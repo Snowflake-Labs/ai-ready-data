@@ -5,8 +5,8 @@
 -- Note: Requires SHOW TABLES + RESULT_SCAN for clustering key info
 WITH tables_in_scope AS (
     SELECT table_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 )
 SELECT
@@ -14,5 +14,5 @@ SELECT
     (SELECT COUNT(*) FROM tables_in_scope) AS total_tables,
     0.0 AS value
 -- For accurate results, run:
--- SHOW TABLES IN SCHEMA {{ container }}.{{ namespace }};
+-- SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 -- Then check "cluster_by" IS NOT NULL OR "search_optimization" = 'ON'

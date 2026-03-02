@@ -11,12 +11,12 @@ WITH timestamp_columns AS (
         c.data_type,
         c.is_nullable,
         c.comment
-    FROM {{ container }}.information_schema.columns c
-    INNER JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    INNER JOIN {{ database }}.information_schema.tables t
         ON c.table_catalog = t.table_catalog
         AND c.table_schema = t.table_schema
         AND c.table_name = t.table_name
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
         AND c.data_type IN ('DATE', 'DATETIME', 'TIMESTAMP_LTZ', 'TIMESTAMP_NTZ', 'TIMESTAMP_TZ')
 ),
@@ -42,8 +42,8 @@ SELECT
         WHEN ts.timestamp_column_count > 0 THEN 'Can support point-in-time joins'
         ELSE 'Add event timestamp column for temporal queries'
     END AS recommendation
-FROM {{ container }}.information_schema.tables t
+FROM {{ database }}.information_schema.tables t
 LEFT JOIN tables_summary ts ON t.table_name = ts.table_name
-WHERE t.table_schema = '{{ namespace }}'
+WHERE t.table_schema = '{{ schema }}'
     AND t.table_type = 'BASE TABLE'
 ORDER BY pit_capability DESC, t.table_name

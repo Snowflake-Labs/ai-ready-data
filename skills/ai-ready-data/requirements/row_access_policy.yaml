@@ -6,7 +6,7 @@ workload: [serving, training]
 check: sql/check/row-access-policy-coverage.sql
 diagnostic: sql/diagnostic/policy-inventory.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]
 constraints:
   - "account_usage.policy_references has ~2 hour latency for new policies"
   - "policy_references uses ref_entity_name, not table_name"

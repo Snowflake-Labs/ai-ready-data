@@ -15,7 +15,7 @@ WITH length_buckets AS (
             ELSE 'TOO_LONG (>32000)'
         END AS length_bucket,
         COUNT(*) AS row_count
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
     GROUP BY 1
 )
 SELECT

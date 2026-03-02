@@ -6,8 +6,8 @@ WITH tables_in_scope AS (
     SELECT
         table_name,
         retention_time
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 ),
 tables_with_versioning AS (

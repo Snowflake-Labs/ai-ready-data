@@ -11,8 +11,8 @@ WITH vector_tables AS (
         c.table_catalog,
         c.table_schema,
         c.table_name
-    FROM {{ container }}.information_schema.columns c
-    WHERE c.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.columns c
+    WHERE c.table_schema = '{{ schema }}'
         AND c.data_type LIKE 'VECTOR%'
 ),
 -- Check search optimization status via SHOW TABLES
@@ -28,5 +28,5 @@ SELECT
         ELSE 0.0  -- Conservative: assume no indexes until verified
     END AS value
 -- To get accurate results, run:
--- SHOW TABLES IN SCHEMA {{ container }}.{{ namespace }};
+-- SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 -- Then query RESULT_SCAN for "search_optimization" = 'ON'

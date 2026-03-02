@@ -1,5 +1,5 @@
 name: encoding_validity
-description: Fraction of text field values free of encoding errors, garbled characters, or Unicode replacement characters
+description: Fraction of text column values free of encoding errors, garbled characters, or Unicode replacement characters
 factor: clean
 direction: lte
 workload: [serving, training]
@@ -8,7 +8,7 @@ diagnostic: sql/diagnostic/encoding-validity.sql
 fixes:
   - sql/fix/replace-encoding-errors.sql
 scope: column
-placeholders: [container, namespace, asset, field, key_columns]
+placeholders: [database, schema, asset, column, key_columns]
 constraints:
   - "Uses CHR(65533) for U+FFFD replacement character detection"
   - "Stripping bad characters may change string length and semantics"

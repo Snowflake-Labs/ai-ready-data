@@ -11,7 +11,7 @@ fixes:
   - sql/fix/add-comments.sql
   - sql/fix/create-semantic-view.sql
 scope: schema
-placeholders: [container, namespace, asset, field, table_comment, column_comment, semantic_view_name, table_definitions, relationship_definitions, fact_definitions, dimension_definitions, metric_definitions, comment]
+placeholders: [database, schema, asset, column, table_comment, column_comment, semantic_view_name, table_definitions, relationship_definitions, fact_definitions, dimension_definitions, metric_definitions, comment]
 constraints:
   - "Comments alone don't enable Text-to-SQL — use semantic views for full coverage"
   - "Delegate to semantic-view-optimization skill for semantic view creation"

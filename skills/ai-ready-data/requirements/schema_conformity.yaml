@@ -6,6 +6,6 @@ workload: [serving, training]
 check: sql/check/schema-conformity.sql
 diagnostic: sql/diagnostic/schema-conformity.sql
 scope: column
-placeholders: [container, namespace, asset, field, expected_type]
+placeholders: [database, schema, asset, column, expected_type]
 constraints:
   - "Uses TRY_TO_NUMBER, TRY_TO_DATE, TRY_TO_TIMESTAMP for type checking"

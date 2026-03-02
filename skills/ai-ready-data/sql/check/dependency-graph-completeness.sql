@@ -4,20 +4,20 @@
 
 WITH tables_in_scope AS (
     SELECT DISTINCT table_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type IN ('BASE TABLE', 'VIEW', 'DYNAMIC TABLE')
 ),
 tables_with_dependencies AS (
     SELECT DISTINCT referencing_object_name AS table_name
     FROM snowflake.account_usage.object_dependencies
-    WHERE referencing_database = '{{ container }}'
-        AND referencing_schema = '{{ namespace }}'
+    WHERE referencing_database = '{{ database }}'
+        AND referencing_schema = '{{ schema }}'
     UNION
     SELECT DISTINCT referenced_object_name AS table_name
     FROM snowflake.account_usage.object_dependencies
-    WHERE referenced_database = '{{ container }}'
-        AND referenced_schema = '{{ namespace }}'
+    WHERE referenced_database = '{{ database }}'
+        AND referenced_schema = '{{ schema }}'
 )
 SELECT
     (SELECT COUNT(*) FROM tables_in_scope t 

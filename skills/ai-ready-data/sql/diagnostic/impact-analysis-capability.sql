@@ -7,18 +7,18 @@ SELECT
         WHEN d.downstream_count > 0 THEN 'HAS_DEPENDENTS'
         ELSE 'NO_DEPENDENTS_TRACKED'
     END AS status
-FROM {{ container }}.information_schema.tables t
+FROM {{ database }}.information_schema.tables t
 LEFT JOIN (
     SELECT
         referenced_object_name AS table_name,
         COUNT(DISTINCT referencing_object_name) AS downstream_count,
         LISTAGG(DISTINCT referencing_object_domain || ':' || referencing_object_name, ', ') AS dependent_objects
     FROM snowflake.account_usage.object_dependencies
-    WHERE referenced_database = '{{ container }}'
-        AND referenced_schema = '{{ namespace }}'
+    WHERE referenced_database = '{{ database }}'
+        AND referenced_schema = '{{ schema }}'
         AND referenced_object_domain = 'TABLE'
     GROUP BY referenced_object_name
 ) d ON t.table_name = d.table_name
-WHERE t.table_schema = '{{ namespace }}'
+WHERE t.table_schema = '{{ schema }}'
     AND t.table_type = 'BASE TABLE'
 ORDER BY downstream_dependents DESC, t.table_name

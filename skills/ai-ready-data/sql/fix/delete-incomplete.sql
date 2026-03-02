@@ -1,2 +1,2 @@
-DELETE FROM {{ container }}.{{ namespace }}.{{ asset }}
-WHERE {{ field }} IS NULL
+DELETE FROM {{ database }}.{{ schema }}.{{ asset }}
+WHERE {{ column }} IS NULL

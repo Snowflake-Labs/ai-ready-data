@@ -1,3 +1,3 @@
-ALTER TABLE {{ container }}.{{ namespace }}.{{ asset }}
-MODIFY COLUMN {{ field }}
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
+MODIFY COLUMN {{ column }}
 SET MASKING POLICY {{ policy_name }}

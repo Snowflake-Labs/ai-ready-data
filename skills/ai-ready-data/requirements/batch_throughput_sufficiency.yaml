@@ -6,7 +6,7 @@ workload: [training]
 check: sql/check/batch-throughput-sufficiency.sql
 diagnostic: sql/diagnostic/batch-throughput-sufficiency.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]
 constraints:
   - "Measures load success rate as a throughput proxy"
   - "True throughput measurement requires warehouse-level monitoring"

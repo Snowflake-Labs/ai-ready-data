@@ -3,7 +3,7 @@
 -- Requires SHOW TABLES + RESULT_SCAN
 
 -- Step 1: Run this first
--- SHOW TABLES IN SCHEMA {{ container }}.{{ namespace }};
+-- SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 
 -- Step 2: Query results
 SELECT

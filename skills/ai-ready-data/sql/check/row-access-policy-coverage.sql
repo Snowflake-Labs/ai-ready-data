@@ -1,14 +1,14 @@
 WITH table_count AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 ),
 rap_tables AS (
     SELECT COUNT(DISTINCT ref_entity_name) AS cnt
     FROM snowflake.account_usage.policy_references
-    WHERE ref_database_name = '{{ container }}'
-        AND ref_schema_name = '{{ namespace }}'
+    WHERE ref_database_name = '{{ database }}'
+        AND ref_schema_name = '{{ schema }}'
         AND policy_kind = 'ROW_ACCESS_POLICY'
 )
 SELECT

@@ -8,6 +8,6 @@ diagnostic: sql/diagnostic/feature-refresh-compliance.sql
 fixes:
   - sql/fix/refresh-dynamic-table.sql
 scope: schema
-placeholders: [container, namespace, asset]
+placeholders: [database, schema, asset]
 constraints:
   - "Requires SHOW DYNAMIC TABLES + RESULT_SCAN in same session"

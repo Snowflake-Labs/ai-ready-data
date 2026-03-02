@@ -10,8 +10,8 @@ WITH temporal_columns AS (
         c.column_name,
         c.data_type,
         c.comment
-    FROM {{ container }}.information_schema.columns c
-    WHERE c.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.columns c
+    WHERE c.table_schema = '{{ schema }}'
         AND c.data_type IN ('DATE', 'DATETIME', 'TIMESTAMP_LTZ', 'TIMESTAMP_NTZ', 'TIMESTAMP_TZ', 'TIME')
 ),
 documented_temporal AS (

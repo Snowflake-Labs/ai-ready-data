@@ -1,13 +1,13 @@
 WITH dynamic_tables AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'DYNAMIC TABLE'
 ),
 all_feature_tables AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type IN ('BASE TABLE', 'DYNAMIC TABLE')
         AND (
             LOWER(table_name) LIKE '%feature%'

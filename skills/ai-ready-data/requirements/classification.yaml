@@ -12,7 +12,7 @@ fixes:
   - sql/fix/table-tags.sql
   - sql/fix/column-tags.sql
 scope: schema
-placeholders: [container, namespace, tag_name, tag_value, allowed_values, asset, field, comment]
+placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, column, comment]
 constraints:
   - "account_usage.tag_references has ~2 hour latency for new tags"
   - "tag_references has no deleted column — don't filter on it"

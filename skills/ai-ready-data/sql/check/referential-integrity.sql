@@ -6,8 +6,8 @@ WITH fk_check AS (
     SELECT
         COUNT(*) AS total_rows,
         COUNT_IF(target.{{ target_key }} IS NULL AND source.{{ fk_column }} IS NOT NULL) AS orphan_rows
-    FROM {{ container }}.{{ namespace }}.{{ asset }} source
-    LEFT JOIN {{ container }}.{{ target_namespace }}.{{ target_asset }} target
+    FROM {{ database }}.{{ schema }}.{{ asset }} source
+    LEFT JOIN {{ database }}.{{ target_namespace }}.{{ target_asset }} target
         ON source.{{ fk_column }} = target.{{ target_key }}
 )
 SELECT

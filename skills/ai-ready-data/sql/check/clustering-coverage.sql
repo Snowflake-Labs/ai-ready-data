@@ -1,14 +1,14 @@
 WITH large_tables AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
         AND row_count > 10000
 ),
 clustered AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
         AND row_count > 10000
         AND clustering_key IS NOT NULL

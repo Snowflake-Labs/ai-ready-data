@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/record-level-traceability.sql
 diagnostic: sql/diagnostic/record-level-traceability.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

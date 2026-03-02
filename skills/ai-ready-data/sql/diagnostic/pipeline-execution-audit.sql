@@ -24,7 +24,7 @@ SELECT
     END AS recommendation
 FROM snowflake.account_usage.task_history
 WHERE scheduled_time >= DATEADD(day, -7, CURRENT_TIMESTAMP())
-    AND database_name = '{{ container }}'
-    AND schema_name = '{{ namespace }}'
+    AND database_name = '{{ database }}'
+    AND schema_name = '{{ schema }}'
 ORDER BY scheduled_time DESC
 LIMIT 100

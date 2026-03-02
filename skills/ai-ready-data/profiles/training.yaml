@@ -14,7 +14,7 @@ stages:
       distribution_conformity: { max: 0.05 }
       outlier_prevalence: { max: 0.05 }
       referential_integrity: { max: 0.01 }
-      cross_field_consistency: { max: 0.01 }
+      cross_column_consistency: { max: 0.01 }
       referential_accuracy: { max: 0.01 }
 
   - name: Schema Understanding
@@ -63,7 +63,7 @@ stages:
     why: Models trained on non-compliant data create legal and reputational risk
     requirements:
       classification: { min: 0.80 }
-      field_masking: { min: 1.00 }
+      column_masking: { min: 1.00 }
       row_access_policy: { min: 0.30 }
       access_audit_coverage: { min: 0.80 }
       consent_coverage: { min: 0.50 }

@@ -1,2 +1,2 @@
-ALTER TABLE {{ container }}.{{ namespace }}.{{ asset }}
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
 CLUSTER BY ({{ clustering_columns }})

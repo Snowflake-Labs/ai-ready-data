@@ -17,7 +17,7 @@ SELECT
         WHEN t.retention_time > 0 THEN 'Can query historical schema via AT/BEFORE'
         ELSE 'Enable Time Travel for schema history'
     END AS recommendation
-FROM {{ container }}.information_schema.tables t
-WHERE t.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables t
+WHERE t.table_schema = '{{ schema }}'
     AND t.table_type = 'BASE TABLE'
 ORDER BY schema_history_status DESC, t.table_name

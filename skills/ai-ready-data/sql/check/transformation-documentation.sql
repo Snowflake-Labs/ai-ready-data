@@ -7,8 +7,8 @@ WITH transformations AS (
         table_name,
         table_type,
         comment
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type IN ('VIEW', 'DYNAMIC TABLE', 'MATERIALIZED VIEW')
 ),
 documented_transformations AS (

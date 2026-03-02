@@ -13,12 +13,12 @@ WITH columns_in_scope AS (
         c.character_maximum_length,
         c.numeric_precision,
         c.numeric_scale
-    FROM {{ container }}.information_schema.columns c
-    INNER JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    INNER JOIN {{ database }}.information_schema.tables t
         ON c.table_catalog = t.table_catalog
         AND c.table_schema = t.table_schema
         AND c.table_name = t.table_name
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
 ),
 -- Get columns involved in constraints
@@ -28,8 +28,8 @@ constrained_columns AS (
         kcu.table_schema,
         kcu.table_name,
         kcu.column_name
-    FROM {{ container }}.information_schema.key_column_usage kcu
-    WHERE kcu.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.key_column_usage kcu
+    WHERE kcu.table_schema = '{{ schema }}'
 ),
 columns_with_constraints AS (
     SELECT c.*

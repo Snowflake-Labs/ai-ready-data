@@ -6,4 +6,4 @@ workload: [training]
 check: sql/check/outlier-prevalence.sql
 diagnostic: sql/diagnostic/outlier-prevalence.sql
 scope: table
-placeholders: [container, namespace, asset]
+placeholders: [database, schema, asset]

@@ -1,16 +1,16 @@
 WITH column_count AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.columns c
-    JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    JOIN {{ database }}.information_schema.tables t
         ON c.table_name = t.table_name AND c.table_schema = t.table_schema
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
 ),
 tagged_columns AS (
     SELECT COUNT(DISTINCT column_name) AS cnt
     FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ container }}'
-        AND object_schema = '{{ namespace }}'
+    WHERE object_database = '{{ database }}'
+        AND object_schema = '{{ schema }}'
         AND domain = 'COLUMN'
 )
 SELECT

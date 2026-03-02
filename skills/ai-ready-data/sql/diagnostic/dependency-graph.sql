@@ -9,8 +9,8 @@ SELECT
     referenced_object_domain AS source_type,
     'UPSTREAM' AS direction
 FROM snowflake.account_usage.object_dependencies
-WHERE (referencing_database = '{{ container }}' AND referencing_schema = '{{ namespace }}')
-    OR (referenced_database = '{{ container }}' AND referenced_schema = '{{ namespace }}')
+WHERE (referencing_database = '{{ database }}' AND referencing_schema = '{{ schema }}')
+    OR (referenced_database = '{{ database }}' AND referenced_schema = '{{ schema }}')
 
 UNION ALL
 
@@ -21,8 +21,8 @@ SELECT
     referencing_object_domain AS source_type,
     'DOWNSTREAM' AS direction
 FROM snowflake.account_usage.object_dependencies
-WHERE referenced_database = '{{ container }}' 
-    AND referenced_schema = '{{ namespace }}'
+WHERE referenced_database = '{{ database }}' 
+    AND referenced_schema = '{{ schema }}'
 
 ORDER BY direction, dependent_object
 LIMIT 200

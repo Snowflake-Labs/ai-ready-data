@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/propagation-latency-compliance.sql
 diagnostic: sql/diagnostic/propagation-latency.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

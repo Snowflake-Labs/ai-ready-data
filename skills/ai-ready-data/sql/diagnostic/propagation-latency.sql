@@ -3,7 +3,7 @@
 -- Requires SHOW DYNAMIC TABLES followed by RESULT_SCAN
 
 -- Step 1: Run this first
--- SHOW DYNAMIC TABLES IN SCHEMA {{ container }}.{{ namespace }};
+-- SHOW DYNAMIC TABLES IN SCHEMA {{ database }}.{{ schema }};
 
 -- Step 2: Then query results
 SELECT

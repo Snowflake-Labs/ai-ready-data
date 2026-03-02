@@ -1,1 +1,1 @@
-ALTER TABLE {{ container }}.{{ namespace }}.{{ asset }} SET CHANGE_TRACKING = TRUE
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} SET CHANGE_TRACKING = TRUE

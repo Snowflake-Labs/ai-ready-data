@@ -11,7 +11,7 @@ fixes:
   - sql/fix/enable-change-tracking.sql
   - sql/fix/create-stream.sql
 scope: schema
-placeholders: [container, namespace, asset, stream_name]
+placeholders: [database, schema, asset, stream_name]
 constraints:
   - "SHOW TABLES + RESULT_SCAN must run in the same session"
   - "change_tracking is NOT in information_schema — use SHOW TABLES"

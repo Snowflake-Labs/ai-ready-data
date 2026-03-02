@@ -1,9 +1,9 @@
 name: referential_accuracy
-description: Fraction of field values verified as correct against an authoritative reference or ground-truth source
+description: Fraction of column values verified as correct against an authoritative reference or ground-truth source
 factor: clean
 direction: lte
 workload: [serving, training]
 check: sql/check/referential-accuracy.sql
 diagnostic: sql/diagnostic/referential-accuracy.sql
 scope: table
-placeholders: [container, namespace, asset]
+placeholders: [database, schema, asset]

@@ -17,8 +17,8 @@ SELECT
             THEN 'Count column stored as FLOAT - consider INTEGER'
         ELSE 'Review type appropriateness'
     END AS issue
-FROM {{ container }}.information_schema.columns
-WHERE table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.columns
+WHERE table_schema = '{{ schema }}'
     AND table_name = '{{ asset }}'
     AND (
         (data_type = 'VARIANT' AND column_name NOT LIKE '%JSON%' AND column_name NOT LIKE '%PAYLOAD%')

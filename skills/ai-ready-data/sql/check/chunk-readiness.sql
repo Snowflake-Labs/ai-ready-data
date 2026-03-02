@@ -16,7 +16,7 @@ WITH text_stats AS (
         COUNT_IF(LENGTH({{ text_column }}) > 8000) AS too_long_rows,
         AVG(LENGTH({{ text_column }})) AS avg_length,
         MEDIAN(LENGTH({{ text_column }})) AS median_length
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
     WHERE {{ text_column }} IS NOT NULL
 )
 SELECT

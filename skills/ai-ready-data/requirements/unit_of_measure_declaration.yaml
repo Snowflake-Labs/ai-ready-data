@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/unit-of-measure-declaration.sql
 diagnostic: sql/diagnostic/unit-of-measure-declaration.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

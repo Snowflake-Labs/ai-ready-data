@@ -8,7 +8,7 @@ diagnostic: sql/diagnostic/staleness-report.sql
 fixes:
   - sql/fix/refresh-dynamic-table.sql
 scope: schema
-placeholders: [container, namespace, asset, freshness_threshold_hours]
+placeholders: [database, schema, asset, freshness_threshold_hours]
 constraints:
   - "last_altered reflects DDL changes, not DML — see gotchas.md"
   - "For true freshness, prefer streams, dynamic table DATA_TIMESTAMP, or explicit timestamp columns"

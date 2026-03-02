@@ -4,20 +4,20 @@
 
 WITH base_tables AS (
     SELECT table_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 ),
 streams AS (
     SELECT DISTINCT table_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'STREAM'
 ),
 dynamic_tables AS (
     SELECT table_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'DYNAMIC TABLE'
 ),
 -- Tables that either have a stream on them OR are dynamic tables

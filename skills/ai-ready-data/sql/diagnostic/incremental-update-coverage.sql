@@ -9,8 +9,8 @@ WITH base_tables AS (
         table_name,
         row_count,
         'BASE TABLE' AS table_type
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 ),
 dynamic_tables AS (
@@ -20,8 +20,8 @@ dynamic_tables AS (
         table_name,
         row_count,
         'DYNAMIC TABLE' AS table_type
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'DYNAMIC TABLE'
 ),
 streams AS (
@@ -29,8 +29,8 @@ streams AS (
         table_catalog,
         table_schema,
         table_name AS stream_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'STREAM'
 ),
 all_tables AS (

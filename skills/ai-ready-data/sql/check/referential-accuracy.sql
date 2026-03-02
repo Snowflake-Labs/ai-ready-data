@@ -12,8 +12,8 @@ WITH accuracy_check AS (
             source.{{ column }} IS NOT NULL 
             AND ref.{{ ref_column }} IS NULL
         ) AS unverified_rows
-    FROM {{ container }}.{{ namespace }}.{{ asset }} source
-    LEFT JOIN {{ container }}.{{ ref_namespace }}.{{ ref_asset }} ref
+    FROM {{ database }}.{{ schema }}.{{ asset }} source
+    LEFT JOIN {{ database }}.{{ ref_namespace }}.{{ ref_asset }} ref
         ON source.{{ column }} = ref.{{ ref_column }}
 )
 SELECT

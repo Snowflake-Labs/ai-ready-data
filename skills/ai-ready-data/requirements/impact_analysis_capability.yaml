@@ -6,6 +6,6 @@ workload: [serving, training]
 check: sql/check/impact-analysis-capability.sql
 diagnostic: sql/diagnostic/impact-analysis-capability.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]
 constraints:
   - "account_usage.object_dependencies has ~2 hour latency"

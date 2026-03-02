@@ -1,1 +1,1 @@
-ALTER DYNAMIC TABLE {{ container }}.{{ namespace }}.{{ asset }} REFRESH
+ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }} REFRESH

@@ -13,8 +13,8 @@ WITH task_runs AS (
         error_message
     FROM snowflake.account_usage.task_history
     WHERE scheduled_time >= DATEADD(day, -7, CURRENT_TIMESTAMP())
-        AND database_name = '{{ container }}'
-        AND schema_name = '{{ namespace }}'
+        AND database_name = '{{ database }}'
+        AND schema_name = '{{ schema }}'
 ),
 audited_runs AS (
     SELECT * FROM task_runs

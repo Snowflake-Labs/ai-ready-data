@@ -5,8 +5,8 @@
 -- Note: Requires SHOW DYNAMIC TABLES + RESULT_SCAN for accurate measurement
 WITH dynamic_tables AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'DYNAMIC TABLE'
 )
 SELECT
@@ -14,5 +14,5 @@ SELECT
     -- Assume compliant unless SHOW DYNAMIC TABLES reveals otherwise
     1.0 AS value
 -- For accurate results, run:
--- SHOW DYNAMIC TABLES IN SCHEMA {{ container }}.{{ namespace }};
+-- SHOW DYNAMIC TABLES IN SCHEMA {{ database }}.{{ schema }};
 -- Then check "scheduling_state" = 'RUNNING' and compare actual lag to target_lag

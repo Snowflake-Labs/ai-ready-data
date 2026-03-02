@@ -19,7 +19,7 @@ SELECT
         WHEN {{ timestamp_column }} = '1970-01-01'::TIMESTAMP THEN 'Unix epoch - likely uninitialized'
         ELSE 'Valid timestamp'
     END AS recommendation
-FROM {{ container }}.{{ namespace }}.{{ asset }}
+FROM {{ database }}.{{ schema }}.{{ asset }}
 WHERE {{ timestamp_column }} IS NULL
     OR {{ timestamp_column }} > CURRENT_TIMESTAMP()
     OR {{ timestamp_column }} < '1900-01-01'::TIMESTAMP

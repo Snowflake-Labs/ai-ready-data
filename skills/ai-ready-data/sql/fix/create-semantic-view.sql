@@ -1,4 +1,4 @@
-CREATE OR REPLACE SEMANTIC VIEW {{ container }}.{{ namespace }}.{{ semantic_view_name }}
+CREATE OR REPLACE SEMANTIC VIEW {{ database }}.{{ schema }}.{{ semantic_view_name }}
 
     TABLES (
         {{ table_definitions }}

@@ -3,15 +3,15 @@
 -- Requires: SHOW TABLES followed by RESULT_SCAN in same session
 
 -- Step 1: Run this first
--- SHOW TABLES IN SCHEMA {{ container }}.{{ namespace }};
+-- SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 
 -- Step 2: Then run this query to see vector tables with search optimization status
 WITH vector_tables AS (
     SELECT DISTINCT
         c.table_schema,
         c.table_name
-    FROM {{ container }}.information_schema.columns c
-    WHERE c.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.columns c
+    WHERE c.table_schema = '{{ schema }}'
         AND c.data_type LIKE 'VECTOR%'
 )
 SELECT

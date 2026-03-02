@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/temporal-scope-declaration.sql
 diagnostic: sql/diagnostic/temporal-scope-declaration.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

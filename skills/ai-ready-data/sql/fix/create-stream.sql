@@ -1,2 +1,2 @@
-CREATE STREAM IF NOT EXISTS {{ container }}.{{ namespace }}.{{ stream_name }}
-ON TABLE {{ container }}.{{ namespace }}.{{ asset }}
+CREATE STREAM IF NOT EXISTS {{ database }}.{{ schema }}.{{ stream_name }}
+ON TABLE {{ database }}.{{ schema }}.{{ asset }}

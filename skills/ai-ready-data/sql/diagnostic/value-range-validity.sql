@@ -4,16 +4,16 @@
 
 SELECT
     '{{ asset }}' AS table_name,
-    '{{ field }}' AS column_name,
+    '{{ column }}' AS column_name,
     COUNT(*) AS total_rows,
-    COUNT({{ field }}) AS non_null_rows,
-    MIN({{ field }}) AS min_value,
-    MAX({{ field }}) AS max_value,
-    AVG({{ field }}) AS avg_value,
-    MEDIAN({{ field }}) AS median_value,
-    STDDEV({{ field }}) AS stddev_value,
-    APPROX_PERCENTILE({{ field }}, 0.01) AS p1,
-    APPROX_PERCENTILE({{ field }}, 0.05) AS p5,
-    APPROX_PERCENTILE({{ field }}, 0.95) AS p95,
-    APPROX_PERCENTILE({{ field }}, 0.99) AS p99
-FROM {{ container }}.{{ namespace }}.{{ asset }}
+    COUNT({{ column }}) AS non_null_rows,
+    MIN({{ column }}) AS min_value,
+    MAX({{ column }}) AS max_value,
+    AVG({{ column }}) AS avg_value,
+    MEDIAN({{ column }}) AS median_value,
+    STDDEV({{ column }}) AS stddev_value,
+    APPROX_PERCENTILE({{ column }}, 0.01) AS p1,
+    APPROX_PERCENTILE({{ column }}, 0.05) AS p5,
+    APPROX_PERCENTILE({{ column }}, 0.95) AS p95,
+    APPROX_PERCENTILE({{ column }}, 0.99) AS p99
+FROM {{ database }}.{{ schema }}.{{ asset }}

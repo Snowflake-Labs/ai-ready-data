@@ -6,7 +6,7 @@ WITH stats AS (
     SELECT
         AVG({{ column }}) AS mean_val,
         STDDEV({{ column }}) AS stddev_val
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
     WHERE {{ column }} IS NOT NULL
 )
 SELECT
@@ -20,7 +20,7 @@ SELECT
         WHEN (t.{{ column }} - s.mean_val) / NULLIF(s.stddev_val, 0) < -{{ stddev_threshold }} THEN 'LOW_OUTLIER'
         ELSE 'NORMAL'
     END AS outlier_type
-FROM {{ container }}.{{ namespace }}.{{ asset }} t
+FROM {{ database }}.{{ schema }}.{{ asset }} t
 CROSS JOIN stats s
 WHERE t.{{ column }} IS NOT NULL
     AND ABS(t.{{ column }} - s.mean_val) > ({{ stddev_threshold }} * s.stddev_val)

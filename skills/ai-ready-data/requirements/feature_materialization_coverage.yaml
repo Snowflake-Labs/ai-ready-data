@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/feature-materialization-coverage.sql
 diagnostic: sql/diagnostic/feature-materialization-coverage.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

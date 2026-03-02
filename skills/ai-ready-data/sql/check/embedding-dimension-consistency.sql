@@ -11,8 +11,8 @@ WITH vector_columns AS (
         -- Extract dimension from data type (e.g., VECTOR(FLOAT, 768))
         c.data_type AS full_type,
         c.comment
-    FROM {{ container }}.information_schema.columns c
-    WHERE c.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.columns c
+    WHERE c.table_schema = '{{ schema }}'
         AND c.data_type LIKE 'VECTOR%'
 ),
 dimension_counts AS (

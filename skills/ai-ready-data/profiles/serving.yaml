@@ -12,7 +12,7 @@ stages:
       syntactic_validity: { max: 0.0 }
       encoding_validity: { max: 0.0 }
       referential_integrity: { max: 0.01 }
-      cross_field_consistency: { max: 0.01 }
+      cross_column_consistency: { max: 0.01 }
 
   - name: Schema Understanding
     why: Documented schemas enable Text-to-SQL, semantic search, and context-aware generation
@@ -68,7 +68,7 @@ stages:
     why: Prevents sensitive data from leaking into AI responses
     requirements:
       classification: { min: 0.50 }
-      field_masking: { min: 1.00 }
+      column_masking: { min: 1.00 }
       row_access_policy: { min: 0.30 }
       access_audit_coverage: { min: 0.80 }
       consent_coverage: { min: 0.30 }

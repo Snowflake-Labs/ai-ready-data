@@ -1,9 +1,9 @@
 WITH pii_columns AS (
     SELECT c.table_name, c.column_name, c.data_type
-    FROM {{ container }}.information_schema.columns c
-    JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    JOIN {{ database }}.information_schema.tables t
         ON c.table_name = t.table_name AND c.table_schema = t.table_schema
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
         AND (
             LOWER(c.column_name) LIKE '%email%'
@@ -16,15 +16,15 @@ WITH pii_columns AS (
 masked AS (
     SELECT DISTINCT ref_entity_name AS table_name, ref_column_name AS column_name, 'MASKING_POLICY' AS protection
     FROM snowflake.account_usage.policy_references
-    WHERE ref_database_name = '{{ container }}'
-        AND ref_schema_name = '{{ namespace }}'
+    WHERE ref_database_name = '{{ database }}'
+        AND ref_schema_name = '{{ schema }}'
         AND policy_kind = 'MASKING_POLICY'
 ),
 tagged AS (
     SELECT DISTINCT object_name AS table_name, column_name, 'TAG:' || tag_name AS protection
     FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ container }}'
-        AND object_schema = '{{ namespace }}'
+    WHERE object_database = '{{ database }}'
+        AND object_schema = '{{ schema }}'
         AND domain = 'COLUMN'
         AND LOWER(tag_name) IN ('pii', 'sensitive', 'anonymized', 'privacy_category')
 )

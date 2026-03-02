@@ -6,4 +6,4 @@ workload: [serving]
 check: sql/check/embedding-coverage.sql
 diagnostic: sql/diagnostic/embedding-coverage.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

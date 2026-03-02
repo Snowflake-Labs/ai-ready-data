@@ -6,8 +6,8 @@
 WITH tables_in_scope AS (
     SELECT DISTINCT
         table_catalog || '.' || table_schema || '.' || table_name AS full_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 ),
 tables_with_lineage AS (

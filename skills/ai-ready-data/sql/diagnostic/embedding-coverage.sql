@@ -9,12 +9,12 @@ WITH text_columns AS (
         c.table_name,
         c.column_name AS text_column,
         c.character_maximum_length AS max_length
-    FROM {{ container }}.information_schema.columns c
-    INNER JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    INNER JOIN {{ database }}.information_schema.tables t
         ON c.table_catalog = t.table_catalog
         AND c.table_schema = t.table_schema
         AND c.table_name = t.table_name
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
         AND c.data_type IN ('VARCHAR', 'TEXT', 'STRING')
         AND (
@@ -39,8 +39,8 @@ vector_columns AS (
         c.table_name,
         c.column_name AS vector_column,
         c.comment AS vector_comment
-    FROM {{ container }}.information_schema.columns c
-    WHERE c.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.columns c
+    WHERE c.table_schema = '{{ schema }}'
         AND c.data_type = 'VECTOR'
 )
 SELECT

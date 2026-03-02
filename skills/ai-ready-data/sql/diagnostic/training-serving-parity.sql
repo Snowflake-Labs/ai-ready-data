@@ -8,8 +8,8 @@ SELECT
         WHEN t.table_type = 'BASE TABLE' THEN 'STATIC (training-only)'
         ELSE t.table_type
     END AS parity_status
-FROM {{ container }}.information_schema.tables t
-WHERE t.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables t
+WHERE t.table_schema = '{{ schema }}'
     AND (
         LOWER(t.table_name) LIKE '%feature%'
         OR LOWER(t.table_name) LIKE '%feat_%'

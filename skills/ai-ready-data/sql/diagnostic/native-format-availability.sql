@@ -24,6 +24,6 @@ SELECT
         WHEN t.table_type = 'EXTERNAL TABLE' THEN 'Consider materializing frequently accessed external data'
         ELSE 'Native format - no action needed'
     END AS recommendation
-FROM {{ container }}.information_schema.tables t
-WHERE t.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables t
+WHERE t.table_schema = '{{ schema }}'
 ORDER BY format_type DESC, t.row_count DESC

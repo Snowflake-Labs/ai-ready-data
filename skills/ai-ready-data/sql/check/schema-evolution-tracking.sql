@@ -9,8 +9,8 @@ WITH tables_in_scope AS (
         table_name,
         created,
         last_altered
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 ),
 -- Tables with Time Travel retention (enables schema history)

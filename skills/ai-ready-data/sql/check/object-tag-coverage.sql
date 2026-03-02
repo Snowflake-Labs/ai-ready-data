@@ -1,14 +1,14 @@
 WITH table_count AS (
     SELECT COUNT(*) AS cnt
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'BASE TABLE'
 ),
 tagged_tables AS (
     SELECT COUNT(DISTINCT object_name) AS cnt
     FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ container }}'
-        AND object_schema = '{{ namespace }}'
+    WHERE object_database = '{{ database }}'
+        AND object_schema = '{{ schema }}'
         AND domain = 'TABLE'
 )
 SELECT

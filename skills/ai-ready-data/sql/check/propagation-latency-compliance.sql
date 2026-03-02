@@ -7,8 +7,8 @@ WITH dynamic_tables AS (
         table_catalog,
         table_schema,
         table_name
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'DYNAMIC TABLE'
 )
 SELECT

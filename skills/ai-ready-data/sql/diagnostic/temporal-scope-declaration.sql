@@ -28,8 +28,8 @@ SELECT
         WHEN LOWER(c.column_name) LIKE '%transaction%' THEN 'TRANSACTION_TIMESTAMP'
         ELSE 'UNKNOWN_ROLE'
     END AS suggested_temporal_role
-FROM {{ container }}.information_schema.columns c
-WHERE c.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.columns c
+WHERE c.table_schema = '{{ schema }}'
     AND c.data_type IN ('DATE', 'DATETIME', 'TIMESTAMP_LTZ', 'TIMESTAMP_NTZ', 'TIMESTAMP_TZ', 'TIME')
 ORDER BY 
     documentation_status DESC,

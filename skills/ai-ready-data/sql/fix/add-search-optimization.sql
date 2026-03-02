@@ -1,1 +1,1 @@
-ALTER TABLE {{ container }}.{{ namespace }}.{{ asset }} ADD SEARCH OPTIMIZATION
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} ADD SEARCH OPTIMIZATION

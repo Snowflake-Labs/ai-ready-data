@@ -14,12 +14,12 @@ WITH columns_in_scope AS (
         c.character_maximum_length,
         c.numeric_precision,
         c.numeric_scale
-    FROM {{ container }}.information_schema.columns c
-    INNER JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    INNER JOIN {{ database }}.information_schema.tables t
         ON c.table_catalog = t.table_catalog
         AND c.table_schema = t.table_schema
         AND c.table_name = t.table_name
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
 ),
 key_constraints AS (
@@ -29,11 +29,11 @@ key_constraints AS (
         kcu.table_name,
         kcu.column_name,
         tc.constraint_type
-    FROM {{ container }}.information_schema.key_column_usage kcu
-    INNER JOIN {{ container }}.information_schema.table_constraints tc
+    FROM {{ database }}.information_schema.key_column_usage kcu
+    INNER JOIN {{ database }}.information_schema.table_constraints tc
         ON kcu.constraint_name = tc.constraint_name
         AND kcu.table_schema = tc.table_schema
-    WHERE kcu.table_schema = '{{ namespace }}'
+    WHERE kcu.table_schema = '{{ schema }}'
 )
 SELECT
     c.table_catalog AS database_name,

@@ -1,4 +1,4 @@
-SHOW TABLES IN SCHEMA {{ container }}.{{ namespace }};
+SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 
 SELECT
     COUNT_IF("search_optimization" = 'ON') AS optimized_tables,

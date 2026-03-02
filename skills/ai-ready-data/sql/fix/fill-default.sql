@@ -1,3 +1,3 @@
-UPDATE {{ container }}.{{ namespace }}.{{ asset }}
-SET {{ field }} = {{ default_value }}
-WHERE {{ field }} IS NULL
+UPDATE {{ database }}.{{ schema }}.{{ asset }}
+SET {{ column }} = {{ default_value }}
+WHERE {{ column }} IS NULL

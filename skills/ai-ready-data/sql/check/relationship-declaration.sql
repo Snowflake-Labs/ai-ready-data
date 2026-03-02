@@ -8,8 +8,8 @@ WITH semantic_views AS (
         table_schema,
         table_name,
         comment
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type = 'SEMANTIC VIEW'
 ),
 -- Count tables referenced in each semantic view via SHOW command would be ideal

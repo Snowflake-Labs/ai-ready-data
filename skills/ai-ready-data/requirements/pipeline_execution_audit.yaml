@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/pipeline-execution-audit.sql
 diagnostic: sql/diagnostic/pipeline-execution-audit.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

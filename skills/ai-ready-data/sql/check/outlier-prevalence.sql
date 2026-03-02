@@ -6,7 +6,7 @@ WITH stats AS (
     SELECT
         AVG({{ column }}) AS mean_val,
         STDDEV({{ column }}) AS stddev_val
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
     WHERE {{ column }} IS NOT NULL
 ),
 outlier_check AS (
@@ -15,7 +15,7 @@ outlier_check AS (
         COUNT_IF(
             ABS(t.{{ column }} - s.mean_val) > ({{ stddev_threshold }} * s.stddev_val)
         ) AS outlier_rows
-    FROM {{ container }}.{{ namespace }}.{{ asset }} t
+    FROM {{ database }}.{{ schema }}.{{ asset }} t
     CROSS JOIN stats s
     WHERE t.{{ column }} IS NOT NULL
 )

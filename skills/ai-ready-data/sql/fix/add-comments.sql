@@ -1,2 +1,2 @@
-COMMENT ON TABLE {{ container }}.{{ namespace }}.{{ asset }} IS '{{ table_comment }}';
-COMMENT ON COLUMN {{ container }}.{{ namespace }}.{{ asset }}.{{ field }} IS '{{ column_comment }}'
+COMMENT ON TABLE {{ database }}.{{ schema }}.{{ asset }} IS '{{ table_comment }}';
+COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ asset }}.{{ column }} IS '{{ column_comment }}'

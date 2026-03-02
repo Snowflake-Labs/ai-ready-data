@@ -1,3 +1,3 @@
-UPDATE {{ container }}.{{ namespace }}.{{ asset }}
-SET {{ field }} = {{ placeholder_expression }}
-WHERE {{ field }} IS NULL
+UPDATE {{ database }}.{{ schema }}.{{ asset }}
+SET {{ column }} = {{ placeholder_expression }}
+WHERE {{ column }} IS NULL

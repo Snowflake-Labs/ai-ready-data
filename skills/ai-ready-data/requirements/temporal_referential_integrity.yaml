@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/temporal-referential-integrity.sql
 diagnostic: sql/diagnostic/temporal-referential-integrity.sql
 scope: table
-placeholders: [container, namespace, asset, timestamp_column, key_columns]
+placeholders: [database, schema, asset, timestamp_column, key_columns]

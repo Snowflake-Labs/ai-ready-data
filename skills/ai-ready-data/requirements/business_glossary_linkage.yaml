@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/business-glossary-linkage.sql
 diagnostic: sql/diagnostic/business-glossary-linkage.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

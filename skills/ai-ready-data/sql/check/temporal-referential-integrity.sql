@@ -9,7 +9,7 @@ WITH timestamp_check AS (
             AND {{ timestamp_column }} <= CURRENT_TIMESTAMP()
             AND {{ timestamp_column }} >= '1900-01-01'::TIMESTAMP
         ) AS valid_timestamp_rows
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
 )
 SELECT
     valid_timestamp_rows,

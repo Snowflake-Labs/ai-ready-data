@@ -15,7 +15,7 @@ WITH current_stats AS (
         APPROX_PERCENTILE({{ column }}, 0.25) AS current_p25,
         APPROX_PERCENTILE({{ column }}, 0.75) AS current_p75,
         APPROX_PERCENTILE({{ column }}, 0.95) AS current_p95
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
 )
 SELECT
     column_name,

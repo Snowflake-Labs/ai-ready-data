@@ -1,2 +1,2 @@
-ALTER TABLE {{ container }}.{{ namespace }}.{{ asset }}
-ALTER COLUMN {{ field }} SET NOT NULL
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
+ALTER COLUMN {{ column }} SET NOT NULL

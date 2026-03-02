@@ -5,8 +5,8 @@ WITH recent_loads AS (
             rows_loaded > 0
             AND DATEDIFF('second', last_load_time, DATEADD('second', rows_loaded / NULLIF(rows_parsed, 0), last_load_time)) IS NOT NULL
         ) AS successful_loads
-    FROM {{ container }}.information_schema.load_history
-    WHERE schema_name = '{{ namespace }}'
+    FROM {{ database }}.information_schema.load_history
+    WHERE schema_name = '{{ schema }}'
         AND last_load_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
 )
 SELECT

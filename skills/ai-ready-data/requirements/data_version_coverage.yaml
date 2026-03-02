@@ -6,4 +6,4 @@ workload: [training]
 check: sql/check/data-version-coverage.sql
 diagnostic: sql/diagnostic/data-version-coverage.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

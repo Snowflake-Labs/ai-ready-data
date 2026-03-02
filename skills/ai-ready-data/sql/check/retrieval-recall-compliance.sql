@@ -1,18 +1,18 @@
 WITH vector_tables AS (
     SELECT COUNT(DISTINCT c.table_name) AS total_vector_tables
-    FROM {{ container }}.information_schema.columns c
-    JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    JOIN {{ database }}.information_schema.tables t
         ON c.table_name = t.table_name AND c.table_schema = t.table_schema
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
         AND c.data_type = 'VECTOR'
 ),
 indexed_vector_tables AS (
     SELECT COUNT(DISTINCT c.table_name) AS indexed_count
-    FROM {{ container }}.information_schema.columns c
-    JOIN {{ container }}.information_schema.tables t
+    FROM {{ database }}.information_schema.columns c
+    JOIN {{ database }}.information_schema.tables t
         ON c.table_name = t.table_name AND c.table_schema = t.table_schema
-    WHERE c.table_schema = '{{ namespace }}'
+    WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
         AND c.data_type = 'VECTOR'
         AND t.search_optimization = 'ON'

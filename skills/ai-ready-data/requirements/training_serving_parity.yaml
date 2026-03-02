@@ -6,7 +6,7 @@ workload: [serving, training]
 check: sql/check/training-serving-parity.sql
 diagnostic: sql/diagnostic/training-serving-parity.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]
 constraints:
   - "Heuristic check based on dynamic table presence for feature tables"
   - "True parity verification requires comparing transformation logic across pipelines"

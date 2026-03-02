@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/agent-attribution.sql
 diagnostic: sql/diagnostic/agent-attribution.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

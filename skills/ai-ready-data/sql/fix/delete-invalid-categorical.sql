@@ -1,3 +1,3 @@
-DELETE FROM {{ container }}.{{ namespace }}.{{ asset }}
-WHERE {{ field }} IS NOT NULL
-    AND {{ field }} NOT IN ({{ allowed_values }})
+DELETE FROM {{ database }}.{{ schema }}.{{ asset }}
+WHERE {{ column }} IS NOT NULL
+    AND {{ column }} NOT IN ({{ allowed_values }})

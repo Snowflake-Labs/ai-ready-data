@@ -12,8 +12,8 @@ WITH write_queries AS (
     FROM snowflake.account_usage.query_history
     WHERE start_time >= DATEADD(day, -7, CURRENT_TIMESTAMP())
         AND query_type IN ('INSERT', 'UPDATE', 'DELETE', 'MERGE', 'CREATE_TABLE_AS_SELECT')
-        AND database_name = '{{ container }}'
-        AND schema_name = '{{ namespace }}'
+        AND database_name = '{{ database }}'
+        AND schema_name = '{{ schema }}'
 ),
 queries_with_attribution AS (
     SELECT * FROM write_queries

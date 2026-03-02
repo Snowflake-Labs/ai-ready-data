@@ -6,4 +6,4 @@ workload: [serving]
 check: sql/check/vector-index-coverage.sql
 diagnostic: sql/diagnostic/vector-index-coverage.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

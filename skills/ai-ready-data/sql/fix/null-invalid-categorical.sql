@@ -1,4 +1,4 @@
-UPDATE {{ container }}.{{ namespace }}.{{ asset }}
-SET {{ field }} = NULL
-WHERE {{ field }} IS NOT NULL
-    AND {{ field }} NOT IN ({{ allowed_values }})
+UPDATE {{ database }}.{{ schema }}.{{ asset }}
+SET {{ column }} = NULL
+WHERE {{ column }} IS NOT NULL
+    AND {{ column }} NOT IN ({{ allowed_values }})

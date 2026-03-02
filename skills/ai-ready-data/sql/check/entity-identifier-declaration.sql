@@ -7,8 +7,8 @@ WITH tables_in_scope AS (
         t.table_catalog,
         t.table_schema,
         t.table_name
-    FROM {{ container }}.information_schema.tables t
-    WHERE t.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables t
+    WHERE t.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
 ),
 -- Check for primary key constraints
@@ -17,8 +17,8 @@ pk_constraints AS (
         tc.table_catalog,
         tc.table_schema,
         tc.table_name
-    FROM {{ container }}.information_schema.table_constraints tc
-    WHERE tc.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.table_constraints tc
+    WHERE tc.table_schema = '{{ schema }}'
         AND tc.constraint_type = 'PRIMARY KEY'
 ),
 -- Check for unique constraints (often used as entity identifiers)
@@ -27,8 +27,8 @@ unique_constraints AS (
         tc.table_catalog,
         tc.table_schema,
         tc.table_name
-    FROM {{ container }}.information_schema.table_constraints tc
-    WHERE tc.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.table_constraints tc
+    WHERE tc.table_schema = '{{ schema }}'
         AND tc.constraint_type = 'UNIQUE'
 ),
 tables_with_identifiers AS (

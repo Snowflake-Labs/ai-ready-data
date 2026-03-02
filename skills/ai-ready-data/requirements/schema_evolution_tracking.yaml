@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/schema-evolution-tracking.sql
 diagnostic: sql/diagnostic/schema-evolution-tracking.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

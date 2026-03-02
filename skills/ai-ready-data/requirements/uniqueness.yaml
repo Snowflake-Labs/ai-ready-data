@@ -10,7 +10,7 @@ fixes:
   - sql/fix/deduplicate-keep-first.sql
   - sql/fix/deduplicate-keep-last.sql
 scope: table
-placeholders: [container, namespace, asset, key_columns, tiebreaker_column]
+placeholders: [database, schema, asset, key_columns, tiebreaker_column]
 constraints:
   - "CREATE OR REPLACE TABLE drops grants, policies, streams, and change tracking"
   - "key_columns should be the logical primary key"

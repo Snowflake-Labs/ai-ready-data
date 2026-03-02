@@ -10,8 +10,8 @@ WITH vector_columns AS (
         c.column_name,
         c.data_type AS vector_type,
         c.comment
-    FROM {{ container }}.information_schema.columns c
-    WHERE c.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.columns c
+    WHERE c.table_schema = '{{ schema }}'
         AND c.data_type LIKE 'VECTOR%'
 ),
 dimension_summary AS (

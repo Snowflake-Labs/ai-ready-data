@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/native-format-availability.sql
 diagnostic: sql/diagnostic/native-format-availability.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

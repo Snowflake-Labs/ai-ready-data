@@ -9,6 +9,6 @@ fixes:
   - sql/fix/create-tag.sql
   - sql/fix/table-tags.sql
 scope: schema
-placeholders: [container, namespace, tag_name, tag_value, allowed_values, asset, comment]
+placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, comment]
 constraints:
   - "account_usage.tag_references has ~2 hour latency for new tags"

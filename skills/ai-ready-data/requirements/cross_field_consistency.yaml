@@ -1,9 +1,0 @@
-name: cross_field_consistency
-description: Fraction of records where logically related fields are mutually consistent per declared cross-field rules
-factor: clean
-direction: lte
-workload: [serving, training]
-check: sql/check/cross-field-consistency.sql
-diagnostic: sql/diagnostic/cross-field-consistency.sql
-scope: table
-placeholders: [container, namespace, asset]

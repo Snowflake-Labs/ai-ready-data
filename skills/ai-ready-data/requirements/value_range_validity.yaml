@@ -1,5 +1,5 @@
 name: value_range_validity
-description: Fraction of numeric field values that fall within declared valid ranges or domain boundaries
+description: Fraction of numeric column values that fall within declared valid ranges or domain boundaries
 factor: clean
 direction: lte
 workload: [serving, training]
@@ -9,7 +9,7 @@ fixes:
   - sql/fix/clamp-out-of-range.sql
   - sql/fix/delete-out-of-range.sql
 scope: column
-placeholders: [container, namespace, asset, field, min_value, max_value]
+placeholders: [database, schema, asset, column, min_value, max_value]
 constraints:
   - "Clamping changes data values — verify business rules before applying"
   - "Deletion is irreversible — prefer clamping for recoverable data"

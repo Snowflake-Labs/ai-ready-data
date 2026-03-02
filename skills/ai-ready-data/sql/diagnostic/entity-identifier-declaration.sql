@@ -8,8 +8,8 @@ WITH tables_in_scope AS (
         t.table_schema,
         t.table_name,
         t.row_count
-    FROM {{ container }}.information_schema.tables t
-    WHERE t.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables t
+    WHERE t.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
 ),
 pk_constraints AS (
@@ -19,8 +19,8 @@ pk_constraints AS (
         tc.table_name,
         tc.constraint_name,
         'PRIMARY KEY' AS constraint_type
-    FROM {{ container }}.information_schema.table_constraints tc
-    WHERE tc.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.table_constraints tc
+    WHERE tc.table_schema = '{{ schema }}'
         AND tc.constraint_type = 'PRIMARY KEY'
 ),
 unique_constraints AS (
@@ -30,8 +30,8 @@ unique_constraints AS (
         tc.table_name,
         tc.constraint_name,
         'UNIQUE' AS constraint_type
-    FROM {{ container }}.information_schema.table_constraints tc
-    WHERE tc.table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.table_constraints tc
+    WHERE tc.table_schema = '{{ schema }}'
         AND tc.constraint_type = 'UNIQUE'
 )
 SELECT

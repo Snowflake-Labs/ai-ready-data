@@ -18,8 +18,8 @@ FROM snowflake.account_usage.access_history
 WHERE query_start_time >= DATEADD(day, -30, CURRENT_TIMESTAMP())
     AND ARRAY_SIZE(direct_objects_accessed) > 0
     AND (
-        direct_objects_accessed[0]:objectName::STRING LIKE '{{ container }}.{{ namespace }}.%'
-        OR base_objects_accessed[0]:objectName::STRING LIKE '{{ container }}.{{ namespace }}.%'
+        direct_objects_accessed[0]:objectName::STRING LIKE '{{ database }}.{{ schema }}.%'
+        OR base_objects_accessed[0]:objectName::STRING LIKE '{{ database }}.{{ schema }}.%'
     )
 ORDER BY query_start_time DESC
 LIMIT 100

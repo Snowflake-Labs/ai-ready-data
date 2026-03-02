@@ -8,8 +8,8 @@ WITH declared_types AS (
         column_name,
         data_type,
         is_nullable
-    FROM {{ container }}.information_schema.columns
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.columns
+    WHERE table_schema = '{{ schema }}'
         AND table_name = '{{ asset }}'
 ),
 type_violations AS (

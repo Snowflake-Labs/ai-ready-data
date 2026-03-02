@@ -12,8 +12,8 @@ SELECT
         WHEN t.comment LIKE '%RELATIONSHIPS%' THEN 'HAS_RELATIONSHIPS'
         ELSE 'NO_RELATIONSHIPS'
     END AS relationship_status
-FROM {{ container }}.information_schema.tables t
-WHERE t.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables t
+WHERE t.table_schema = '{{ schema }}'
     AND t.table_type = 'SEMANTIC VIEW'
 ORDER BY 
     relationship_status DESC,

@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/incremental-update-coverage.sql
 diagnostic: sql/diagnostic/incremental-update-coverage.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

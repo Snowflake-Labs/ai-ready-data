@@ -1,7 +1,7 @@
-UPDATE {{ container }}.{{ namespace }}.{{ asset }}
-SET {{ field }} = CASE
-    WHEN {{ field }} < {{ min_value }} THEN {{ min_value }}
-    WHEN {{ field }} > {{ max_value }} THEN {{ max_value }}
-    ELSE {{ field }}
+UPDATE {{ database }}.{{ schema }}.{{ asset }}
+SET {{ column }} = CASE
+    WHEN {{ column }} < {{ min_value }} THEN {{ min_value }}
+    WHEN {{ column }} > {{ max_value }} THEN {{ max_value }}
+    ELSE {{ column }}
 END
-WHERE {{ field }} < {{ min_value }} OR {{ field }} > {{ max_value }}
+WHERE {{ column }} < {{ min_value }} OR {{ column }} > {{ max_value }}

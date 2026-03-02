@@ -10,8 +10,8 @@ SELECT
         WHEN rows_loaded = 0 THEN 'EMPTY_LOAD'
         ELSE 'OK'
     END AS load_status
-FROM {{ container }}.information_schema.load_history
-WHERE schema_name = '{{ namespace }}'
+FROM {{ database }}.information_schema.load_history
+WHERE schema_name = '{{ schema }}'
     AND last_load_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
 ORDER BY last_load_time DESC
 LIMIT 100

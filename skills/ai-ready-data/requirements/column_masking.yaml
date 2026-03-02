@@ -1,4 +1,4 @@
-name: field_masking
+name: column_masking
 description: Fraction of PII columns with masking policies applied
 factor: compliant
 direction: gte
@@ -10,7 +10,7 @@ fixes:
   - sql/fix/create-masking-policy.sql
   - sql/fix/masking-policy.sql
 scope: schema
-placeholders: [container, namespace, policy_name, privileged_role, redacted_value, data_type, asset, field]
+placeholders: [database, schema, policy_name, privileged_role, redacted_value, data_type, asset, column]
 constraints:
   - "Always use IS_ROLE_IN_SESSION() — never CURRENT_ROLE()"
   - "policy_references uses ref_column_name, not column_name"

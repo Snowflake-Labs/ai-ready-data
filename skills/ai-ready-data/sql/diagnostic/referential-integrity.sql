@@ -7,8 +7,8 @@ SELECT
     source.{{ fk_column }} AS fk_value,
     'ORPHAN' AS integrity_status,
     'FK value does not exist in target table' AS issue
-FROM {{ container }}.{{ namespace }}.{{ asset }} source
-LEFT JOIN {{ container }}.{{ target_namespace }}.{{ target_asset }} target
+FROM {{ database }}.{{ schema }}.{{ asset }} source
+LEFT JOIN {{ database }}.{{ target_namespace }}.{{ target_asset }} target
     ON source.{{ fk_column }} = target.{{ target_key }}
 WHERE target.{{ target_key }} IS NULL
     AND source.{{ fk_column }} IS NOT NULL

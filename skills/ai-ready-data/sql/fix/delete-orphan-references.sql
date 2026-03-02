@@ -1,5 +1,5 @@
-DELETE FROM {{ container }}.{{ namespace }}.{{ asset }}
-WHERE {{ field }} NOT IN (
-    SELECT {{ field }}
-    FROM {{ container }}.{{ namespace }}.{{ reference_table }}
+DELETE FROM {{ database }}.{{ schema }}.{{ asset }}
+WHERE {{ column }} NOT IN (
+    SELECT {{ column }}
+    FROM {{ database }}.{{ schema }}.{{ reference_table }}
 )

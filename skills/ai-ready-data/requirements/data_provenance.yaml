@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/data-provenance.sql
 diagnostic: sql/diagnostic/data-provenance.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

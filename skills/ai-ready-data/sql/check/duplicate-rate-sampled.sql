@@ -4,6 +4,6 @@ SELECT
 FROM (
     SELECT
         ROW_NUMBER() OVER (PARTITION BY {{ key_columns }} ORDER BY 1) AS rn
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
         TABLESAMPLE ({{ sample_rows }} ROWS)
 )

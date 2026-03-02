@@ -21,7 +21,7 @@ SELECT
         ) THEN 'Provenance documented in comment'
         ELSE 'Add COMMENT with source system, collection method, and upstream lineage'
     END AS recommendation
-FROM {{ container }}.information_schema.tables t
-WHERE t.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables t
+WHERE t.table_schema = '{{ schema }}'
     AND t.table_type = 'BASE TABLE'
 ORDER BY provenance_status DESC, t.table_name

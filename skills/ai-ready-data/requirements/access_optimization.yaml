@@ -9,4 +9,4 @@ diagnostic_depth: sql/check/clustering-depth.sql
 fixes:
   - sql/fix/add-clustering-key.sql
 scope: schema
-placeholders: [container, namespace, clustering_columns, asset]
+placeholders: [database, schema, clustering_columns, asset]

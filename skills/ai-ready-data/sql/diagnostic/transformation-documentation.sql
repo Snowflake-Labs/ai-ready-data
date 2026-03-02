@@ -17,7 +17,7 @@ SELECT
         WHEN t.comment IS NOT NULL AND LENGTH(t.comment) > 20 THEN 'Transformation documented'
         ELSE 'Add COMMENT explaining transformation logic, inputs, and outputs'
     END AS recommendation
-FROM {{ container }}.information_schema.tables t
-WHERE t.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables t
+WHERE t.table_schema = '{{ schema }}'
     AND t.table_type IN ('VIEW', 'DYNAMIC TABLE', 'MATERIALIZED VIEW')
 ORDER BY documentation_status DESC, t.table_name

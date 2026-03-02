@@ -5,14 +5,14 @@
 
 SELECT
     '{{ asset }}' AS table_name,
-    '{{ field }}' AS column_name,
+    '{{ column }}' AS column_name,
     COUNT(*) AS total_rows,
     SUM(CASE 
-        WHEN TRY_PARSE_JSON({{ field }}) IS NOT NULL OR {{ field }} IS NULL
+        WHEN TRY_PARSE_JSON({{ column }}) IS NOT NULL OR {{ column }} IS NULL
         THEN 1 ELSE 0 
     END) AS valid_rows,
     SUM(CASE 
-        WHEN TRY_PARSE_JSON({{ field }}) IS NOT NULL OR {{ field }} IS NULL
+        WHEN TRY_PARSE_JSON({{ column }}) IS NOT NULL OR {{ column }} IS NULL
         THEN 1 ELSE 0 
     END)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
-FROM {{ container }}.{{ namespace }}.{{ asset }}
+FROM {{ database }}.{{ schema }}.{{ asset }}

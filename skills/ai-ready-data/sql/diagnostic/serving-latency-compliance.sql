@@ -11,8 +11,8 @@ SELECT
         ELSE 'EXCEEDS_SLA'
     END AS status
 FROM snowflake.account_usage.query_history
-WHERE database_name = '{{ container }}'
-    AND schema_name = '{{ namespace }}'
+WHERE database_name = '{{ database }}'
+    AND schema_name = '{{ schema }}'
     AND start_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
     AND query_type IN ('SELECT')
     AND execution_status = 'SUCCESS'

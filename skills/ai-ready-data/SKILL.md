@@ -65,9 +65,9 @@ Load the profile YAML, then for each stage, for each requirement:
 
 Infer execution scope from placeholders present in a SQL file:
 
-- **Schema-scoped** (only `container`, `namespace`): run once per schema.
+- **Schema-scoped** (only `database`, `schema`): run once per schema.
 - **Table-scoped** (includes `asset`): run per table, aggregate results.
-- **Column-scoped** (includes `field`): run per column, aggregate results.
+- **Column-scoped** (includes `column`): run per column, aggregate results.
 
 For multi-run checks, the requirement's value is the aggregate (e.g., worst value across tables/columns).
 
@@ -179,9 +179,9 @@ Before executing non-idempotent operations, run guard queries:
 
 | Operation | Guard Query | Skip If |
 |-----------|------------|---------|
-| CREATE TAG | `SHOW TAGS LIKE '{tag_name}' IN SCHEMA {namespace}` | Has rows |
-| CREATE MASKING POLICY | `SHOW MASKING POLICIES LIKE '{policy_name}' IN SCHEMA {namespace}` | Has rows |
-| CREATE STREAM | `SHOW STREAMS LIKE '{stream_name}' IN SCHEMA {namespace}` | Has rows |
+| CREATE TAG | `SHOW TAGS LIKE '{tag_name}' IN SCHEMA {schema}` | Has rows |
+| CREATE MASKING POLICY | `SHOW MASKING POLICIES LIKE '{policy_name}' IN SCHEMA {schema}` | Has rows |
+| CREATE STREAM | `SHOW STREAMS LIKE '{stream_name}' IN SCHEMA {schema}` | Has rows |
 | ALTER COLUMN SET NOT NULL | `DESCRIBE TABLE {asset}` | Column already NOT NULL |
 | CREATE SEMANTIC VIEW | None — `CREATE OR REPLACE` is appropriate for declarative semantic views | N/A |
 
@@ -225,7 +225,7 @@ When remediating certain requirements, delegate to specialized skills:
 | Requirement | Delegate To | When |
 |-------------|-------------|------|
 | `semantic_documentation` | `semantic-view-optimization` | Before creating semantic views |
-| `field_masking` | `data-policy` | Before creating masking policies |
+| `column_masking` | `data-policy` | Before creating masking policies |
 | `classification` | `sensitive-data-classification` | Before creating tags via SYSTEM$CLASSIFY |
 
 After the delegated skill completes, return to the remediation workflow to verify.
@@ -238,10 +238,10 @@ SQL files use `{{ placeholder }}` syntax. Substitute from context:
 
 | Placeholder | Description |
 |-------------|-------------|
-| `{{ container }}` | Database name |
-| `{{ namespace }}` | Schema name |
+| `{{ database }}` | Database name |
+| `{{ schema }}` | Schema name |
 | `{{ asset }}` | Table name |
-| `{{ field }}` | Column name |
+| `{{ column }}` | Column name |
 | `{{ key_columns }}` | Comma-separated key columns |
 | `{{ tag_name }}` | Tag identifier |
 | `{{ tag_value }}` | Tag value to assign |
@@ -285,7 +285,7 @@ SQL files use `{{ placeholder }}` syntax. Substitute from context:
 4. **Surface all constraints.** Show constraints from the requirement YAML before executing fix operations.
 5. **No credentials in output.** Connection strings stay in environment variables.
 6. **Read `reference/gotchas.md`** before executing SQL to avoid common Snowflake pitfalls.
-7. **Delegate to specialized skills** for `semantic_documentation`, `field_masking`, and `classification` remediation.
+7. **Delegate to specialized skills** for `semantic_documentation`, `column_masking`, and `classification` remediation.
 
 ---
 

@@ -11,8 +11,8 @@ WITH tables_in_scope AS (
             WHEN table_type IN ('BASE TABLE', 'DYNAMIC TABLE') THEN 'NATIVE'
             ELSE 'OTHER'
         END AS format_type
-    FROM {{ container }}.information_schema.tables
-    WHERE table_schema = '{{ namespace }}'
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
         AND table_type IN ('BASE TABLE', 'DYNAMIC TABLE', 'EXTERNAL TABLE')
 )
 SELECT

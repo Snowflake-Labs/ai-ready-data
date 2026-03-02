@@ -24,7 +24,7 @@ SELECT
         WHEN t.table_type = 'MATERIALIZED VIEW' THEN 'Materialized (refresh on base change)'
         ELSE 'Consider dynamic table for pre-computation'
     END AS recommendation
-FROM {{ container }}.information_schema.tables t
-WHERE t.table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables t
+WHERE t.table_schema = '{{ schema }}'
     AND t.table_type IN ('BASE TABLE', 'DYNAMIC TABLE', 'MATERIALIZED VIEW')
 ORDER BY materialization_status DESC, t.row_count DESC

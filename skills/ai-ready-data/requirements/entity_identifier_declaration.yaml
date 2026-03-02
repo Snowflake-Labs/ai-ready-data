@@ -6,6 +6,6 @@ workload: [serving, training]
 check: sql/check/entity-identifier-declaration.sql
 diagnostic: sql/diagnostic/entity-identifier-declaration.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]
 constraints:
   - "Primary key constraints in Snowflake are not enforced — they are metadata hints"

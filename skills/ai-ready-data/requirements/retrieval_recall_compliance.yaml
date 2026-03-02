@@ -6,6 +6,6 @@ workload: [serving]
 check: sql/check/retrieval-recall-compliance.sql
 diagnostic: sql/diagnostic/retrieval-recall-compliance.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]
 constraints:
   - "Recall measurement requires ground-truth queries — this check proxies via index presence"

@@ -6,4 +6,4 @@ workload: [serving]
 check: sql/check/embedding-dimension-consistency.sql
 diagnostic: sql/diagnostic/embedding-dimension-consistency.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

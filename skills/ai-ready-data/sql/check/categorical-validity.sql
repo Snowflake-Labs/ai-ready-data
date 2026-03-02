@@ -5,10 +5,10 @@
 
 SELECT
     '{{ asset }}' AS table_name,
-    '{{ field }}' AS column_name,
+    '{{ column }}' AS column_name,
     COUNT(*) AS total_rows,
-    SUM(CASE WHEN {{ field }} IN ({{ allowed_values }}) THEN 1 ELSE 0 END) AS valid_rows,
-    SUM(CASE WHEN {{ field }} IN ({{ allowed_values }}) THEN 1 ELSE 0 END)::FLOAT 
+    SUM(CASE WHEN {{ column }} IN ({{ allowed_values }}) THEN 1 ELSE 0 END) AS valid_rows,
+    SUM(CASE WHEN {{ column }} IN ({{ allowed_values }}) THEN 1 ELSE 0 END)::FLOAT 
         / NULLIF(COUNT(*)::FLOAT, 0) AS value
-FROM {{ container }}.{{ namespace }}.{{ asset }}
-WHERE {{ field }} IS NOT NULL
+FROM {{ database }}.{{ schema }}.{{ asset }}
+WHERE {{ column }} IS NOT NULL

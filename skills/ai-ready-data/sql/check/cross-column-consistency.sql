@@ -1,5 +1,5 @@
--- check-cross-field-consistency.sql
--- Checks fraction of records where related fields are mutually consistent
+-- check-cross-column-consistency.sql
+-- Checks fraction of records where related columns are mutually consistent
 -- Returns: value (float 0-1) - fraction of inconsistent records (lower is better)
 
 -- This is a template - customize the consistency_rule for your use case
@@ -12,7 +12,7 @@ WITH consistency_check AS (
     SELECT
         COUNT(*) AS total_rows,
         COUNT_IF(NOT ({{ consistency_rule }})) AS inconsistent_rows
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
     WHERE {{ filter_nulls }}
 )
 SELECT

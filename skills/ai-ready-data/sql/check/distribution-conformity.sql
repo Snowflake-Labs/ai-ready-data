@@ -11,7 +11,7 @@ WITH current_stats AS (
         MAX({{ column }}) AS current_max,
         APPROX_PERCENTILE({{ column }}, 0.25) AS current_p25,
         APPROX_PERCENTILE({{ column }}, 0.75) AS current_p75
-    FROM {{ container }}.{{ namespace }}.{{ asset }}
+    FROM {{ database }}.{{ schema }}.{{ asset }}
     WHERE {{ column }} IS NOT NULL
 ),
 drift_score AS (

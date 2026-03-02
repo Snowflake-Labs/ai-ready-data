@@ -8,7 +8,7 @@ SELECT
         WHEN clustering_key IS NOT NULL THEN 'CLUSTERED'
         ELSE 'NEEDS CLUSTERING'
     END AS status
-FROM {{ container }}.information_schema.tables
-WHERE table_schema = '{{ namespace }}'
+FROM {{ database }}.information_schema.tables
+WHERE table_schema = '{{ schema }}'
     AND table_type = 'BASE TABLE'
 ORDER BY row_count DESC

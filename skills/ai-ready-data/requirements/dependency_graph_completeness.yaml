@@ -6,4 +6,4 @@ workload: [serving, training]
 check: sql/check/dependency-graph-completeness.sql
 diagnostic: sql/diagnostic/dependency-graph.sql
 scope: schema
-placeholders: [container, namespace]
+placeholders: [database, schema]

@@ -6,4 +6,4 @@ workload: [training]
 check: sql/check/distribution-conformity.sql
 diagnostic: sql/diagnostic/distribution-conformity.sql
 scope: table
-placeholders: [container, namespace, asset]
+placeholders: [database, schema, asset]
