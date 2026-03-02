@@ -1,0 +1,17 @@
+name: uniqueness
+description: Fraction of duplicate records across scoped key columns
+factor: clean
+direction: lte
+workload: [serving, training]
+check: sql/check/duplicate-rate.sql
+check_sampled: sql/check/duplicate-rate-sampled.sql
+diagnostic: sql/diagnostic/duplicate-summary.sql
+fixes:
+  - sql/fix/deduplicate-keep-first.sql
+  - sql/fix/deduplicate-keep-last.sql
+scope: table
+placeholders: [container, namespace, asset, key_columns, tiebreaker_column]
+constraints:
+  - "CREATE OR REPLACE TABLE drops grants, policies, streams, and change tracking"
+  - "key_columns should be the logical primary key"
+  - "For tables >1M rows, use sampled check"

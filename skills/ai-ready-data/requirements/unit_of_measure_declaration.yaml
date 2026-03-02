@@ -1,0 +1,9 @@
+name: unit_of_measure_declaration
+description: Fraction of numeric fields with explicit unit of measure declarations
+factor: contextual
+direction: gte
+workload: [serving, training]
+check: sql/check/unit-of-measure-declaration.sql
+diagnostic: sql/diagnostic/unit-of-measure-declaration.sql
+scope: schema
+placeholders: [container, namespace]

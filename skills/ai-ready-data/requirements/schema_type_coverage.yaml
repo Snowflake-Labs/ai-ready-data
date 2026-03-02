@@ -1,0 +1,9 @@
+name: schema_type_coverage
+description: Fraction of data fields with explicitly declared, machine-readable data types
+factor: contextual
+direction: gte
+workload: [serving, training]
+check: sql/check/schema-type-coverage.sql
+diagnostic: sql/diagnostic/schema-type-coverage.sql
+scope: schema
+placeholders: [container, namespace]

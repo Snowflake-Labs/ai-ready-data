@@ -1,0 +1,19 @@
+name: classification
+description: Fraction of objects with governance tags applied
+factor: compliant
+direction: gte
+workload: [serving, training]
+check: sql/check/object-tag-coverage.sql
+check_column: sql/check/column-tag-coverage.sql
+diagnostic: sql/diagnostic/tag-inventory.sql
+diagnostic_untagged: sql/diagnostic/untagged-tables.sql
+fixes:
+  - sql/fix/create-tag.sql
+  - sql/fix/table-tags.sql
+  - sql/fix/column-tags.sql
+scope: schema
+placeholders: [container, namespace, tag_name, tag_value, allowed_values, asset, field, comment]
+constraints:
+  - "account_usage.tag_references has ~2 hour latency for new tags"
+  - "tag_references has no deleted column — don't filter on it"
+delegates_to: sensitive-data-classification

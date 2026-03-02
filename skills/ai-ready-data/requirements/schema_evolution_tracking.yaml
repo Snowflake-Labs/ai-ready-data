@@ -1,0 +1,9 @@
+name: schema_evolution_tracking
+description: Fraction of data assets with automated schema change detection, version identifiers, and version history
+factor: current
+direction: gte
+workload: [serving, training]
+check: sql/check/schema-evolution-tracking.sql
+diagnostic: sql/diagnostic/schema-evolution-tracking.sql
+scope: schema
+placeholders: [container, namespace]

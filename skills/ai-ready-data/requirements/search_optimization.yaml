@@ -1,0 +1,13 @@
+name: search_optimization
+description: Fraction of tables with search optimization enabled
+factor: consumable
+direction: gte
+workload: [serving]
+check: sql/check/search-optimization-coverage.sql
+diagnostic: sql/diagnostic/search-optimization-status.sql
+fixes:
+  - sql/fix/add-search-optimization.sql
+scope: schema
+placeholders: [container, namespace, asset]
+constraints:
+  - "Only enable on tables >1GB"

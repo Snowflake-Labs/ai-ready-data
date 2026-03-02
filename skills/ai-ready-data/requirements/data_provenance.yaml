@@ -1,0 +1,9 @@
+name: data_provenance
+description: Fraction of datasets with documented source provenance including origin system, collection method, and upstream lineage
+factor: correlated
+direction: gte
+workload: [serving, training]
+check: sql/check/data-provenance.sql
+diagnostic: sql/diagnostic/data-provenance.sql
+scope: schema
+placeholders: [container, namespace]

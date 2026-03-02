@@ -1,0 +1,9 @@
+name: chunk_readiness
+description: Fraction of document assets pre-chunked to sizes aligned with target context windows
+factor: consumable
+direction: gte
+workload: [serving]
+check: sql/check/chunk-readiness.sql
+diagnostic: sql/diagnostic/chunk-readiness.sql
+scope: schema
+placeholders: [container, namespace]

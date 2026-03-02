@@ -1,0 +1,13 @@
+name: relationship_declaration
+description: Fraction of cross-entity references with explicit, machine-readable relationship declarations
+factor: contextual
+direction: gte
+workload: [serving, training]
+check: sql/check/relationship-declaration.sql
+diagnostic: sql/diagnostic/relationship-declaration.sql
+fixes:
+  - sql/fix/create-semantic-view.sql
+scope: schema
+placeholders: [container, namespace, semantic_view_name, table_definitions, relationship_definitions, fact_definitions, dimension_definitions, metric_definitions, comment]
+constraints:
+  - "Relationships define join paths — ensure they match actual foreign keys"

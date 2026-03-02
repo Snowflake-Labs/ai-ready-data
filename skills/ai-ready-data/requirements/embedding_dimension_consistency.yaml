@@ -1,0 +1,9 @@
+name: embedding_dimension_consistency
+description: Fraction of embedding collections with uniform dimensionality matching their consuming model's expected input
+factor: consumable
+direction: gte
+workload: [serving]
+check: sql/check/embedding-dimension-consistency.sql
+diagnostic: sql/diagnostic/embedding-dimension-consistency.sql
+scope: schema
+placeholders: [container, namespace]

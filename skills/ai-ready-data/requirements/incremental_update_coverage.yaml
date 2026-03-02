@@ -1,0 +1,9 @@
+name: incremental_update_coverage
+description: Fraction of data pipelines that use incremental processing (CDC or streaming) rather than full-reload extraction
+factor: current
+direction: gte
+workload: [serving, training]
+check: sql/check/incremental-update-coverage.sql
+diagnostic: sql/diagnostic/incremental-update-coverage.sql
+scope: schema
+placeholders: [container, namespace]

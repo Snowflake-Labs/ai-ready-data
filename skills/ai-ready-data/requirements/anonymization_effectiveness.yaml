@@ -1,0 +1,12 @@
+name: anonymization_effectiveness
+description: Fraction of anonymized datasets with measured re-identification risk at or below defined thresholds
+factor: compliant
+direction: gte
+workload: [serving, training]
+check: sql/check/anonymization-effectiveness.sql
+diagnostic: sql/diagnostic/anonymization-effectiveness.sql
+scope: schema
+placeholders: [container, namespace]
+constraints:
+  - "account_usage.policy_references has ~2 hour latency"
+  - "PII detection is heuristic (column-name based) — delegate to sensitive-data-classification for thorough scanning"

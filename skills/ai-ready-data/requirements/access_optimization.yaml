@@ -1,0 +1,12 @@
+name: access_optimization
+description: Fraction of large tables with clustering keys
+factor: consumable
+direction: gte
+workload: [serving, training]
+check: sql/check/clustering-coverage.sql
+diagnostic: sql/diagnostic/clustering-status.sql
+diagnostic_depth: sql/check/clustering-depth.sql
+fixes:
+  - sql/fix/add-clustering-key.sql
+scope: schema
+placeholders: [container, namespace, clustering_columns, asset]

@@ -1,0 +1,12 @@
+name: serving_latency_compliance
+description: Fraction of data serving endpoints meeting their defined latency SLA at p99
+factor: consumable
+direction: gte
+workload: [serving]
+check: sql/check/serving-latency-compliance.sql
+diagnostic: sql/diagnostic/serving-latency-compliance.sql
+scope: schema
+placeholders: [container, namespace, latency_threshold_ms]
+constraints:
+  - "account_usage.query_history has ~2 hour latency"
+  - "Measures SELECT queries only — does not cover API-based serving"

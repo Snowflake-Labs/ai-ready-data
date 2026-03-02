@@ -1,0 +1,11 @@
+name: retrieval_recall_compliance
+description: Fraction of vector search indexes achieving their target recall threshold at required query latency
+factor: consumable
+direction: gte
+workload: [serving]
+check: sql/check/retrieval-recall-compliance.sql
+diagnostic: sql/diagnostic/retrieval-recall-compliance.sql
+scope: schema
+placeholders: [container, namespace]
+constraints:
+  - "Recall measurement requires ground-truth queries — this check proxies via index presence"

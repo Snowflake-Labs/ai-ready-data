@@ -1,0 +1,18 @@
+name: data_completeness
+description: Fraction of null values across scoped fields
+factor: clean
+direction: lte
+workload: [serving, training]
+check: sql/check/null-rate.sql
+check_sampled: sql/check/null-rate-sampled.sql
+diagnostic: sql/diagnostic/null-summary.sql
+fixes:
+  - sql/fix/fill-default.sql
+  - sql/fix/fill-placeholder.sql
+  - sql/fix/delete-incomplete.sql
+  - sql/fix/add-not-null.sql
+scope: column
+placeholders: [container, namespace, asset, field]
+constraints:
+  - "NOT NULL constraint will fail if NULLs still exist — fill or delete first"
+  - "For tables >1M rows, use sampled check to avoid full scan"

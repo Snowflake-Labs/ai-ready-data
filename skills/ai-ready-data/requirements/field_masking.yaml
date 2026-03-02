@@ -1,0 +1,18 @@
+name: field_masking
+description: Fraction of PII columns with masking policies applied
+factor: compliant
+direction: gte
+workload: [serving, training]
+check: sql/check/masking-policy-coverage.sql
+diagnostic: sql/diagnostic/unmasked-pii.sql
+diagnostic_inventory: sql/diagnostic/policy-inventory.sql
+fixes:
+  - sql/fix/create-masking-policy.sql
+  - sql/fix/masking-policy.sql
+scope: schema
+placeholders: [container, namespace, policy_name, privileged_role, redacted_value, data_type, asset, field]
+constraints:
+  - "Always use IS_ROLE_IN_SESSION() — never CURRENT_ROLE()"
+  - "policy_references uses ref_column_name, not column_name"
+  - "account_usage.policy_references has ~2 hour latency"
+delegates_to: data-policy

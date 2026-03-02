@@ -1,0 +1,11 @@
+name: schema_conformity
+description: Fraction of records that conform to the declared schema, including correct data types, required fields present, and structural rules satisfied
+factor: clean
+direction: lte
+workload: [serving, training]
+check: sql/check/schema-conformity.sql
+diagnostic: sql/diagnostic/schema-conformity.sql
+scope: column
+placeholders: [container, namespace, asset, field, expected_type]
+constraints:
+  - "Uses TRY_TO_NUMBER, TRY_TO_DATE, TRY_TO_TIMESTAMP for type checking"

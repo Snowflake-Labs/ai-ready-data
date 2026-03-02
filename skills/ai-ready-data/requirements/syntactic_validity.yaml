@@ -1,0 +1,11 @@
+name: syntactic_validity
+description: Fraction of raw data records that parse without structural errors, including well-formed serialization and correct delimiters
+factor: clean
+direction: lte
+workload: [serving, training]
+check: sql/check/syntactic-validity.sql
+diagnostic: sql/diagnostic/syntactic-validity.sql
+scope: column
+placeholders: [container, namespace, asset, field, key_columns]
+constraints:
+  - "JSON validity uses TRY_PARSE_JSON which returns NULL for invalid JSON"

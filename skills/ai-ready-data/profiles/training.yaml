@@ -1,0 +1,75 @@
+name: training
+description: AI training workload readiness (fine-tuning, ML training, dataset curation)
+stages:
+  - name: Data Quality
+    why: Noisy training data degrades model performance and amplifies bias
+    requirements:
+      data_completeness: { max: 0.01 }
+      uniqueness: { max: 0.005 }
+      schema_conformity: { max: 0.001 }
+      value_range_validity: { max: 0.001 }
+      categorical_validity: { max: 0.001 }
+      syntactic_validity: { max: 0.0 }
+      encoding_validity: { max: 0.0 }
+      distribution_conformity: { max: 0.05 }
+      outlier_prevalence: { max: 0.05 }
+      referential_integrity: { max: 0.01 }
+      cross_field_consistency: { max: 0.01 }
+      referential_accuracy: { max: 0.01 }
+
+  - name: Schema Understanding
+    why: Well-documented schemas prevent feature engineering errors and enable automated dataset curation
+    requirements:
+      semantic_documentation: { min: 0.70 }
+      relationship_declaration: { min: 0.80 }
+      entity_identifier_declaration: { min: 0.80 }
+      temporal_scope_declaration: { min: 0.80 }
+      schema_type_coverage: { min: 0.70 }
+      constraint_declaration: { min: 0.50 }
+      business_glossary_linkage: { min: 0.30 }
+      unit_of_measure_declaration: { min: 0.50 }
+
+  - name: Temporal Integrity
+    why: Training on future data or stale features produces models that fail in production
+    requirements:
+      point_in_time_correctness: { min: 1.00 }
+      temporal_referential_integrity: { min: 0.99 }
+      schema_evolution_tracking: { min: 1.00 }
+      change_detection: { min: 1.00 }
+      incremental_update_coverage: { min: 0.50 }
+      training_serving_parity: { min: 0.50 }
+
+  - name: Consumability
+    why: Training pipelines need data in efficient formats with sufficient throughput
+    requirements:
+      native_format_availability: { min: 0.80 }
+      feature_materialization_coverage: { min: 0.50 }
+      batch_throughput_sufficiency: { min: 0.80 }
+
+  - name: Provenance
+    why: Reproducible training requires knowing exactly what data was used and how it was transformed
+    requirements:
+      data_provenance: { min: 0.80 }
+      lineage_completeness: { min: 0.80 }
+      data_version_coverage: { min: 0.80 }
+      agent_attribution: { min: 0.50 }
+      pipeline_execution_audit: { min: 0.80 }
+      transformation_documentation: { min: 0.50 }
+      dependency_graph_completeness: { min: 0.50 }
+      record_level_traceability: { min: 0.50 }
+      impact_analysis_capability: { min: 0.30 }
+
+  - name: Governance
+    why: Models trained on non-compliant data create legal and reputational risk
+    requirements:
+      classification: { min: 0.80 }
+      field_masking: { min: 1.00 }
+      row_access_policy: { min: 0.30 }
+      access_audit_coverage: { min: 0.80 }
+      consent_coverage: { min: 0.50 }
+      purpose_limitation: { min: 0.50 }
+      license_compliance: { min: 0.80 }
+      retention_policy: { min: 0.50 }
+      anonymization_effectiveness: { min: 0.50 }
+      demographic_representation: { min: 0.50 }
+      bias_testing_coverage: { min: 0.50 }

@@ -1,0 +1,12 @@
+name: row_access_policy
+description: Fraction of tables with row access policies enforcing row-level security
+factor: compliant
+direction: gte
+workload: [serving, training]
+check: sql/check/row-access-policy-coverage.sql
+diagnostic: sql/diagnostic/policy-inventory.sql
+scope: schema
+placeholders: [container, namespace]
+constraints:
+  - "account_usage.policy_references has ~2 hour latency for new policies"
+  - "policy_references uses ref_entity_name, not table_name"

@@ -1,0 +1,9 @@
+name: propagation_latency_compliance
+description: Fraction of data pipelines where end-to-end propagation latency meets the defined freshness SLA
+factor: current
+direction: gte
+workload: [serving, training]
+check: sql/check/propagation-latency-compliance.sql
+diagnostic: sql/diagnostic/propagation-latency.sql
+scope: schema
+placeholders: [container, namespace]

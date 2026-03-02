@@ -1,0 +1,9 @@
+name: transformation_documentation
+description: Fraction of data transformations with documented logic, inputs, and outputs
+factor: correlated
+direction: gte
+workload: [serving, training]
+check: sql/check/transformation-documentation.sql
+diagnostic: sql/diagnostic/transformation-documentation.sql
+scope: schema
+placeholders: [container, namespace]

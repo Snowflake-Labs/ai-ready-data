@@ -1,0 +1,17 @@
+name: change_detection
+description: Fraction of tables with change tracking and streams enabled
+factor: current
+direction: gte
+workload: [serving, training]
+check: sql/check/change-tracking-coverage.sql
+check_streams: sql/check/stream-coverage.sql
+diagnostic: sql/diagnostic/change-tracking-status.sql
+diagnostic_streams: sql/diagnostic/stream-inventory.sql
+fixes:
+  - sql/fix/enable-change-tracking.sql
+  - sql/fix/create-stream.sql
+scope: schema
+placeholders: [container, namespace, asset, stream_name]
+constraints:
+  - "SHOW TABLES + RESULT_SCAN must run in the same session"
+  - "change_tracking is NOT in information_schema — use SHOW TABLES"

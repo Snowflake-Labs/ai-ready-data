@@ -1,0 +1,12 @@
+name: batch_throughput_sufficiency
+description: Fraction of training data pipelines with I/O throughput sufficient to avoid compute idle time
+factor: consumable
+direction: gte
+workload: [training]
+check: sql/check/batch-throughput-sufficiency.sql
+diagnostic: sql/diagnostic/batch-throughput-sufficiency.sql
+scope: schema
+placeholders: [container, namespace]
+constraints:
+  - "Measures load success rate as a throughput proxy"
+  - "True throughput measurement requires warehouse-level monitoring"

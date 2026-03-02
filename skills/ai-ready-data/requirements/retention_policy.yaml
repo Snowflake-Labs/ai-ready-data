@@ -1,0 +1,15 @@
+name: retention_policy
+description: Fraction of datasets with defined and enforced data retention and deletion schedules
+factor: compliant
+direction: gte
+workload: [serving, training]
+check: sql/check/retention-policy.sql
+diagnostic: sql/diagnostic/retention-policy.sql
+fixes:
+  - sql/fix/create-tag.sql
+  - sql/fix/table-tags.sql
+scope: schema
+placeholders: [container, namespace, tag_name, tag_value, allowed_values, asset, comment]
+constraints:
+  - "account_usage.tag_references has ~2 hour latency for new tags"
+  - "tag_references has no deleted column — don't filter on it"

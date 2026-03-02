@@ -1,0 +1,13 @@
+name: feature_refresh_compliance
+description: Fraction of served features updated within their defined staleness tolerance threshold
+factor: current
+direction: gte
+workload: [serving]
+check: sql/check/feature-refresh-compliance.sql
+diagnostic: sql/diagnostic/feature-refresh-compliance.sql
+fixes:
+  - sql/fix/refresh-dynamic-table.sql
+scope: schema
+placeholders: [container, namespace, asset]
+constraints:
+  - "Requires SHOW DYNAMIC TABLES + RESULT_SCAN in same session"

@@ -1,0 +1,15 @@
+name: constraint_declaration
+description: Fraction of data fields with explicitly declared constraints (nullability, uniqueness, valid ranges, or patterns)
+factor: contextual
+direction: gte
+workload: [serving, training]
+check: sql/check/constraint-declaration.sql
+diagnostic: sql/diagnostic/constraint-declaration.sql
+fixes:
+  - sql/fix/add-not-null.sql
+  - sql/fix/add-constraint.sql
+scope: schema
+placeholders: [container, namespace, asset, field, constraint_name, constraint_type]
+constraints:
+  - "Primary key and unique constraints in Snowflake are not enforced — they are metadata hints"
+  - "NOT NULL constraint will fail if NULLs still exist — fill or delete first"

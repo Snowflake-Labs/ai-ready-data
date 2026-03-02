@@ -1,0 +1,76 @@
+name: serving
+description: AI serving workload readiness (RAG, feature serving, real-time inference, agents)
+stages:
+  - name: Data Quality
+    why: Dirty data produces wrong answers, hallucinations, and failed lookups
+    requirements:
+      data_completeness: { max: 0.01 }
+      uniqueness: { max: 0.01 }
+      schema_conformity: { max: 0.001 }
+      value_range_validity: { max: 0.001 }
+      categorical_validity: { max: 0.001 }
+      syntactic_validity: { max: 0.0 }
+      encoding_validity: { max: 0.0 }
+      referential_integrity: { max: 0.01 }
+      cross_field_consistency: { max: 0.01 }
+
+  - name: Schema Understanding
+    why: Documented schemas enable Text-to-SQL, semantic search, and context-aware generation
+    requirements:
+      semantic_documentation: { min: 0.80 }
+      relationship_declaration: { min: 1.00 }
+      entity_identifier_declaration: { min: 0.90 }
+      temporal_scope_declaration: { min: 0.80 }
+      schema_type_coverage: { min: 0.70 }
+      constraint_declaration: { min: 0.50 }
+      business_glossary_linkage: { min: 0.30 }
+      unit_of_measure_declaration: { min: 0.50 }
+
+  - name: RAG Readiness
+    why: Retrieval-augmented generation requires chunked, embedded, and indexed content
+    requirements:
+      chunk_readiness: { min: 0.80 }
+      embedding_coverage: { min: 0.80 }
+      embedding_dimension_consistency: { min: 1.00 }
+      vector_index_coverage: { min: 0.80 }
+      retrieval_recall_compliance: { min: 0.80 }
+
+  - name: Access Performance
+    why: Optimized access keeps inference latency low at scale
+    requirements:
+      access_optimization: { min: 0.80 }
+      search_optimization: { min: 0.80 }
+      point_lookup_availability: { min: 0.80 }
+      serving_latency_compliance: { min: 0.95 }
+      feature_materialization_coverage: { min: 0.80 }
+      native_format_availability: { min: 0.80 }
+
+  - name: Freshness
+    why: Stale data means outdated answers — changes must propagate before the next query
+    requirements:
+      change_detection: { min: 1.00 }
+      data_freshness: { min: 1.00 }
+      propagation_latency_compliance: { min: 1.00 }
+      incremental_update_coverage: { min: 0.50 }
+      feature_refresh_compliance: { min: 1.00 }
+      training_serving_parity: { min: 0.50 }
+
+  - name: Provenance
+    why: Serving pipelines need traceable data for debugging, auditing, and incident response
+    requirements:
+      data_provenance: { min: 0.50 }
+      lineage_completeness: { min: 0.50 }
+      record_level_traceability: { min: 0.50 }
+      agent_attribution: { min: 0.30 }
+      pipeline_execution_audit: { min: 0.50 }
+
+  - name: Governance
+    why: Prevents sensitive data from leaking into AI responses
+    requirements:
+      classification: { min: 0.50 }
+      field_masking: { min: 1.00 }
+      row_access_policy: { min: 0.30 }
+      access_audit_coverage: { min: 0.80 }
+      consent_coverage: { min: 0.30 }
+      purpose_limitation: { min: 0.30 }
+      retention_policy: { min: 0.30 }

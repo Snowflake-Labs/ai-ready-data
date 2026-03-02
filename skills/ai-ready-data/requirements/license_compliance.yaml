@@ -1,0 +1,14 @@
+name: license_compliance
+description: Fraction of externally sourced datasets with documented and valid usage licenses permitting AI training
+factor: compliant
+direction: gte
+workload: [serving, training]
+check: sql/check/license-compliance.sql
+diagnostic: sql/diagnostic/license-compliance.sql
+fixes:
+  - sql/fix/create-tag.sql
+  - sql/fix/table-tags.sql
+scope: schema
+placeholders: [container, namespace, tag_name, tag_value, allowed_values, asset, comment]
+constraints:
+  - "account_usage.tag_references has ~2 hour latency for new tags"

@@ -1,0 +1,15 @@
+name: demographic_representation
+description: Fraction of training datasets with measured and documented demographic distribution relative to target population
+factor: compliant
+direction: gte
+workload: [training]
+check: sql/check/demographic-representation.sql
+diagnostic: sql/diagnostic/demographic-representation.sql
+fixes:
+  - sql/fix/create-tag.sql
+  - sql/fix/column-tags.sql
+scope: schema
+placeholders: [container, namespace, tag_name, tag_value, asset, field]
+constraints:
+  - "account_usage.tag_references has ~2 hour latency for new tags"
+  - "Demographic attributes are sensitive — handle with appropriate access controls"

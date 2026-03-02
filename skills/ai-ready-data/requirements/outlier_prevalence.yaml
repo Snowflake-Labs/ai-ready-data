@@ -1,0 +1,9 @@
+name: outlier_prevalence
+description: Fraction of records containing values flagged as statistical outliers beyond declared distance thresholds
+factor: clean
+direction: lte
+workload: [training]
+check: sql/check/outlier-prevalence.sql
+diagnostic: sql/diagnostic/outlier-prevalence.sql
+scope: table
+placeholders: [container, namespace, asset]
