@@ -2,7 +2,7 @@ name: encoding_validity
 description: Fraction of text column values free of encoding errors, garbled characters, or Unicode replacement characters
 factor: clean
 direction: lte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/encoding-validity.sql
 diagnostic: sql/diagnostic/encoding-validity.sql
 fixes:

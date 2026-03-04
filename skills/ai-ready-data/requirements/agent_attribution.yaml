@@ -2,7 +2,7 @@ name: agent_attribution
 description: Fraction of data modifications with a recorded agent (person, system, or process) responsible for the change
 factor: correlated
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/agent-attribution.sql
 diagnostic: sql/diagnostic/agent-attribution.sql
 scope: schema

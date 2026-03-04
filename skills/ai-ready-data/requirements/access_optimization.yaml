@@ -2,7 +2,7 @@ name: access_optimization
 description: Fraction of large tables with clustering keys
 factor: consumable
 direction: gte
-workload: [serving, training]
+workload: [feature-serving, training, agents]
 check: sql/check/clustering-coverage.sql
 diagnostic: sql/diagnostic/clustering-status.sql
 diagnostic_depth: sql/check/clustering-depth.sql

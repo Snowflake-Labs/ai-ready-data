@@ -2,7 +2,7 @@ name: access_audit_coverage
 description: Fraction of AI data access events captured in immutable audit logs
 factor: compliant
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/access-audit-coverage.sql
 diagnostic: sql/diagnostic/access-audit-coverage.sql
 scope: schema

@@ -1,7 +1,7 @@
 name: training
-description: AI training workload readiness (fine-tuning, ML training, dataset curation)
+description: AI training workload readiness — fine-tuning, ML training, and dataset curation
 stages:
-  - name: Data Quality
+  - name: Clean
     why: Noisy training data degrades model performance and amplifies bias
     requirements:
       data_completeness: { max: 0.01 }
@@ -17,7 +17,7 @@ stages:
       cross_column_consistency: { max: 0.01 }
       referential_accuracy: { max: 0.01 }
 
-  - name: Schema Understanding
+  - name: Contextual
     why: Well-documented schemas prevent feature engineering errors and enable automated dataset curation
     requirements:
       semantic_documentation: { min: 0.70 }
@@ -29,7 +29,15 @@ stages:
       business_glossary_linkage: { min: 0.30 }
       unit_of_measure_declaration: { min: 0.50 }
 
-  - name: Temporal Integrity
+  - name: Consumable
+    why: Training pipelines need data in efficient formats with sufficient throughput
+    requirements:
+      native_format_availability: { min: 0.80 }
+      feature_materialization_coverage: { min: 0.50 }
+      batch_throughput_sufficiency: { min: 0.80 }
+      access_optimization: { min: 0.70 }
+
+  - name: Current
     why: Training on future data or stale features produces models that fail in production
     requirements:
       point_in_time_correctness: { min: 1.00 }
@@ -39,14 +47,7 @@ stages:
       incremental_update_coverage: { min: 0.50 }
       training_serving_parity: { min: 0.50 }
 
-  - name: Consumability
-    why: Training pipelines need data in efficient formats with sufficient throughput
-    requirements:
-      native_format_availability: { min: 0.80 }
-      feature_materialization_coverage: { min: 0.50 }
-      batch_throughput_sufficiency: { min: 0.80 }
-
-  - name: Provenance
+  - name: Correlated
     why: Reproducible training requires knowing exactly what data was used and how it was transformed
     requirements:
       data_provenance: { min: 0.80 }
@@ -59,7 +60,7 @@ stages:
       record_level_traceability: { min: 0.50 }
       impact_analysis_capability: { min: 0.30 }
 
-  - name: Governance
+  - name: Compliant
     why: Models trained on non-compliant data create legal and reputational risk
     requirements:
       classification: { min: 0.80 }

@@ -2,7 +2,7 @@ name: entity_identifier_declaration
 description: Fraction of entities or datasets with explicitly declared primary or natural key definitions
 factor: contextual
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/entity-identifier-declaration.sql
 diagnostic: sql/diagnostic/entity-identifier-declaration.sql
 scope: schema

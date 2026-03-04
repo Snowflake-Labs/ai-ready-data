@@ -2,7 +2,7 @@ name: classification
 description: Fraction of objects with governance tags applied
 factor: compliant
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/object-tag-coverage.sql
 check_column: sql/check/column-tag-coverage.sql
 diagnostic: sql/diagnostic/tag-inventory.sql

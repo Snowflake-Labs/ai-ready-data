@@ -2,7 +2,7 @@ name: cross_column_consistency
 description: Fraction of records where logically related columns are mutually consistent per declared cross-column rules
 factor: clean
 direction: lte
-workload: [serving, training]
+workload: [feature-serving, training]
 check: sql/check/cross-column-consistency.sql
 diagnostic: sql/diagnostic/cross-column-consistency.sql
 scope: table

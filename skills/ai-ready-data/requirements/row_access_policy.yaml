@@ -2,7 +2,7 @@ name: row_access_policy
 description: Fraction of tables with row access policies enforcing row-level security
 factor: compliant
 direction: gte
-workload: [serving, training]
+workload: [feature-serving, training, agents]
 check: sql/check/row-access-policy-coverage.sql
 diagnostic: sql/diagnostic/policy-inventory.sql
 scope: schema

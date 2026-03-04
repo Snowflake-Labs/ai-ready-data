@@ -82,30 +82,37 @@ The final query in the script prints row counts for all tables. Confirm all 8 ap
 Trigger the skill:
 
 ```
-Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for serving readiness
+Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for RAG readiness
 ```
 
 The agent will:
 
-1. Load `profiles/serving.yaml` (7 stages, 49 requirements)
+1. Load `assessments/rag.yaml` (6 stages, one per factor of AI-ready data)
 2. Discover the 8 tables in `AIRDF_DEMO`
-3. Ask you to confirm scope
+3. Ask you to confirm scope and offer override options (skip/set/add)
 4. Run check SQL for each requirement, stage by stage
 5. Present a scored report
+
+You can also try other assessments:
+
+```
+Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for feature serving readiness
+Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for training readiness
+Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for agents readiness
+```
 
 ### What to expect
 
 The demo data is designed to produce failures across every stage, giving you material to demonstrate the full lifecycle:
 
-| Stage | Expected | Why |
+| Stage (Factor) | Expected | Why |
 |---|---|---|
-| Data Quality | FAIL | Nulls, duplicates, encoding errors, bad types, invalid categories, orphan FKs |
-| Schema Understanding | FAIL | No column comments, no primary keys, no constraints |
-| RAG Readiness | FAIL | No embeddings, no vector indexes, no chunks |
-| Access Performance | FAIL | No clustering on large table, no search optimization |
-| Freshness | FAIL | No change tracking, no streams |
-| Provenance | Partial | Query history may show some agent attribution |
-| Governance | FAIL | PII columns without masking, no tags, no row access policies |
+| Clean | FAIL | Nulls, duplicates, encoding errors, bad types, invalid categories, orphan FKs |
+| Contextual | FAIL | No column comments, no primary keys, no constraints |
+| Consumable | FAIL | No embeddings, no vector indexes, no chunks, no clustering |
+| Current | FAIL | No change tracking, no streams |
+| Correlated | Partial | Query history may show some agent attribution |
+| Compliant | FAIL | PII columns without masking, no tags, no row access policies |
 
 After the report, the agent offers four options:
 - **remediate** — fix failing stages
@@ -132,7 +139,7 @@ The agent runs the diagnostic SQL and shows which columns have nulls, how many, 
 Start the remediation loop:
 
 ```
-Remediate the Data Quality stage
+Remediate the Clean stage
 ```
 
 The agent will:
@@ -180,10 +187,10 @@ This removes all tables, views, streams, tags, masking policies, and anything el
 ## Tips for a Live Demo
 
 - **Start with the assessment.** The stage-by-stage report is the visual anchor. Let it finish before jumping into remediation.
-- **Pick Data Quality for the first remediation.** It has the most tangible before/after (nulls disappear, duplicates removed, encoding fixed).
+- **Pick Clean for the first remediation.** It has the most tangible before/after (nulls disappear, duplicates removed, encoding fixed).
 - **Show a diagnostic drill-down** before remediating to demonstrate the two-phase workflow (understand, then fix).
-- **Skip RAG Readiness** unless you have Cortex embedding functions available — those checks require `SNOWFLAKE.CORTEX` access.
-- **Governance checks** that use `snowflake.account_usage` views (tags, policies) have ~2 hour latency for newly created objects. If you create tags/policies during remediation, the checks may still show FAIL until the views catch up. Mention this as a known Snowflake behavior.
+- **Consumable stage (RAG checks)** — skip `embedding_coverage` and `vector_index_coverage` unless you have Cortex embedding functions available. Those checks require `SNOWFLAKE.CORTEX` access. This is a good opportunity to demonstrate the `skip` override.
+- **Compliant stage** checks that use `snowflake.account_usage` views (tags, policies) have ~2 hour latency for newly created objects. If you create tags/policies during remediation, the checks may still show FAIL until the views catch up. Mention this as a known Snowflake behavior.
 - **Re-run the full assessment** after remediating a couple of stages to show the overall score improving.
 
 ---

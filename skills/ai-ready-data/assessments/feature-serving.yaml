@@ -1,8 +1,8 @@
-name: serving
-description: AI serving workload readiness (RAG, feature serving, real-time inference, agents)
+name: feature-serving
+description: Online feature store and real-time inference readiness — low-latency lookups, materialized features, and freshness guarantees
 stages:
-  - name: Data Quality
-    why: Dirty data produces wrong answers, hallucinations, and failed lookups
+  - name: Clean
+    why: Dirty features produce wrong predictions and failed lookups
     requirements:
       data_completeness: { max: 0.01 }
       uniqueness: { max: 0.01 }
@@ -14,8 +14,8 @@ stages:
       referential_integrity: { max: 0.01 }
       cross_column_consistency: { max: 0.01 }
 
-  - name: Schema Understanding
-    why: Documented schemas enable Text-to-SQL, semantic search, and context-aware generation
+  - name: Contextual
+    why: Documented schemas prevent feature misuse and enable automated feature discovery
     requirements:
       semantic_documentation: { min: 0.80 }
       relationship_declaration: { min: 1.00 }
@@ -23,30 +23,19 @@ stages:
       temporal_scope_declaration: { min: 0.80 }
       schema_type_coverage: { min: 0.70 }
       constraint_declaration: { min: 0.50 }
-      business_glossary_linkage: { min: 0.30 }
       unit_of_measure_declaration: { min: 0.50 }
 
-  - name: RAG Readiness
-    why: Retrieval-augmented generation requires chunked, embedded, and indexed content
-    requirements:
-      chunk_readiness: { min: 0.80 }
-      embedding_coverage: { min: 0.80 }
-      embedding_dimension_consistency: { min: 1.00 }
-      vector_index_coverage: { min: 0.80 }
-      retrieval_recall_compliance: { min: 0.80 }
-
-  - name: Access Performance
-    why: Optimized access keeps inference latency low at scale
+  - name: Consumable
+    why: Serving features at inference time demands low latency and pre-materialized values
     requirements:
       access_optimization: { min: 0.80 }
-      search_optimization: { min: 0.80 }
       point_lookup_availability: { min: 0.80 }
       serving_latency_compliance: { min: 0.95 }
       feature_materialization_coverage: { min: 0.80 }
       native_format_availability: { min: 0.80 }
 
-  - name: Freshness
-    why: Stale data means outdated answers — changes must propagate before the next query
+  - name: Current
+    why: Stale features mean outdated predictions — changes must propagate before the next request
     requirements:
       change_detection: { min: 1.00 }
       data_freshness: { min: 1.00 }
@@ -55,8 +44,8 @@ stages:
       feature_refresh_compliance: { min: 1.00 }
       training_serving_parity: { min: 0.50 }
 
-  - name: Provenance
-    why: Serving pipelines need traceable data for debugging, auditing, and incident response
+  - name: Correlated
+    why: Feature serving pipelines need traceable data for debugging, auditing, and incident response
     requirements:
       data_provenance: { min: 0.50 }
       lineage_completeness: { min: 0.50 }
@@ -64,8 +53,8 @@ stages:
       agent_attribution: { min: 0.30 }
       pipeline_execution_audit: { min: 0.50 }
 
-  - name: Governance
-    why: Prevents sensitive data from leaking into AI responses
+  - name: Compliant
+    why: Prevents sensitive data from leaking into model predictions and API responses
     requirements:
       classification: { min: 0.50 }
       column_masking: { min: 1.00 }

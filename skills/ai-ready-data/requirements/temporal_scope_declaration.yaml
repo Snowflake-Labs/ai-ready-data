@@ -2,7 +2,7 @@ name: temporal_scope_declaration
 description: Fraction of datasets with declared temporal validity windows (effective dates, as-of dates, or valid-time ranges)
 factor: contextual
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/temporal-scope-declaration.sql
 diagnostic: sql/diagnostic/temporal-scope-declaration.sql
 scope: schema

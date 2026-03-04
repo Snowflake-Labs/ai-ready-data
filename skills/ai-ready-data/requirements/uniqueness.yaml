@@ -2,7 +2,7 @@ name: uniqueness
 description: Fraction of duplicate records across scoped key columns
 factor: clean
 direction: lte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/duplicate-rate.sql
 check_sampled: sql/check/duplicate-rate-sampled.sql
 diagnostic: sql/diagnostic/duplicate-summary.sql

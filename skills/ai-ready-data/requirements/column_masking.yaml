@@ -2,7 +2,7 @@ name: column_masking
 description: Fraction of PII columns with masking policies applied
 factor: compliant
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/masking-policy-coverage.sql
 diagnostic: sql/diagnostic/unmasked-pii.sql
 diagnostic_inventory: sql/diagnostic/policy-inventory.sql

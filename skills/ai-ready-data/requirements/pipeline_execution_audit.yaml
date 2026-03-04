@@ -2,7 +2,7 @@ name: pipeline_execution_audit
 description: Fraction of pipeline runs with immutable execution records capturing inputs, parameters, outputs, and completion status
 factor: correlated
 direction: gte
-workload: [serving, training]
+workload: [feature-serving, training, agents]
 check: sql/check/pipeline-execution-audit.sql
 diagnostic: sql/diagnostic/pipeline-execution-audit.sql
 scope: schema

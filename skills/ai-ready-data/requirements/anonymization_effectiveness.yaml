@@ -2,7 +2,7 @@ name: anonymization_effectiveness
 description: Fraction of anonymized datasets with measured re-identification risk at or below defined thresholds
 factor: compliant
 direction: gte
-workload: [serving, training]
+workload: [training]
 check: sql/check/anonymization-effectiveness.sql
 diagnostic: sql/diagnostic/anonymization-effectiveness.sql
 scope: schema

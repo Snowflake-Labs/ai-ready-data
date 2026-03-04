@@ -1,24 +1,58 @@
 ---
 name: ai-ready-data
-description: Assess and optimize Snowflake data for AI workloads. Runs SQL checks against serving or training requirements, identifies gaps, and guides remediation.
+description: Assess and optimize Snowflake data for AI workloads. Runs SQL checks against workload-specific assessments, identifies gaps, and guides remediation.
 ---
 
 # AI-Ready Data
 
-Assess Snowflake data products for AI-readiness and remediate gaps. Works like a test suite: each requirement has a check SQL that returns a 0–1 score, a threshold from the use-case profile, and fix SQL for remediation.
+Assess Snowflake data products for AI-readiness and remediate gaps. Each requirement has a check SQL that returns a 0–1 score, a threshold from the assessment, and fix SQL for remediation. Stages map to the six factors of AI-ready data: Clean, Contextual, Consumable, Current, Correlated, Compliant.
 
 ## What This Skill Does
 
-1. **Assess** — Run SQL checks against a workload profile (serving or training), score each requirement, report pass/fail.
+1. **Assess** — Run SQL checks against a workload assessment (RAG, feature serving, training, or agents), score each requirement, report pass/fail.
 2. **Remediate** — For failing requirements, present fix SQL, get approval, execute, verify.
 
 ## Quick Start
 
 Ask the user:
 
-1. **What workload?** Serving or training. Load `profiles/serving.yaml` or `profiles/training.yaml`. Default: serving.
+1. **What workload?** RAG, feature serving, training, or agents. Load `assessments/{name}.yaml`. Default: rag.
 2. **What scope?** Database, schema, and optionally specific tables.
-3. **Assess or remediate?** If no prior assessment exists, assess first.
+3. **Any adjustments?** User may skip, set, or add requirements before running. See [Overrides](#overrides).
+4. **Assess or remediate?** If no prior assessment exists, assess first.
+
+### Available Assessments
+
+| Assessment | File | Best For |
+|---|---|---|
+| RAG | `assessments/rag.yaml` | Retrieval-augmented generation pipelines |
+| Feature Serving | `assessments/feature-serving.yaml` | Online feature stores, real-time inference |
+| Training | `assessments/training.yaml` | Fine-tuning, ML training, dataset curation |
+| Agents | `assessments/agents.yaml` | Text-to-SQL, agentic tool use, autonomous data access |
+
+### Overrides
+
+After loading an assessment but before running, offer the user three adjustment verbs:
+
+- **`skip <requirement>`** — Exclude a requirement entirely.
+- **`set <requirement> <threshold>`** — Override a threshold (e.g., `set chunk_readiness 0.70`).
+- **`add <requirement> <threshold>`** — Include a requirement not in the base assessment.
+
+Overrides are applied in memory for the current run. For repeatability, overrides can be saved as a custom assessment YAML using `extends`:
+
+```yaml
+name: my-rag-assessment
+extends: rag
+overrides:
+  skip:
+    - embedding_coverage
+  set:
+    chunk_readiness: { min: 0.70 }
+  add:
+    row_access_policy: { min: 0.50 }
+```
+
+When loading an assessment with `extends`, first load the base assessment, then apply overrides.
 
 ---
 
@@ -33,7 +67,7 @@ discover → assess → report → [approve] → remediate → verify
 | Phase | What Happens | SQL Type |
 |-------|-------------|----------|
 | Discover | Confirm scope (database, schema, tables) | Ad-hoc |
-| Assess | Run `check` SQL for each requirement in the profile | `sql/check/` (read-only) |
+| Assess | Run `check` SQL for each requirement in the assessment | `sql/check/` (read-only) |
 | Report | Present scores grouped by stage, show pass/fail | None |
 | Approve | User approves remediation per stage | None |
 | Remediate | Run `fix` SQL for failing requirements | `sql/fix/` (mutating) |
@@ -45,21 +79,21 @@ All `check` SQL files return a `value` column: a float between 0.0 and 1.0.
 
 Each requirement declares a `direction`:
 
-- **`lte`** (lower is better): value must be ≤ `max` threshold to pass. Used by Factor 0 (Clean) requirements.
-- **`gte`** (higher is better): value must be ≥ `min` threshold to pass. Used by all other factors.
+- **`lte`** (lower is better): value must be ≤ `max` threshold to pass. Used by Clean stage requirements.
+- **`gte`** (higher is better): value must be ≥ `min` threshold to pass. Used by all other stages.
 
-Profiles declare thresholds with matching keys: `{ max: N }` for lte, `{ min: N }` for gte.
+Assessments declare thresholds with matching keys: `{ max: N }` for lte, `{ min: N }` for gte.
 
-### How Profiles Work
+### How Assessments Work
 
-A profile (in `profiles/`) lists stages. Each stage has a `why` and a set of requirements with thresholds. Run stages in order. A stage passes when all its requirements pass.
+An assessment (in `assessments/`) lists six stages — one per factor of AI-ready data: Clean, Contextual, Consumable, Current, Correlated, Compliant. Each stage has a `why` and a set of requirements with thresholds. Run stages in order. A stage passes when all its requirements pass.
 
-Load the profile YAML, then for each stage, for each requirement:
+Load the assessment YAML, apply any overrides, then for each stage, for each requirement:
 
 1. Load `requirements/{requirement_name}.yaml` to get the check SQL path, direction, scope, and placeholders.
 2. Read the SQL file, substitute `{{ placeholder }}` values from context.
 3. Execute the SQL, read the `value` column.
-4. Compare against the profile threshold using the requirement's direction.
+4. Compare against the assessment threshold using the requirement's direction.
 
 ### Scope Inference
 
@@ -93,7 +127,7 @@ Present as inventory, confirm scope with the user.
 
 ### Step 2: Run Checks
 
-For each stage in the profile (in order), for each requirement:
+For each stage in the assessment (in order), for each requirement:
 
 1. Load `requirements/{requirement_name}.yaml`.
 2. Read the `check` SQL file.
@@ -104,9 +138,9 @@ For each stage in the profile (in order), for each requirement:
 ### Step 3: Present Results
 
 ```
-{Serving|Training} Assessment — {DATABASE}.{SCHEMA}
+{Assessment Name} Assessment — {DATABASE}.{SCHEMA}
 
-{Stage Name}                                          {PASS/FAIL}
+{Stage Name (Factor)}                                 {PASS/FAIL}
   "{why}"
   {requirement}    {value}  (need {op} {threshold})    {PASS/FAIL}
 
@@ -124,7 +158,7 @@ When the user wants detail on a failing requirement, run the `diagnostic` SQL fr
 ```json
 {
   "assessment": {
-    "workload": "serving|training",
+    "name": "rag|feature-serving|training|agents",
     "timestamp": "<ISO 8601>",
     "scope": { "database": "", "schema": "", "tables": [] },
     "summary": { "stages_passing": 0, "stages_total": 0, "requirements_passing": 0, "requirements_total": 0 },
@@ -146,7 +180,7 @@ When the user wants detail on a failing requirement, run the `diagnostic` SQL fr
 
 ## Remediation Workflow
 
-Process failing stages in profile order. For each stage:
+Process failing stages in assessment order. For each stage:
 
 ### Step 1: Present Stage Context
 
@@ -329,9 +363,11 @@ skills/ai-ready-data/
     check/                          ← Assessment queries (read-only)
     diagnostic/                     ← Detail queries (read-only)
     fix/                            ← Remediation queries (mutating)
-  profiles/
-    serving.yaml                    ← Serving workload thresholds
-    training.yaml                   ← Training workload thresholds
+  assessments/
+    rag.yaml                        ← RAG workload assessment
+    feature-serving.yaml            ← Feature serving workload assessment
+    training.yaml                   ← Training workload assessment
+    agents.yaml                     ← Agents workload assessment
   reference/
     gotchas.md                      ← Snowflake pitfalls
 ```
@@ -340,8 +376,12 @@ skills/ai-ready-data/
 
 1. Create `requirements/{name}.yaml` with metadata, check/diagnostic/fix paths, placeholders, constraints.
 2. Add SQL files to `sql/check/`, `sql/diagnostic/`, and/or `sql/fix/`.
-3. Add a line to the relevant profile YAML.
+3. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
 
-### Adding a New Use-Case Profile
+### Adding a New Assessment
 
-1. Create `profiles/{name}.yaml` listing stages, requirements, and thresholds.
+1. Create `assessments/{name}.yaml` with six stages (Clean, Contextual, Consumable, Current, Correlated, Compliant).
+2. Select requirements for each stage and set thresholds appropriate for the workload.
+3. Alternatively, use `extends` to derive from an existing assessment and apply overrides.
+
+Or use the **Build Assessment** skill (`skills/build-assessment/SKILL.md`) — a guided conversation that interviews the user and generates the YAML.

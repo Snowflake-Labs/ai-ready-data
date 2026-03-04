@@ -2,7 +2,7 @@ name: vector_index_coverage
 description: Fraction of embedding collections with a vector similarity index built and maintained
 factor: consumable
 direction: gte
-workload: [serving]
+workload: [rag]
 check: sql/check/vector-index-coverage.sql
 diagnostic: sql/diagnostic/vector-index-coverage.sql
 scope: schema

@@ -2,7 +2,7 @@ name: record_level_traceability
 description: Fraction of records with a unique correlation identifier enabling trace-back to their originating source record
 factor: correlated
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/record-level-traceability.sql
 diagnostic: sql/diagnostic/record-level-traceability.sql
 scope: schema

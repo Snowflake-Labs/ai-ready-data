@@ -2,7 +2,7 @@ name: referential_integrity
 description: Fraction of foreign-key or cross-dataset reference values that successfully resolve to valid target records
 factor: clean
 direction: lte
-workload: [serving, training]
+workload: [feature-serving, training, agents]
 check: sql/check/referential-integrity.sql
 diagnostic: sql/diagnostic/referential-integrity.sql
 fixes:

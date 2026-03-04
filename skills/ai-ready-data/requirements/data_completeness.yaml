@@ -2,7 +2,7 @@ name: data_completeness
 description: Fraction of null values across scoped columns
 factor: clean
 direction: lte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/null-rate.sql
 check_sampled: sql/check/null-rate-sampled.sql
 diagnostic: sql/diagnostic/null-summary.sql

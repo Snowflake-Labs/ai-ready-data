@@ -2,7 +2,7 @@ name: change_detection
 description: Fraction of tables with change tracking and streams enabled
 factor: current
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/change-tracking-coverage.sql
 check_streams: sql/check/stream-coverage.sql
 diagnostic: sql/diagnostic/change-tracking-status.sql

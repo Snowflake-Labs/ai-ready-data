@@ -2,7 +2,7 @@ name: lineage_completeness
 description: Fraction of datasets with documented end-to-end lineage from source through transformations, at both dataset and column level
 factor: correlated
 direction: gte
-workload: [serving, training]
+workload: [rag, feature-serving, training, agents]
 check: sql/check/lineage-completeness.sql
 diagnostic: sql/diagnostic/lineage-completeness.sql
 scope: schema
