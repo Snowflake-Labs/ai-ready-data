@@ -1,4 +1,4 @@
-# AI-Ready Data Agent
+# AI-Ready Data Skills
 
 Assess and optimize Snowflake data for AI workloads.
 
