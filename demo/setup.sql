@@ -58,7 +58,7 @@ INSERT INTO CUSTOMERS VALUES
 (1,  'Alice',    'Johnson',   'alice@example.com',      '555-0101', '123 Main St',      'Seattle',       'WA', 'US', '2024-01-15 08:30:00', '2025-11-01 10:00:00'),
 (2,  'Bob',      'Smith',     'bob@example.com',        '555-0102', '456 Oak Ave',       'Portland',      'OR', 'US', '2024-02-20 14:15:00', '2025-10-15 09:30:00'),
 (3,  'Carol',    'Williams',  NULL,                     '555-0103', '789 Pine Rd',       'San Francisco', 'CA', 'US', '2024-03-10 11:45:00', '2025-09-20 16:45:00'),
-(4,  'David',    'Br' || CHR(65533) || 'wn',  'david@example.com', '555-0104', '321 Elm Blvd',  'Denver',  'CO', 'US', '2024-04-05 09:00:00', '2025-12-01 08:00:00'),
+(4,  'David',    'Brown',             'david@example.com', '555-0104', '321 Elm Blvd',  'Denver',  'CO', 'US', '2024-04-05 09:00:00', '2025-12-01 08:00:00'),
 (5,  'Eve',      'Davis',     'eve@example.com',        NULL,       '654 Cedar Ln',      'Austin',        'TX', 'US', '2024-05-12 16:30:00', '2025-11-10 14:20:00'),
 (6,  'Frank',    'Miller',    'frank@example.com',      '555-0106', '987 Birch Dr',      'Chicago',       'IL', 'US', '2024-06-18 10:00:00', '2025-10-05 11:15:00'),
 (7,  'Grace',    'Wilson',    NULL,                     '555-0107', '147 Maple Way',     'Miami',         'FL', 'US', '2024-07-22 13:20:00', '2025-11-20 17:00:00'),
@@ -75,6 +75,9 @@ INSERT INTO CUSTOMERS VALUES
 (18, 'Rachel',   'Robinson',  NULL,                     '555-0118', '148 Willow Ct',     'San Antonio',   'TX', 'US', '2025-02-10 09:40:00', '2025-10-30 09:30:00'),
 (19, 'Sam',      'Clark',     'sam@example.com',        '555-0119', '259 Chestnut Pl',   'Columbus',      'OH', 'US', '2025-03-01 15:25:00', '2025-11-05 16:20:00'),
 (20, 'Tina',     'Lewis',     'tina@example.com',       '555-0120', '361 Hawthorn St',   'Indianapolis',  'IN', 'US', '2025-03-18 12:10:00', '2025-12-20 10:00:00');
+
+-- Inject encoding error (U+FFFD replacement character) via expression
+UPDATE CUSTOMERS SET LAST_NAME = 'Br' || CHR(65533) || 'wn' WHERE CUSTOMER_ID = 4;
 
 
 -- =============================================================================
@@ -139,7 +142,7 @@ INSERT INTO ORDERS VALUES
 (1001, 1,  '2025-01-10', '2025-01-13', 'DELIVERED',   159.98, 9.99,  0.00,  'WEB',    'Standard delivery',                              '2025-01-10 10:00:00', '2025-01-13 15:00:00'),
 (1002, 2,  '2025-01-15', '2025-01-18', 'DELIVERED',   49.99,  5.99,  0.10,  'WEB',    'Gift wrapped',                                   '2025-01-15 11:30:00', '2025-01-18 09:00:00'),
 (1003, 3,  '2025-02-01', '2025-02-04', 'DELIVERED',   129.99, 0.00,  0.05,  'MOBILE', NULL,                                             '2025-02-01 14:20:00', '2025-02-04 16:00:00'),
-(1004, 4,  '2025-02-14', NULL,         'PROCESSING',  199.99, 12.99, 0.00,  'WEB',    'Valentine' || CHR(65533) || 's day rush',         '2025-02-14 09:00:00', '2025-02-14 09:00:00'),
+(1004, 4,  '2025-02-14', NULL,         'PROCESSING',  199.99, 12.99, 0.00,  'WEB',    'Valentines day rush',                              '2025-02-14 09:00:00', '2025-02-14 09:00:00'),
 (1005, 5,  '2025-03-01', '2025-03-03', 'DELIVERED',   18.99,  3.99,  0.00,  'MOBILE', 'Leave at door',                                  '2025-03-01 16:45:00', '2025-03-03 12:00:00'),
 (1006, 6,  '2025-03-15', '2025-03-17', 'DELIVERED',   89.98,  0.00,  0.15,  'WEB',    NULL,                                             '2025-03-15 08:30:00', '2025-03-17 10:30:00'),
 (1007, 7,  '2025-04-01', '2025-04-05', 'DELIVERED',   34.99,  5.99,  0.00,  'STORE',  'In-store pickup',                                '2025-04-01 12:00:00', '2025-04-05 14:00:00'),
@@ -167,6 +170,9 @@ INSERT INTO ORDERS VALUES
 
 -- Invalid status
 (1023, 19, '2025-11-20', NULL,         'YOLO',        18.99,  3.99,  0.00,  'WEB',    NULL,                                             '2025-11-20 12:00:00', '2025-11-20 12:00:00');
+
+-- Inject encoding error (U+FFFD) via expression
+UPDATE ORDERS SET NOTES = 'Valentine' || CHR(65533) || 's day rush' WHERE ORDER_ID = 1004 AND CUSTOMER_ID = 4;
 
 
 -- =============================================================================
@@ -338,9 +344,11 @@ INSERT INTO MARKETING_EVENTS VALUES
 (8,  10, 'EMAIL_BOUNCE',  '2025-05-20 09:00:00', 'CAMP-2025-05', 'EMAIL',  '{"reason": "invalid_address"}',                               '2025-05-20 09:00:00'),
 (9,  12, 'UNSUBSCRIBE',   '2025-06-15 14:00:00', 'CAMP-2025-05', 'EMAIL',  '{"reason": "too_frequent"}',                                  '2025-06-15 14:00:00'),
 (10, 15, 'AD_VIEW',       '2025-08-05 07:30:00', 'CAMP-2025-06', 'SEARCH', '{"keyword": "standing desk", "position": 2}',                 '2025-08-05 07:30:00'),
--- Encoding error in payload
-(11, 16, 'EMAIL_OPEN',    '2025-09-15 11:00:00', 'CAMP-2025-07', 'EMAIL',  '{"subject": "Fall Collection ' || CHR(0) || '"}',             '2025-09-15 11:00:00'),
+(11, 16, 'EMAIL_OPEN',    '2025-09-15 11:00:00', 'CAMP-2025-07', 'EMAIL',  '{"subject": "Fall Collection"}',                              '2025-09-15 11:00:00'),
 (12, 20, 'PAGE_VIEW',     '2025-10-01 13:00:00', 'CAMP-2025-08', 'WEB',    '{"page": "/checkout", "duration_seconds": 120}',              '2025-10-01 13:00:00');
+
+-- Inject encoding error (null byte) via expression
+UPDATE MARKETING_EVENTS SET EVENT_PAYLOAD = '{"subject": "Fall Collection ' || CHR(0) || '"}' WHERE EVENT_ID = 11;
 
 
 -- =============================================================================
