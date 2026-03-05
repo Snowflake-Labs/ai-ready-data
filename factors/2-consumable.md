@@ -20,7 +20,11 @@ A format mismatch or latency miss isn't a degraded experience — it's a failed 
 
 ## By Workload
 
-**Serving (RAG, feature serving)** — RAG retrieval must complete in milliseconds for interactive experiences — documents must be pre-chunked, embeddings must exist, and vector indexes must be built. Feature serving requires sub-100ms lookups for real-time inference, with features materialized in row-oriented stores. Query-time transformation breaks SLAs in both cases.
+**RAG** — Retrieval must complete in milliseconds for interactive experiences. Documents must be pre-chunked to fit context windows, embeddings must exist for semantic search, and vector indexes must be built and maintained. Query-time transformation breaks SLAs. Retrieval recall and search optimization directly determine answer quality.
+
+**Agents** — Agents need fast query responses and predictable data formats. Text-to-SQL and tool-use patterns require optimized access paths, point lookups, and sub-second latency. Agents make multiple round-trips per interaction, so latency compounds — a slow lookup on one step delays the entire reasoning chain.
+
+**Feature Serving** — Real-time inference requires sub-100ms lookups with features materialized in row-oriented stores. Features must be pre-computed and point-addressable by entity key. Query-time transformation breaks SLAs. Feature materialization coverage and serving latency compliance are the critical gates.
 
 **Training** — Training processes terabytes repeatedly across epochs. Features must exist in batch-optimized columnar formats. I/O bottlenecks cause expensive GPU idle time. Any format mismatch or throughput limitation multiplies across the entire training run.
 

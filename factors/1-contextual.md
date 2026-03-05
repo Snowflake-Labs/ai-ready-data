@@ -17,7 +17,11 @@ Meaning can be broken into four dimensions:
 
 ## By Workload
 
-**Serving (RAG, feature serving)** — The model has no tribal knowledge. In RAG, if meaning is not colocated with the data, the model generates answers without understanding what the data represents. In feature serving, undocumented features cause silent misinterpretation — the model uses a value without knowing its units, valid range, or business meaning. Unlike analysts who can look up a column definition or ask a colleague, serving workloads have only what the data declares about itself.
+**RAG** — The model has no tribal knowledge. If meaning is not colocated with the data, the model generates answers without understanding what the data represents. Semantic documentation and entity identifiers power hybrid search and context-aware retrieval. Without them, retrieval quality degrades and answers lack grounding.
 
-**Training** — Ambiguous semantics propagate into learned representations. If the model does not know what a column means, what relationships exist, or when data is valid, it cannot learn the right signal. Full semantic coverage is essential — meaning that is implicit or external to the data at training time is meaning the model will never have.
+**Agents** — Schema metadata is the agent's only map. For Text-to-SQL and tool use, the agent must understand table relationships, column semantics, constraints, and business glossary terms to generate correct queries. Agents demand the highest contextual coverage — undocumented relationships, missing constraints, or ambiguous column names cause query generation failures and wrong results. Unlike RAG where retrieval can partially compensate, agents have no fallback when metadata is missing.
+
+**Feature Serving** — Undocumented features cause silent misinterpretation — the model uses a value without knowing its units, valid range, or business meaning. Relationship declarations and entity identifiers are essential for correct feature joins. Unlike analysts who can look up a column definition, feature serving has only what the data declares about itself.
+
+**Training** — Ambiguous semantics propagate into learned representations. If the model does not know what a column means, what relationships exist, or when data is valid, it cannot learn the right signal. Well-documented schemas prevent feature engineering errors and enable automated dataset curation. Meaning that is implicit or external to the data at training time is meaning the model will never have.
 

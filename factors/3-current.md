@@ -18,7 +18,11 @@ Without these mechanisms, freshness depends on pipeline schedules holding, jobs 
 
 ## By Workload
 
-**Serving (RAG, feature serving)** — Users expect current information. A RAG-powered support agent citing outdated policies creates real harm. Feature serving requires values that reflect the present state — a stale feature produces a prediction based on yesterday's reality. Both require infrastructure-enforced freshness rather than schedule-based assumptions.
+**RAG** — Users expect current information. A RAG-powered support agent citing outdated policies creates real harm. Stale documents mean stale answers delivered with full model confidence. Change detection and freshness enforcement ensure the retrieval corpus reflects the present state, not a stale snapshot.
 
-**Training** — Training on stale data teaches the model outdated patterns. Feature stores must maintain point-in-time correctness — the features available at inference must match what was available at training time. Training-serving skew, where training features don't match serving features, silently degrades model performance.
+**Agents** — Agents that answer from stale data give confidently wrong responses — and may take wrong actions based on those responses. Because agents operate autonomously, stale data is more dangerous than in human-mediated workflows. Propagation latency must be tightly controlled so that agent queries reflect current state.
+
+**Feature Serving** — Stale features mean outdated predictions. Feature serving requires values that reflect the present state — a stale feature produces a prediction based on yesterday's reality. Changes must propagate before the next request. Feature refresh compliance and training-serving parity ensure that serving features stay synchronized with reality and with the features the model was trained on.
+
+**Training** — Training on stale data teaches the model outdated patterns. Point-in-time correctness is essential — the features available at inference must match what was available at training time. Training-serving skew, where training features don't match serving features, silently degrades model performance. Schema evolution tracking ensures the training pipeline adapts to upstream changes.
 

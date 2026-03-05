@@ -8,7 +8,7 @@ Canonical definitions for the AI-Ready Data project. A short summary appears in 
 
 **AI-ready data** is data that meets the requirements of the five factors (Contextual, Consumable, Current, Correlated, Compliant) for the **workload (use case)** you target. The factors define what the data layer must provide so that what crosses the boundary into the AI system is fit for consumption.
 
-Whether data is "AI-ready" is therefore relative to your use case. We use two workloads: serving and training.
+Whether data is "AI-ready" is therefore relative to your use case. We define four workloads: RAG, Agents, Feature Serving, and Training.
 
 ---
 
@@ -34,12 +34,17 @@ A **data asset** is a concrete object within a data product: e.g. a table and co
 
 ## Workloads (use cases)
 
-Requirements differ by **use case**: what you are building (serving  or training) determines how strict the requirements are. We define two workload categories.
+Requirements differ by **use case**: what you are building determines how strict the requirements are. We define four workload categories:
 
-Requirements and thresholds are defined per factor and per workload. Meeting a stricter workload implies meeting the less strict ones for that requirement (additivity).
+- **RAG** — Retrieval-augmented generation: chunking, embedding, retrieval, and governance for LLM-powered search and Q&A.
+- **Agents** — Agentic AI: Text-to-SQL, tool use, and autonomous data access by LLM agents.
+- **Feature Serving** — Online feature stores and real-time inference: low-latency lookups, materialized features, and freshness guarantees.
+- **Training** — AI/ML training: fine-tuning, ML training, and dataset curation.
+
+Requirements and thresholds are defined per factor and per workload. Each workload has its own assessment profile with workload-specific requirements and thresholds.
 
 ---
 
 ## Factor
 
-A **factor** is one of five high-level categories of AI-readiness: Contextual (1), Consumable (2), Current (3), Correlated (4), Compliant (5). Each factor has a definition, capabilities per workload (L1/L2/L3), and platform-specific check operations. Checks are tagged by factor and capability.
+A **factor** is one of six high-level categories of AI-readiness: Clean (0), Contextual (1), Consumable (2), Current (3), Correlated (4), Compliant (5). Each factor has a definition, workload-specific requirements and thresholds, and platform-specific check operations. Checks are tagged by factor and workload.

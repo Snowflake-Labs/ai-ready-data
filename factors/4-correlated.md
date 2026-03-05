@@ -18,7 +18,11 @@ Correlated data enables:
 
 ## By Workload
 
-**Serving (RAG, feature serving)** — When a chatbot gives a wrong answer, you need to know which chunks were retrieved, what their sources were, and how they were ranked. When a feature serving prediction fails, you need to trace back through the feature pipeline to the source data. Without lineage, debugging is guesswork.
+**RAG** — When a chatbot gives a wrong answer, you need to know which chunks were retrieved, what their sources were, and how they were ranked. Traceability lets you debug which source documents produced which answers. Data provenance and record-level traceability are the minimum — without them, debugging retrieval quality is guesswork.
 
-**Training** — Training data provenance is a regulatory requirement (EU AI Act). You must be able to reconstruct what data trained what model at what time. Drift detection requires baselines to compare against. Reproducibility — running the same training on the same data and getting the same result — depends on versioned, traceable datasets.
+**Agents** — Agentic actions must be auditable — who asked what, what data was used, what was returned. Because agents operate autonomously, the audit trail is the primary mechanism for accountability. Agent attribution tracks which agent accessed which data and what decisions resulted. Pipeline execution audit ensures every step in an agent's reasoning chain is reconstructable.
+
+**Feature Serving** — When a prediction fails, you need to trace back through the feature pipeline to the source data. Pipeline execution audit and record-level traceability enable incident response. Without lineage, diagnosing whether a bad prediction came from stale data, a transformation bug, or a model issue is guesswork.
+
+**Training** — Training data provenance is a regulatory requirement (EU AI Act). You must be able to reconstruct what data trained what model at what time. Reproducibility — running the same training on the same data and getting the same result — depends on versioned, traceable datasets. Training demands the broadest traceability: data versioning, transformation documentation, dependency graphs, and impact analysis.
 

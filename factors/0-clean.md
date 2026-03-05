@@ -14,6 +14,10 @@ Models optimize on whatever signal is present — including noise. Dirty data do
 
 ## By Workload
 
-**Serving (RAG, feature serving)** — In RAG, any chunk can surface verbatim as an answer — a dirty record becomes a wrong answer. In feature serving, a malformed or missing value produces a bad prediction on every request that hits it. Unlike BI dashboards where humans notice anomalies, serving workloads consume data uncritically and at machine speed.
+**RAG** — Any chunk can surface verbatim as an answer — a dirty record becomes a wrong answer delivered with full model confidence. Unlike BI dashboards where humans notice anomalies, RAG consumes data uncritically and at machine speed. Duplicate or malformed source documents create retrieval noise and degrade recall.
 
-**Training** — Errors in training data are not retrieved — they are *learned*. The model encodes patterns from the training distribution into its weights. A bias, a labeling error, or a systematic data quality issue produces a model that is structurally wrong across every inference it serves. Remediation means retraining.
+**Agents** — Agents query data autonomously and act on results. A dirty record doesn't just produce a wrong answer — it can trigger a wrong action. Because agents operate with minimal human oversight, data quality errors compound through multi-step reasoning chains. A malformed value in one query result can cascade through subsequent tool calls, producing confidently wrong conclusions.
+
+**Feature Serving** — A malformed or missing feature value produces a bad prediction on every request that hits it. Feature serving operates at machine speed with no human in the loop to catch anomalies. Cross-column inconsistencies and referential integrity failures cause silent prediction errors that are difficult to detect without monitoring.
+
+**Training** — Errors in training data are not retrieved — they are *learned*. The model encodes patterns from the training distribution into its weights. A bias, a labeling error, or a systematic data quality issue produces a model that is structurally wrong across every inference it serves. Training has the strictest clean data requirements because errors become permanent and remediation means retraining.
