@@ -1,6 +1,6 @@
-# AI-Ready Data Skills
+# AI-Ready Data Agent
 
-Assess and optimize Snowflake data for AI workloads.
+Assess and optimize Snowflake data for AI workloads. Pick an assessment, point it at your schema, and get a scored report across six factors of AI-ready data — with guided remediation for anything that fails.
 
 ## Quick Start
 
@@ -8,7 +8,7 @@ Point your coding agent at this repo and say:
 
 > Assess my database for RAG readiness. I'm connected to MY_DB.MY_SCHEMA.
 
-The agent discovers your schema, runs checks, presents results by stage, and offers to fix what's failing.
+The agent loads the RAG assessment, discovers your tables, runs checks, and presents a scored report. From there you can drill into failures, remediate stage-by-stage, or export results as JSON.
 
 ### Install as a skill
 
@@ -20,22 +20,82 @@ npx skills add your-org/ai-ready-data -a cortex
 
 Clone or add this repo as workspace context. The agent reads `skills/ai-ready-data/SKILL.md` automatically.
 
-## What It Does
+## How It Works
 
-1. **Discovers** your schema (database, tables, row counts)
-2. **Assesses** data against a workload assessment (RAG, feature serving, training, or agents) — runs read-only SQL checks
-3. **Reports** scores grouped by the six factors of AI-ready data with pass/fail status
-4. **Remediates** failing requirements stage-by-stage with your approval
-5. **Verifies** improvements by re-running checks
+1. **Choose an assessment** — RAG, feature serving, training, agents, or build your own
+2. **Discover** — agent inventories your schema (tables, row counts, sizes)
+3. **Adjust** — skip, set, or add requirements before running
+4. **Assess** — read-only SQL checks score each requirement 0–1, compared against thresholds
+5. **Report** — results grouped by the six factors, with pass/fail per requirement
+6. **Remediate** — for failures, the agent presents fix SQL, gets your approval, executes, and verifies
 
-All operations are SQL — no Python, no packages, no infrastructure.
+All operations are SQL. No Python, no packages, no infrastructure.
+
+## The Six Factors
+
+Every assessment is organized into six stages — one per factor of AI-ready data:
+
+| Factor | What It Measures | Example Requirements |
+|---|---|---|
+| **Clean** | Error rates — nulls, duplicates, encoding issues, schema violations | `data_completeness`, `uniqueness`, `encoding_validity` |
+| **Contextual** | Schema documentation and metadata for machines and humans | `semantic_documentation`, `relationship_declaration`, `entity_identifier_declaration` |
+| **Consumable** | Data in the right format, indexed, and accessible at the right latency | `embedding_coverage`, `vector_index_coverage`, `serving_latency_compliance` |
+| **Current** | Freshness guarantees — change detection, SLAs, propagation latency | `change_detection`, `data_freshness`, `incremental_update_coverage` |
+| **Correlated** | Lineage, provenance, and traceability from source to consumption | `data_provenance`, `lineage_completeness`, `agent_attribution` |
+| **Compliant** | Governance — classification, masking, access policies, consent, retention | `classification`, `column_masking`, `access_audit_coverage` |
+
+Clean requirements use **lower-is-better** scoring (error rates ≤ threshold). All other factors use **higher-is-better** scoring (coverage ≥ threshold).
+
+## Built-In Assessments
+
+| Assessment | Requirements | Best For |
+|---|---|---|
+| **rag** | 27 | Retrieval-augmented generation — chunking, embeddings, vector search, document governance |
+| **feature-serving** | 39 | Online feature stores — low-latency lookups, materialized features, freshness SLAs |
+| **training** | 50 | Fine-tuning and ML training — temporal integrity, reproducibility, bias testing, licensing |
+| **agents** | 37 | Text-to-SQL and agentic tool use — highest bar on schema documentation, strong audit trail |
+
+Each assessment selects a different subset of the 61 total requirements, with thresholds tuned for the workload. Every assessment uses the same six stages.
+
+## Overrides
+
+Before running, you can adjust any assessment on the fly:
+
+- **`skip <requirement>`** — exclude a check entirely
+- **`set <requirement> <threshold>`** — override a threshold
+- **`add <requirement> <threshold>`** — include a check not in the base assessment
+
+For repeatability, save overrides as a custom assessment using `extends`:
+
+```yaml
+name: my-rag-assessment
+extends: rag
+overrides:
+  skip:
+    - embedding_coverage
+  set:
+    chunk_readiness: { min: 0.70 }
+  add:
+    row_access_policy: { min: 0.50 }
+```
+
+## Build Your Own Assessment
+
+Say **"build me an assessment"** and the agent will interview you:
+
+1. What are you building? What data? Who consumes it?
+2. Walk through each factor with pre-selected requirements based on your answers
+3. Set thresholds with guidance on what the numbers mean
+4. Name it, review the YAML, save it
+
+The builder pre-selects aggressively so you approve batches, not individual items. Most users say "looks good" on 4–5 of the six factors.
 
 ## Structure
 
 ```
 skills/
   ai-ready-data/
-    SKILL.md                ← Entry point for coding agents
+    SKILL.md                ← Agent instructions for assessment & remediation
     requirements/           ← One YAML per requirement (61 total)
     sql/
       check/                ← Assessment queries (read-only)
@@ -54,19 +114,23 @@ skills/
 
 ## Key Concepts
 
-- **Assessment** — A workload-specific collection of requirements with thresholds, organized into six stages. Four built-in: `rag`, `feature-serving`, `training`, `agents`. Defined in `assessments/*.yaml`.
-- **Stage** — Each assessment has six stages, one per factor of AI-ready data: Clean, Contextual, Consumable, Current, Correlated, Compliant.
-- **Requirement** — A single testable data quality dimension (e.g., `data_completeness`). Defined in `requirements/*.yaml` with check SQL, thresholds, and fix SQL.
-- **Override** — Before running, users can `skip`, `set`, or `add` requirements to customize an assessment for their needs.
+- **Assessment** — A YAML file selecting requirements and thresholds for a workload, organized into the six factor stages. Four built-in, unlimited custom.
+- **Stage** — One per factor: Clean, Contextual, Consumable, Current, Correlated, Compliant.
+- **Requirement** — A single testable dimension with check SQL (returns 0–1 score), diagnostic SQL (detail drill-down), and fix SQL (remediation). 61 total.
+- **Override** — skip/set/add adjustments applied before running an assessment.
 
-## Adding a Requirement
+## Extending
+
+### Adding a Requirement
 
 1. Create `requirements/{name}.yaml` with metadata, check/diagnostic/fix SQL paths, placeholders, and constraints.
 2. Add SQL files to `sql/check/`, `sql/diagnostic/`, and/or `sql/fix/`.
 3. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
 
-## Adding an Assessment
+### Adding an Assessment
 
-Create `assessments/{name}.yaml` with six stages (Clean, Contextual, Consumable, Current, Correlated, Compliant), selecting requirements and thresholds appropriate for the workload. Alternatively, use `extends` to derive from an existing assessment with overrides.
+Create `assessments/{name}.yaml` with six stages, or use `extends` to derive from an existing one. Or say **"build me an assessment"** and let the agent generate it through conversation.
 
-Or say **"build me an assessment"** — the agent will interview you about your workload and generate a curated assessment YAML.
+## Demo
+
+See [`demo/DEMO.md`](demo/DEMO.md) for a full walkthrough: provision a demo dataset with intentional issues, run an assessment, explore diagnostics, remediate, and verify.
