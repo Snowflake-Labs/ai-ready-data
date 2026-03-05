@@ -1,7 +1,6 @@
 name: categorical_validity
 description: Fraction of categorical column values that belong to a declared controlled vocabulary or code set
 factor: clean
-direction: lte
 workload: [feature-serving, training, agents]
 check: sql/check/categorical-validity.sql
 diagnostic: sql/diagnostic/categorical-validity.sql

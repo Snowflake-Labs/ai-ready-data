@@ -1,7 +1,6 @@
 name: relationship_declaration
 description: Fraction of cross-entity references with explicit, machine-readable relationship declarations
 factor: contextual
-direction: gte
 workload: [feature-serving, training, agents]
 check: sql/check/relationship-declaration.sql
 diagnostic: sql/diagnostic/relationship-declaration.sql

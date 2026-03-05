@@ -1,6 +1,6 @@
 -- check-outlier-prevalence.sql
 -- Checks fraction of records containing statistical outliers (beyond N standard deviations)
--- Returns: value (float 0-1) - fraction of rows with outliers (lower is better)
+-- Returns: value (float 0-1) - fraction of rows within expected range (1.0 = no outliers)
 
 WITH stats AS (
     SELECT
@@ -22,5 +22,5 @@ outlier_check AS (
 SELECT
     outlier_rows,
     total_rows,
-    outlier_rows::FLOAT / NULLIF(total_rows::FLOAT, 0) AS value
+    1.0 - (outlier_rows::FLOAT / NULLIF(total_rows::FLOAT, 0)) AS value
 FROM outlier_check

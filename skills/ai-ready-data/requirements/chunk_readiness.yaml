@@ -1,9 +1,8 @@
 name: chunk_readiness
 description: Fraction of document assets pre-chunked to sizes aligned with target context windows
 factor: consumable
-direction: gte
 workload: [rag]
 check: sql/check/chunk-readiness.sql
 diagnostic: sql/diagnostic/chunk-readiness.sql
 scope: schema
-placeholders: [database, schema]
+placeholders: [database, schema, asset, text_column]

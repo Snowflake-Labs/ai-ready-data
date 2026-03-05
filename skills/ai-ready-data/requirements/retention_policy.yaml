@@ -1,7 +1,6 @@
 name: retention_policy
 description: Fraction of datasets with defined and enforced data retention and deletion schedules
 factor: compliant
-direction: gte
 workload: [rag, feature-serving, training, agents]
 check: sql/check/retention-policy.sql
 diagnostic: sql/diagnostic/retention-policy.sql

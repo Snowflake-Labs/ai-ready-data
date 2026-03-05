@@ -1,6 +1,5 @@
 -- check-encoding-validity.sql
--- Returns: value (float 0-1) - fraction of text values free of encoding errors
--- Direction: gte (higher is better)
+-- Returns: value (float 0-1) - fraction of text values free of encoding errors (1.0 = no errors)
 -- Detects: replacement character (U+FFFD), null bytes, control characters
 
 SELECT

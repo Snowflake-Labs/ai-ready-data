@@ -1,7 +1,6 @@
 name: semantic_documentation
 description: Fraction of objects with machine-readable semantic descriptions
 factor: contextual
-direction: gte
 workload: [rag, feature-serving, training, agents]
 check: sql/check/comment-coverage.sql
 check_semantic: sql/check/semantic-coverage.sql

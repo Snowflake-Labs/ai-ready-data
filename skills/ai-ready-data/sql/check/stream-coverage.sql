@@ -1,4 +1,11 @@
-WITH table_count AS (
+SHOW STREAMS IN SCHEMA {{ database }}.{{ schema }};
+
+WITH stream_data AS (
+    SELECT "source_name" AS table_name
+    FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+    WHERE "stale" = 'false'
+),
+table_count AS (
     SELECT COUNT(*) AS cnt
     FROM {{ database }}.information_schema.tables
     WHERE table_schema = '{{ schema }}'
@@ -6,8 +13,7 @@ WITH table_count AS (
 ),
 streamed_tables AS (
     SELECT COUNT(DISTINCT table_name) AS cnt
-    FROM {{ database }}.information_schema.streams
-    WHERE table_schema = '{{ schema }}'
+    FROM stream_data
 )
 SELECT
     streamed_tables.cnt AS tables_with_streams,

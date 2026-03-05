@@ -1,9 +1,11 @@
 name: business_glossary_linkage
 description: Fraction of data fields linked to a business glossary or authoritative term definition
 factor: contextual
-direction: gte
 workload: [training, agents]
 check: sql/check/business-glossary-linkage.sql
 diagnostic: sql/diagnostic/business-glossary-linkage.sql
 scope: schema
 placeholders: [database, schema]
+constraints:
+  - "account_usage.tag_references has ~2 hour latency"
+  - "Primary signal is column-level tags; secondary signal is comments > 20 chars"

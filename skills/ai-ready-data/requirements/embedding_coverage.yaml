@@ -1,7 +1,6 @@
 name: embedding_coverage
 description: Fraction of unstructured data assets with pre-computed vector embeddings available for retrieval
 factor: consumable
-direction: gte
 workload: [rag]
 check: sql/check/embedding-coverage.sql
 diagnostic: sql/diagnostic/embedding-coverage.sql

@@ -41,7 +41,7 @@ vector_columns AS (
         c.comment AS vector_comment
     FROM {{ database }}.information_schema.columns c
     WHERE c.table_schema = '{{ schema }}'
-        AND c.data_type = 'VECTOR'
+        AND c.data_type LIKE 'VECTOR%'
 )
 SELECT
     t.table_catalog AS database_name,

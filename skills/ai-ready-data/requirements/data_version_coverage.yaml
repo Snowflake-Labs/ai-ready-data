@@ -1,9 +1,10 @@
 name: data_version_coverage
-description: Fraction of datasets with immutable version identifiers enabling point-in-time state reconstruction
+description: Fraction of datasets with Time Travel retention enabled for point-in-time state reconstruction
 factor: correlated
-direction: gte
 workload: [training]
 check: sql/check/data-version-coverage.sql
 diagnostic: sql/diagnostic/data-version-coverage.sql
 scope: schema
 placeholders: [database, schema]
+constraints:
+  - "Check measures Time Travel retention_time > 0; diagnostic looks for explicit version columns — these are complementary signals"

@@ -1,7 +1,6 @@
 name: constraint_declaration
 description: Fraction of data fields with explicitly declared constraints (nullability, uniqueness, valid ranges, or patterns)
 factor: contextual
-direction: gte
 workload: [feature-serving, training, agents]
 check: sql/check/constraint-declaration.sql
 diagnostic: sql/diagnostic/constraint-declaration.sql

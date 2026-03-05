@@ -1,6 +1,6 @@
 -- check-referential-accuracy.sql
 -- Checks fraction of values verified against an authoritative reference
--- Returns: value (float 0-1) - fraction of values that don't match reference (lower is better)
+-- Returns: value (float 0-1) - fraction of values verified against reference (1.0 = all match)
 
 -- This check compares values against a reference/lookup table
 -- Use cases: ZIP code validation, currency code validation, country codes, etc.
@@ -19,5 +19,5 @@ WITH accuracy_check AS (
 SELECT
     unverified_rows,
     total_rows,
-    unverified_rows::FLOAT / NULLIF(total_rows::FLOAT, 0) AS value
+    1.0 - (unverified_rows::FLOAT / NULLIF(total_rows::FLOAT, 0)) AS value
 FROM accuracy_check

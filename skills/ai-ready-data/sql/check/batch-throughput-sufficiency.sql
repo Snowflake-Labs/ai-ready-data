@@ -1,12 +1,9 @@
 WITH recent_loads AS (
     SELECT
         COUNT(*) AS total_loads,
-        COUNT_IF(
-            rows_loaded > 0
-            AND DATEDIFF('second', last_load_time, DATEADD('second', rows_loaded / NULLIF(rows_parsed, 0), last_load_time)) IS NOT NULL
-        ) AS successful_loads
+        COUNT_IF(status = 'LOADED' AND errors_seen = 0) AS successful_loads
     FROM {{ database }}.information_schema.load_history
-    WHERE schema_name = '{{ schema }}'
+    WHERE UPPER(schema_name) = UPPER('{{ schema }}')
         AND last_load_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
 )
 SELECT

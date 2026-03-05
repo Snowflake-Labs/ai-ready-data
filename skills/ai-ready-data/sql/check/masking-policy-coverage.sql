@@ -15,10 +15,12 @@ WITH pii_columns AS (
         )
 ),
 masked_columns AS (
-    SELECT DISTINCT ref_entity_name AS table_name, ref_column_name AS column_name
+    SELECT DISTINCT
+        UPPER(ref_entity_name) AS table_name,
+        UPPER(ref_column_name) AS column_name
     FROM snowflake.account_usage.policy_references
-    WHERE ref_database_name = '{{ database }}'
-        AND ref_schema_name = '{{ schema }}'
+    WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
+        AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
         AND policy_kind = 'MASKING_POLICY'
 ),
 coverage AS (
@@ -27,7 +29,7 @@ coverage AS (
         COUNT(m.column_name) AS masked_count
     FROM pii_columns p
     LEFT JOIN masked_columns m
-        ON p.table_name = m.table_name AND p.column_name = m.column_name
+        ON UPPER(p.table_name) = m.table_name AND UPPER(p.column_name) = m.column_name
 )
 SELECT
     masked_count AS masked_pii_columns,

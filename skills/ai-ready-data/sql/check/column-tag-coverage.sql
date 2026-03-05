@@ -7,11 +7,15 @@ WITH column_count AS (
         AND t.table_type = 'BASE TABLE'
 ),
 tagged_columns AS (
-    SELECT COUNT(DISTINCT column_name) AS cnt
-    FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ database }}'
-        AND object_schema = '{{ schema }}'
-        AND domain = 'COLUMN'
+    SELECT COUNT(DISTINCT UPPER(object_name) || '.' || UPPER(column_name)) AS cnt
+    FROM snowflake.account_usage.tag_references tr
+    JOIN {{ database }}.information_schema.columns c
+        ON UPPER(tr.object_name) = UPPER(c.table_name)
+        AND UPPER(tr.column_name) = UPPER(c.column_name)
+        AND c.table_schema = '{{ schema }}'
+    WHERE UPPER(tr.object_database) = UPPER('{{ database }}')
+        AND UPPER(tr.object_schema) = UPPER('{{ schema }}')
+        AND tr.domain = 'COLUMN'
 )
 SELECT
     tagged_columns.cnt AS tagged_columns,

@@ -4,15 +4,15 @@ stages:
   - name: Clean
     why: Dirty features produce wrong predictions and failed lookups
     requirements:
-      data_completeness: { max: 0.01 }
-      uniqueness: { max: 0.01 }
-      schema_conformity: { max: 0.001 }
-      value_range_validity: { max: 0.001 }
-      categorical_validity: { max: 0.001 }
-      syntactic_validity: { max: 0.0 }
-      encoding_validity: { max: 0.0 }
-      referential_integrity: { max: 0.01 }
-      cross_column_consistency: { max: 0.01 }
+      data_completeness: { min: 0.99 }
+      uniqueness: { min: 0.99 }
+      schema_conformity: { min: 0.999 }
+      value_range_validity: { min: 0.999 }
+      categorical_validity: { min: 0.999 }
+      syntactic_validity: { min: 1.0 }
+      encoding_validity: { min: 1.0 }
+      referential_integrity: { min: 0.99 }
+      cross_column_consistency: { min: 0.99 }
 
   - name: Contextual
     why: Documented schemas prevent feature misuse and enable automated feature discovery

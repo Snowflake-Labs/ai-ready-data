@@ -1,7 +1,6 @@
 name: demographic_representation
 description: Fraction of training datasets with measured and documented demographic distribution relative to target population
 factor: compliant
-direction: gte
 workload: [training]
 check: sql/check/demographic-representation.sql
 diagnostic: sql/diagnostic/demographic-representation.sql

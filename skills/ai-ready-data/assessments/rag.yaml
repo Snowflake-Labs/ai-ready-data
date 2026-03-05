@@ -4,11 +4,11 @@ stages:
   - name: Clean
     why: Dirty source documents produce hallucinations and retrieval noise
     requirements:
-      data_completeness: { max: 0.02 }
-      uniqueness: { max: 0.01 }
-      schema_conformity: { max: 0.001 }
-      syntactic_validity: { max: 0.0 }
-      encoding_validity: { max: 0.0 }
+      data_completeness: { min: 0.98 }
+      uniqueness: { min: 0.99 }
+      schema_conformity: { min: 0.999 }
+      syntactic_validity: { min: 1.0 }
+      encoding_validity: { min: 1.0 }
 
   - name: Contextual
     why: Semantic metadata powers hybrid search and context-aware retrieval

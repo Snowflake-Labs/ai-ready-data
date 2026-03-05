@@ -9,23 +9,22 @@ WITH pii_columns AS (
             LOWER(c.column_name) LIKE '%email%'
             OR LOWER(c.column_name) LIKE '%phone%'
             OR LOWER(c.column_name) LIKE '%ssn%'
-            OR LOWER(c.column_name) LIKE '%name%'
+            OR LOWER(c.column_name) LIKE '%first_name%'
+            OR LOWER(c.column_name) LIKE '%last_name%'
+            OR LOWER(c.column_name) LIKE '%full_name%'
+            OR LOWER(c.column_name) LIKE '%person_name%'
+            OR LOWER(c.column_name) = 'name'
             OR LOWER(c.column_name) LIKE '%address%'
         )
 ),
 protected_columns AS (
-    SELECT DISTINCT ref_entity_name AS table_name, ref_column_name AS column_name
+    SELECT DISTINCT
+        UPPER(ref_entity_name) AS table_name,
+        UPPER(ref_column_name) AS column_name
     FROM snowflake.account_usage.policy_references
-    WHERE ref_database_name = '{{ database }}'
-        AND ref_schema_name = '{{ schema }}'
+    WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
+        AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
         AND policy_kind = 'MASKING_POLICY'
-    UNION
-    SELECT DISTINCT object_name AS table_name, column_name
-    FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ database }}'
-        AND object_schema = '{{ schema }}'
-        AND domain = 'COLUMN'
-        AND LOWER(tag_name) IN ('pii', 'sensitive', 'anonymized', 'privacy_category')
 )
 SELECT
     COUNT(*) AS total_pii_columns,
@@ -33,4 +32,4 @@ SELECT
     COUNT(p.column_name)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
 FROM pii_columns pc
 LEFT JOIN protected_columns p
-    ON pc.table_name = p.table_name AND pc.column_name = p.column_name
+    ON UPPER(pc.table_name) = p.table_name AND UPPER(pc.column_name) = p.column_name

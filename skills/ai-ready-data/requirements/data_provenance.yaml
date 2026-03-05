@@ -1,7 +1,6 @@
 name: data_provenance
 description: Fraction of datasets with documented source provenance including origin system, collection method, and upstream lineage
 factor: correlated
-direction: gte
 workload: [rag, feature-serving, training, agents]
 check: sql/check/data-provenance.sql
 diagnostic: sql/diagnostic/data-provenance.sql

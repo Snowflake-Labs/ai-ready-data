@@ -1,6 +1,6 @@
 -- check-distribution-conformity.sql
 -- Checks if column distribution conforms to expected baseline statistics
--- Returns: value (float 0-1) - conformity score (higher is better, so we return 1 - drift)
+-- Returns: value (float 0-1) - conformity score (1.0 = no drift from baseline)
 
 WITH current_stats AS (
     SELECT

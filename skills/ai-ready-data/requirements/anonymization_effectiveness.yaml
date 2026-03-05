@@ -1,7 +1,6 @@
 name: anonymization_effectiveness
-description: Fraction of anonymized datasets with measured re-identification risk at or below defined thresholds
+description: Fraction of PII-candidate columns with masking policies applied
 factor: compliant
-direction: gte
 workload: [training]
 check: sql/check/anonymization-effectiveness.sql
 diagnostic: sql/diagnostic/anonymization-effectiveness.sql
@@ -10,3 +9,4 @@ placeholders: [database, schema]
 constraints:
   - "account_usage.policy_references has ~2 hour latency"
   - "PII detection is heuristic (column-name based) — delegate to sensitive-data-classification for thorough scanning"
+  - "Only masking policies count toward the score — privacy tags indicate awareness but do not protect data"

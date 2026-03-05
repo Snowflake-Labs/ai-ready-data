@@ -34,8 +34,5 @@ total_vectors AS (
 SELECT
     (SELECT cnt FROM total_vectors) AS total_vector_columns,
     (SELECT column_count FROM most_common_dimension) AS columns_with_common_dimension,
-    CASE
-        WHEN (SELECT cnt FROM total_vectors) = 0 THEN 1.0
-        ELSE (SELECT column_count FROM most_common_dimension)::FLOAT / 
-             (SELECT cnt FROM total_vectors)::FLOAT
-    END AS value
+    (SELECT column_count FROM most_common_dimension)::FLOAT / 
+        NULLIF((SELECT cnt FROM total_vectors)::FLOAT, 0) AS value

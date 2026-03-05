@@ -1,7 +1,6 @@
 name: feature_refresh_compliance
 description: Fraction of served features updated within their defined staleness tolerance threshold
 factor: current
-direction: gte
 workload: [feature-serving]
 check: sql/check/feature-refresh-compliance.sql
 diagnostic: sql/diagnostic/feature-refresh-compliance.sql

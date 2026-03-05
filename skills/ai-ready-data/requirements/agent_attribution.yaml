@@ -1,9 +1,11 @@
 name: agent_attribution
-description: Fraction of data modifications with a recorded agent (person, system, or process) responsible for the change
+description: Fraction of data modifications with a QUERY_TAG identifying the responsible agent, pipeline, or process
 factor: correlated
-direction: gte
 workload: [rag, feature-serving, training, agents]
 check: sql/check/agent-attribution.sql
 diagnostic: sql/diagnostic/agent-attribution.sql
 scope: schema
 placeholders: [database, schema]
+constraints:
+  - "account_usage.query_history has ~45 minute latency"
+  - "user_name is always populated in Snowflake — QUERY_TAG is the meaningful attribution signal"

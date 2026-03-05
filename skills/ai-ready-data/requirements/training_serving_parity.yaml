@@ -1,7 +1,6 @@
 name: training_serving_parity
 description: Fraction of ML features with consistent computation logic between training (batch) and serving (real-time) paths
 factor: current
-direction: gte
 workload: [feature-serving, training]
 check: sql/check/training-serving-parity.sql
 diagnostic: sql/diagnostic/training-serving-parity.sql

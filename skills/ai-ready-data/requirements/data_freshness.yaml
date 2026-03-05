@@ -1,7 +1,6 @@
 name: data_freshness
 description: Fraction of data assets with a declared freshness SLA that are within their defined freshness window
 factor: current
-direction: gte
 workload: [rag, feature-serving, agents]
 check: sql/check/data-freshness.sql
 diagnostic: sql/diagnostic/staleness-report.sql

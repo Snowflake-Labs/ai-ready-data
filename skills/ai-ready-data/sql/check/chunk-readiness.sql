@@ -1,11 +1,10 @@
 -- check-chunk-readiness.sql
--- Checks if text content is appropriately chunked for embedding models
+-- Checks if text content is appropriately sized for embedding models
 -- Returns: value (float 0-1) - fraction of text within optimal chunk size
 
--- Optimal chunk sizes for common embedding models:
--- - 512 tokens (~2000 chars) for smaller models
--- - 8192 tokens (~32000 chars) for larger models like e5-large
--- We check if text is within reasonable bounds (not too short, not too long)
+-- Optimal range is 100-8000 chars (~25-2000 tokens).
+-- Shorter text may lack semantic content; longer text should be chunked
+-- with overlap for better retrieval precision.
 
 WITH text_stats AS (
     SELECT

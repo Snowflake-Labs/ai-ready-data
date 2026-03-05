@@ -44,7 +44,7 @@ Every assessment is organized into six stages — one per factor of AI-ready dat
 | **Correlated** | Lineage, provenance, and traceability from source to consumption | `data_provenance`, `lineage_completeness`, `agent_attribution` |
 | **Compliant** | Governance — classification, masking, access policies, consent, retention | `classification`, `column_masking`, `access_audit_coverage` |
 
-Clean requirements use **lower-is-better** scoring (error rates ≤ threshold). All other factors use **higher-is-better** scoring (coverage ≥ threshold).
+All scores are 0–1 where **1.0 is perfect**. Requirements pass when `score >= threshold`.
 
 ## Built-In Assessments
 

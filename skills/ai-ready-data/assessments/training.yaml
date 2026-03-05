@@ -4,18 +4,18 @@ stages:
   - name: Clean
     why: Noisy training data degrades model performance and amplifies bias
     requirements:
-      data_completeness: { max: 0.01 }
-      uniqueness: { max: 0.005 }
-      schema_conformity: { max: 0.001 }
-      value_range_validity: { max: 0.001 }
-      categorical_validity: { max: 0.001 }
-      syntactic_validity: { max: 0.0 }
-      encoding_validity: { max: 0.0 }
-      distribution_conformity: { max: 0.05 }
-      outlier_prevalence: { max: 0.05 }
-      referential_integrity: { max: 0.01 }
-      cross_column_consistency: { max: 0.01 }
-      referential_accuracy: { max: 0.01 }
+      data_completeness: { min: 0.99 }
+      uniqueness: { min: 0.995 }
+      schema_conformity: { min: 0.999 }
+      value_range_validity: { min: 0.999 }
+      categorical_validity: { min: 0.999 }
+      syntactic_validity: { min: 1.0 }
+      encoding_validity: { min: 1.0 }
+      distribution_conformity: { min: 0.95 }
+      outlier_prevalence: { min: 0.95 }
+      referential_integrity: { min: 0.99 }
+      cross_column_consistency: { min: 0.99 }
+      referential_accuracy: { min: 0.99 }
 
   - name: Contextual
     why: Well-documented schemas prevent feature engineering errors and enable automated dataset curation

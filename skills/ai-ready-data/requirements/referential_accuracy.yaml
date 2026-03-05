@@ -1,7 +1,6 @@
 name: referential_accuracy
 description: Fraction of column values verified as correct against an authoritative reference or ground-truth source
 factor: clean
-direction: lte
 workload: [training]
 check: sql/check/referential-accuracy.sql
 diagnostic: sql/diagnostic/referential-accuracy.sql

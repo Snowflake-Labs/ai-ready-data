@@ -4,14 +4,14 @@ stages:
   - name: Clean
     why: Agents that query dirty data return wrong answers and erode user trust
     requirements:
-      data_completeness: { max: 0.01 }
-      uniqueness: { max: 0.01 }
-      schema_conformity: { max: 0.001 }
-      value_range_validity: { max: 0.001 }
-      categorical_validity: { max: 0.001 }
-      syntactic_validity: { max: 0.0 }
-      encoding_validity: { max: 0.0 }
-      referential_integrity: { max: 0.01 }
+      data_completeness: { min: 0.99 }
+      uniqueness: { min: 0.99 }
+      schema_conformity: { min: 0.999 }
+      value_range_validity: { min: 0.999 }
+      categorical_validity: { min: 0.999 }
+      syntactic_validity: { min: 1.0 }
+      encoding_validity: { min: 1.0 }
+      referential_integrity: { min: 0.99 }
 
   - name: Contextual
     why: Schema metadata is the agent's only map — without it, Text-to-SQL fails

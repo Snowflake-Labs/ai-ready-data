@@ -1,7 +1,6 @@
 name: schema_conformity
 description: Fraction of records that conform to the declared schema, including correct data types, required fields present, and structural rules satisfied
 factor: clean
-direction: lte
 workload: [rag, feature-serving, training, agents]
 check: sql/check/schema-conformity.sql
 diagnostic: sql/diagnostic/schema-conformity.sql

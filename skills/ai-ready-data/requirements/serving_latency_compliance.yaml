@@ -1,7 +1,6 @@
 name: serving_latency_compliance
 description: Fraction of data serving endpoints meeting their defined latency SLA at p99
 factor: consumable
-direction: gte
 workload: [feature-serving, agents]
 check: sql/check/serving-latency-compliance.sql
 diagnostic: sql/diagnostic/serving-latency-compliance.sql

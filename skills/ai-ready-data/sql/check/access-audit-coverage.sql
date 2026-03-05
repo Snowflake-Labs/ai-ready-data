@@ -5,10 +5,12 @@ WITH table_count AS (
         AND table_type = 'BASE TABLE'
 ),
 audited_tables AS (
-    SELECT COUNT(DISTINCT direct_objects_accessed[0]:objectName::STRING) AS cnt
-    FROM snowflake.account_usage.access_history
-    WHERE direct_objects_accessed[0]:objectDomain::STRING = 'Table'
-        AND UPPER(direct_objects_accessed[0]:objectName::STRING) LIKE UPPER('{{ database }}.{{ schema }}.%')
+    SELECT COUNT(DISTINCT f.value:objectName::STRING) AS cnt
+    FROM snowflake.account_usage.access_history,
+        LATERAL FLATTEN(input => direct_objects_accessed) f
+    WHERE f.value:objectDomain::STRING = 'Table'
+        AND UPPER(SPLIT_PART(f.value:objectName::STRING, '.', 1)) = UPPER('{{ database }}')
+        AND UPPER(SPLIT_PART(f.value:objectName::STRING, '.', 2)) = UPPER('{{ schema }}')
         AND query_start_time >= DATEADD('day', -30, CURRENT_TIMESTAMP())
 )
 SELECT

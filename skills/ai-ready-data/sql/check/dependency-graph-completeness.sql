@@ -11,22 +11,19 @@ WITH tables_in_scope AS (
 tables_with_dependencies AS (
     SELECT DISTINCT referencing_object_name AS table_name
     FROM snowflake.account_usage.object_dependencies
-    WHERE referencing_database = '{{ database }}'
-        AND referencing_schema = '{{ schema }}'
+    WHERE UPPER(referencing_database) = UPPER('{{ database }}')
+        AND UPPER(referencing_schema) = UPPER('{{ schema }}')
     UNION
     SELECT DISTINCT referenced_object_name AS table_name
     FROM snowflake.account_usage.object_dependencies
-    WHERE referenced_database = '{{ database }}'
-        AND referenced_schema = '{{ schema }}'
+    WHERE UPPER(referenced_database) = UPPER('{{ database }}')
+        AND UPPER(referenced_schema) = UPPER('{{ schema }}')
 )
 SELECT
     (SELECT COUNT(*) FROM tables_in_scope t 
      WHERE t.table_name IN (SELECT table_name FROM tables_with_dependencies)
     ) AS tables_with_dependencies,
     (SELECT COUNT(*) FROM tables_in_scope) AS total_tables,
-    CASE
-        WHEN (SELECT COUNT(*) FROM tables_in_scope) = 0 THEN 1.0
-        ELSE (SELECT COUNT(*) FROM tables_in_scope t 
-              WHERE t.table_name IN (SELECT table_name FROM tables_with_dependencies)
-             )::FLOAT / (SELECT COUNT(*) FROM tables_in_scope)::FLOAT
-    END AS value
+    (SELECT COUNT(*) FROM tables_in_scope t 
+     WHERE t.table_name IN (SELECT table_name FROM tables_with_dependencies)
+    )::FLOAT / NULLIF((SELECT COUNT(*) FROM tables_in_scope)::FLOAT, 0) AS value

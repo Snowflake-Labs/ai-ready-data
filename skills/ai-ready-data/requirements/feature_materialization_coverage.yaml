@@ -1,7 +1,6 @@
 name: feature_materialization_coverage
 description: Fraction of ML features pre-materialized in both online and offline serving stores
 factor: consumable
-direction: gte
 workload: [feature-serving, training]
 check: sql/check/feature-materialization-coverage.sql
 diagnostic: sql/diagnostic/feature-materialization-coverage.sql

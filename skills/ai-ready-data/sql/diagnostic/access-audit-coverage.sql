@@ -1,13 +1,15 @@
 WITH access_log AS (
     SELECT
-        direct_objects_accessed[0]:objectName::STRING AS object_name,
+        f.value:objectName::STRING AS object_name,
         COUNT(*) AS access_count,
         COUNT(DISTINCT user_name) AS distinct_users,
         MIN(query_start_time) AS first_access,
         MAX(query_start_time) AS last_access
-    FROM snowflake.account_usage.access_history
-    WHERE direct_objects_accessed[0]:objectDomain::STRING = 'Table'
-        AND UPPER(direct_objects_accessed[0]:objectName::STRING) LIKE UPPER('{{ database }}.{{ schema }}.%')
+    FROM snowflake.account_usage.access_history,
+        LATERAL FLATTEN(input => direct_objects_accessed) f
+    WHERE f.value:objectDomain::STRING = 'Table'
+        AND UPPER(SPLIT_PART(f.value:objectName::STRING, '.', 1)) = UPPER('{{ database }}')
+        AND UPPER(SPLIT_PART(f.value:objectName::STRING, '.', 2)) = UPPER('{{ schema }}')
         AND query_start_time >= DATEADD('day', -30, CURRENT_TIMESTAMP())
     GROUP BY object_name
 )

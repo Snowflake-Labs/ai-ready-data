@@ -1,6 +1,6 @@
 -- check-cross-column-consistency.sql
 -- Checks fraction of records where related columns are mutually consistent
--- Returns: value (float 0-1) - fraction of inconsistent records (lower is better)
+-- Returns: value (float 0-1) - fraction of consistent records (1.0 = all consistent)
 
 -- This is a template - customize the consistency_rule for your use case
 -- Example rules:
@@ -18,5 +18,5 @@ WITH consistency_check AS (
 SELECT
     inconsistent_rows,
     total_rows,
-    inconsistent_rows::FLOAT / NULLIF(total_rows::FLOAT, 0) AS value
+    1.0 - (inconsistent_rows::FLOAT / NULLIF(total_rows::FLOAT, 0)) AS value
 FROM consistency_check

@@ -84,27 +84,26 @@ For each selected requirement, propose a default threshold based on the closest 
 Present thresholds grouped by factor:
 
 ```
-── Clean ── (lower is better — these are max error rates)
-  data_completeness       max: 0.01   (1% nulls allowed)
-  uniqueness              max: 0.01   (1% duplicates allowed)
-  encoding_validity       max: 0.0    (zero tolerance)
-  schema_conformity       max: 0.001  (0.1% schema violations)
+── Clean ──
+  data_completeness       min: 0.99   (99% completeness required)
+  uniqueness              min: 0.99   (99% unique records required)
+  encoding_validity       min: 1.0    (zero encoding errors)
+  schema_conformity       min: 0.999  (99.9% conformity required)
 
 Adjust any thresholds, or looks good?
 ```
 
 **Threshold guidance to share with the user:**
 
-- **0.0** = zero tolerance (e.g., encoding errors, syntactic validity)
-- **0.001** = near-zero tolerance (e.g., schema conformity — 1 in 1000)
-- **0.01** = tight tolerance (e.g., completeness, uniqueness — 1 in 100)
-- **0.05** = moderate tolerance (e.g., distribution conformity, outliers)
-- **0.30** = aspirational floor (e.g., governance checks that are hard to achieve 100%)
-- **0.50** = baseline expectation
-- **0.80** = strong expectation
-- **0.90–1.00** = critical requirement (e.g., embeddings must cover 90%+ of documents)
+All scores are 0–1 where 1.0 is perfect. Every threshold is a `min:` — the minimum acceptable score.
 
-For `lte` (Clean) requirements, the threshold is a max error rate. For `gte` (all others), the threshold is a min coverage rate.
+- **1.0** = zero tolerance, must be perfect (e.g., encoding errors, syntactic validity)
+- **0.999** = near-perfect (e.g., schema conformity — 1 in 1000 violations allowed)
+- **0.99** = tight (e.g., completeness, uniqueness — 1 in 100 allowed)
+- **0.95** = moderate (e.g., distribution conformity, outlier tolerance)
+- **0.80** = strong expectation
+- **0.50** = baseline expectation
+- **0.30** = aspirational floor (e.g., governance checks that are hard to reach)
 
 ### Phase 4: Name and Save
 
@@ -127,7 +126,7 @@ stages:
   - name: Clean
     why: {one-sentence why, tailored to their workload}
     requirements:
-      {requirement}: { max: N }
+      {requirement}: { min: N }
       ...
 
   - name: Contextual
@@ -192,7 +191,7 @@ On confirmation, write the file to `skills/ai-ready-data/assessments/{name}.yaml
 
 ## Reference
 
-The full requirement catalog is in `skills/ai-ready-data/requirements/`. Each YAML file contains `name`, `description`, `factor`, `direction`, and `workload` fields. Read individual files when you need details about a specific requirement.
+The full requirement catalog is in `skills/ai-ready-data/requirements/`. Each YAML file contains `name`, `description`, `factor`, and `workload` fields. Read individual files when you need details about a specific requirement.
 
 The four built-in assessments are in `skills/ai-ready-data/assessments/`:
 - `rag.yaml` — 27 requirements

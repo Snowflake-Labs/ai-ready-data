@@ -1,7 +1,6 @@
 name: impact_analysis_capability
 description: Fraction of datasets for which the downstream impact of a schema or content change can be automatically enumerated
 factor: correlated
-direction: gte
 workload: [training]
 check: sql/check/impact-analysis-capability.sql
 diagnostic: sql/diagnostic/impact-analysis-capability.sql

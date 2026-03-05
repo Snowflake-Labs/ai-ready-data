@@ -1,6 +1,6 @@
 -- check-referential-integrity.sql
 -- Checks fraction of foreign key values that resolve to valid target records
--- Returns: value (float 0-1) - fraction of FK values with missing references (lower is better)
+-- Returns: value (float 0-1) - fraction of FK values resolving to valid targets (1.0 = no orphans)
 
 WITH fk_check AS (
     SELECT
@@ -13,5 +13,5 @@ WITH fk_check AS (
 SELECT
     orphan_rows,
     total_rows,
-    orphan_rows::FLOAT / NULLIF(total_rows::FLOAT, 0) AS value
+    1.0 - (orphan_rows::FLOAT / NULLIF(total_rows::FLOAT, 0)) AS value
 FROM fk_check

@@ -5,12 +5,16 @@ WITH table_count AS (
         AND table_type = 'BASE TABLE'
 ),
 documented_tables AS (
-    SELECT COUNT(DISTINCT object_name) AS cnt
-    FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ database }}'
-        AND object_schema = '{{ schema }}'
-        AND domain IN ('TABLE', 'COLUMN')
-        AND LOWER(tag_name) IN ('demographic', 'protected_class', 'sensitive_attribute', 'fairness_attribute')
+    SELECT COUNT(DISTINCT tr.object_name) AS cnt
+    FROM snowflake.account_usage.tag_references tr
+    JOIN {{ database }}.information_schema.tables t
+        ON UPPER(tr.object_name) = UPPER(t.table_name)
+        AND t.table_schema = '{{ schema }}'
+        AND t.table_type = 'BASE TABLE'
+    WHERE UPPER(tr.object_database) = UPPER('{{ database }}')
+        AND UPPER(tr.object_schema) = UPPER('{{ schema }}')
+        AND tr.domain IN ('TABLE', 'COLUMN')
+        AND LOWER(tr.tag_name) IN ('demographic', 'protected_class', 'sensitive_attribute', 'fairness_attribute')
 )
 SELECT
     documented_tables.cnt AS tables_with_demographics,

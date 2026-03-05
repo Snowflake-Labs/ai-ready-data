@@ -9,22 +9,32 @@ WITH pii_columns AS (
             LOWER(c.column_name) LIKE '%email%'
             OR LOWER(c.column_name) LIKE '%phone%'
             OR LOWER(c.column_name) LIKE '%ssn%'
-            OR LOWER(c.column_name) LIKE '%name%'
+            OR LOWER(c.column_name) LIKE '%first_name%'
+            OR LOWER(c.column_name) LIKE '%last_name%'
+            OR LOWER(c.column_name) LIKE '%full_name%'
+            OR LOWER(c.column_name) LIKE '%person_name%'
+            OR LOWER(c.column_name) = 'name'
             OR LOWER(c.column_name) LIKE '%address%'
         )
 ),
 masked AS (
-    SELECT DISTINCT ref_entity_name AS table_name, ref_column_name AS column_name, 'MASKING_POLICY' AS protection
+    SELECT DISTINCT
+        UPPER(ref_entity_name) AS table_name,
+        UPPER(ref_column_name) AS column_name,
+        'MASKING_POLICY' AS protection
     FROM snowflake.account_usage.policy_references
-    WHERE ref_database_name = '{{ database }}'
-        AND ref_schema_name = '{{ schema }}'
+    WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
+        AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
         AND policy_kind = 'MASKING_POLICY'
 ),
 tagged AS (
-    SELECT DISTINCT object_name AS table_name, column_name, 'TAG:' || tag_name AS protection
+    SELECT DISTINCT
+        UPPER(object_name) AS table_name,
+        UPPER(column_name) AS column_name,
+        'TAG:' || tag_name AS protection
     FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ database }}'
-        AND object_schema = '{{ schema }}'
+    WHERE UPPER(object_database) = UPPER('{{ database }}')
+        AND UPPER(object_schema) = UPPER('{{ schema }}')
         AND domain = 'COLUMN'
         AND LOWER(tag_name) IN ('pii', 'sensitive', 'anonymized', 'privacy_category')
 )
@@ -34,6 +44,6 @@ SELECT
     pc.data_type,
     COALESCE(m.protection, t.protection, 'UNPROTECTED') AS protection_status
 FROM pii_columns pc
-LEFT JOIN masked m ON pc.table_name = m.table_name AND pc.column_name = m.column_name
-LEFT JOIN tagged t ON pc.table_name = t.table_name AND pc.column_name = t.column_name
+LEFT JOIN masked m ON UPPER(pc.table_name) = m.table_name AND UPPER(pc.column_name) = m.column_name
+LEFT JOIN tagged t ON UPPER(pc.table_name) = t.table_name AND UPPER(pc.column_name) = t.column_name
 ORDER BY protection_status, pc.table_name, pc.column_name

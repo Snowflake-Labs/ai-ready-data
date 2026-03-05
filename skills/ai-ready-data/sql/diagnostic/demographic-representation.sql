@@ -10,9 +10,9 @@ SELECT
     END AS status
 FROM {{ database }}.information_schema.tables t
 LEFT JOIN snowflake.account_usage.tag_references tr
-    ON tr.object_database = '{{ database }}'
-    AND tr.object_schema = '{{ schema }}'
-    AND tr.object_name = t.table_name
+    ON UPPER(tr.object_database) = UPPER('{{ database }}')
+    AND UPPER(tr.object_schema) = UPPER('{{ schema }}')
+    AND UPPER(tr.object_name) = UPPER(t.table_name)
     AND LOWER(tr.tag_name) IN ('demographic', 'protected_class', 'sensitive_attribute', 'fairness_attribute')
 WHERE t.table_schema = '{{ schema }}'
     AND t.table_type = 'BASE TABLE'

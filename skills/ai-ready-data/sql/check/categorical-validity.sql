@@ -1,6 +1,5 @@
 -- check-categorical-validity.sql
--- Returns: value (float 0-1) - fraction of values in allowed set
--- Direction: gte (higher is better)
+-- Returns: value (float 0-1) - fraction of values in allowed set (1.0 = all valid)
 -- Note: {{ allowed_values }} should be a comma-separated list like 'A','B','C'
 
 SELECT

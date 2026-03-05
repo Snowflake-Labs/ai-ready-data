@@ -1,6 +1,6 @@
 -- check-syntactic-validity.sql
 -- Returns: value (float 0-1) - fraction of JSON/structured fields that parse correctly
--- Direction: gte (higher is better)
+-- Returns: value (float 0-1) - fraction of JSON fields that parse correctly (1.0 = all valid)
 -- Use for VARIANT columns or VARCHAR columns containing JSON
 
 SELECT

@@ -75,14 +75,7 @@ discover → assess → report → [approve] → remediate → verify
 
 ### How Checks Work
 
-All `check` SQL files return a `value` column: a float between 0.0 and 1.0.
-
-Each requirement declares a `direction`:
-
-- **`lte`** (lower is better): value must be ≤ `max` threshold to pass. Used by Clean stage requirements.
-- **`gte`** (higher is better): value must be ≥ `min` threshold to pass. Used by all other stages.
-
-Assessments declare thresholds with matching keys: `{ max: N }` for lte, `{ min: N }` for gte.
+All `check` SQL files return a `value` column: a float between 0.0 and 1.0, where **1.0 is perfect**. A requirement passes when `value >= threshold`.
 
 ### How Assessments Work
 
@@ -90,10 +83,10 @@ An assessment (in `assessments/`) lists six stages — one per factor of AI-read
 
 Load the assessment YAML, apply any overrides, then for each stage, for each requirement:
 
-1. Load `requirements/{requirement_name}.yaml` to get the check SQL path, direction, scope, and placeholders.
+1. Load `requirements/{requirement_name}.yaml` to get the check SQL path, scope, and placeholders.
 2. Read the SQL file, substitute `{{ placeholder }}` values from context.
 3. Execute the SQL, read the `value` column.
-4. Compare against the assessment threshold using the requirement's direction.
+4. Compare `value >= threshold` to determine pass/fail.
 
 ### Scope Inference
 
@@ -168,7 +161,7 @@ When the user wants detail on a failing requirement, run the `diagnostic` SQL fr
         "why": "",
         "status": "PASS|FAIL",
         "requirements": [
-          { "key": "", "value": 0.0, "direction": "lte|gte", "threshold": 0.0, "status": "PASS|FAIL" }
+          { "key": "", "value": 0.0, "threshold": 0.0, "status": "PASS|FAIL" }
         ]
       }
     ]

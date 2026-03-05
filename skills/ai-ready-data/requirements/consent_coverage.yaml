@@ -1,7 +1,6 @@
 name: consent_coverage
 description: Fraction of personal data records with documented and valid legal basis for AI-specific processing
 factor: compliant
-direction: gte
 workload: [feature-serving, training, agents]
 check: sql/check/consent-coverage.sql
 diagnostic: sql/diagnostic/consent-coverage.sql

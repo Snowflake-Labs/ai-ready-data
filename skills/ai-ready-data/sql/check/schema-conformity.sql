@@ -1,6 +1,6 @@
 -- check-schema-conformity.sql
 -- Returns: value (float 0-1) - fraction of columns with correct data types
--- Direction: gte (higher is better)
+-- Returns: value (float 0-1) - fraction of columns with correct data types (1.0 = all conform)
 
 WITH declared_types AS (
     SELECT 

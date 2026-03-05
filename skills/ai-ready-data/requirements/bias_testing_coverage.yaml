@@ -1,7 +1,6 @@
 name: bias_testing_coverage
 description: Fraction of training datasets that have undergone statistical bias testing prior to AI consumption
 factor: compliant
-direction: gte
 workload: [training]
 check: sql/check/bias-testing-coverage.sql
 diagnostic: sql/diagnostic/bias-testing-coverage.sql

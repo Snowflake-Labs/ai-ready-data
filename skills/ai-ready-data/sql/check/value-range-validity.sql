@@ -1,6 +1,6 @@
 -- check-value-range-validity.sql
 -- Returns: value (float 0-1) - fraction of numeric values within expected ranges
--- Direction: gte (higher is better)
+-- Returns: value (float 0-1) - fraction of values within valid range (1.0 = all in range)
 -- Note: Requires {{ column }}, {{ min_value }}, {{ max_value }} parameters
 
 SELECT
