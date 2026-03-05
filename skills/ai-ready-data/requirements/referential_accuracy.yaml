@@ -5,4 +5,4 @@ workload: [training]
 check: sql/check/referential-accuracy.sql
 diagnostic: sql/diagnostic/referential-accuracy.sql
 scope: table
-placeholders: [database, schema, asset]
+placeholders: [database, schema, asset, column, ref_namespace, ref_asset, ref_column]

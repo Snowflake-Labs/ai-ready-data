@@ -7,8 +7,8 @@ WITH table_count AS (
 tables_with_downstream AS (
     SELECT COUNT(DISTINCT referencing_object_name) AS cnt
     FROM snowflake.account_usage.object_dependencies
-    WHERE referenced_database = '{{ database }}'
-        AND referenced_schema = '{{ schema }}'
+    WHERE UPPER(referenced_database) = UPPER('{{ database }}')
+        AND UPPER(referenced_schema) = UPPER('{{ schema }}')
         AND referenced_object_domain = 'TABLE'
 )
 SELECT

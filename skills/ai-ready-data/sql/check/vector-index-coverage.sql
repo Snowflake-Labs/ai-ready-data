@@ -23,10 +23,7 @@ tables_in_scope AS (
 SELECT
     0 AS tables_with_vector_index,  -- Placeholder: requires SHOW TABLES + RESULT_SCAN
     (SELECT total_vector_tables FROM tables_in_scope) AS total_vector_tables,
-    CASE
-        WHEN (SELECT total_vector_tables FROM tables_in_scope) = 0 THEN 1.0
-        ELSE 0.0  -- Conservative: assume no indexes until verified
-    END AS value
+    0.0 AS value  -- Conservative: assumes no indexes until verified via SHOW TABLES
 -- To get accurate results, run:
 -- SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 -- Then query RESULT_SCAN for "search_optimization" = 'ON'

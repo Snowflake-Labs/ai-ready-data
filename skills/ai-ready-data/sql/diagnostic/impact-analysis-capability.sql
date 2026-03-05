@@ -14,8 +14,8 @@ LEFT JOIN (
         COUNT(DISTINCT referencing_object_name) AS downstream_count,
         LISTAGG(DISTINCT referencing_object_domain || ':' || referencing_object_name, ', ') AS dependent_objects
     FROM snowflake.account_usage.object_dependencies
-    WHERE referenced_database = '{{ database }}'
-        AND referenced_schema = '{{ schema }}'
+    WHERE UPPER(referenced_database) = UPPER('{{ database }}')
+        AND UPPER(referenced_schema) = UPPER('{{ schema }}')
         AND referenced_object_domain = 'TABLE'
     GROUP BY referenced_object_name
 ) d ON t.table_name = d.table_name

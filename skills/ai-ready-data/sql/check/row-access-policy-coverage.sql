@@ -7,8 +7,8 @@ WITH table_count AS (
 rap_tables AS (
     SELECT COUNT(DISTINCT ref_entity_name) AS cnt
     FROM snowflake.account_usage.policy_references
-    WHERE ref_database_name = '{{ database }}'
-        AND ref_schema_name = '{{ schema }}'
+    WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
+        AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
         AND policy_kind = 'ROW_ACCESS_POLICY'
 )
 SELECT

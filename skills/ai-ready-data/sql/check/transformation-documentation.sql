@@ -18,8 +18,5 @@ documented_transformations AS (
 SELECT
     (SELECT COUNT(*) FROM documented_transformations) AS documented_count,
     (SELECT COUNT(*) FROM transformations) AS total_count,
-    CASE
-        WHEN (SELECT COUNT(*) FROM transformations) = 0 THEN 1.0
-        ELSE (SELECT COUNT(*) FROM documented_transformations)::FLOAT / 
-             (SELECT COUNT(*) FROM transformations)::FLOAT
-    END AS value
+    (SELECT COUNT(*) FROM documented_transformations)::FLOAT / 
+        NULLIF((SELECT COUNT(*) FROM transformations)::FLOAT, 0) AS value

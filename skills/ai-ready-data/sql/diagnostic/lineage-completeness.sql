@@ -3,23 +3,24 @@
 -- Returns: tables with their upstream sources
 
 SELECT
-    direct_objects_accessed[0]:objectName::STRING AS target_object,
-    direct_objects_accessed[0]:objectDomain::STRING AS target_type,
-    base_objects_accessed[0]:objectName::STRING AS source_object,
-    base_objects_accessed[0]:objectDomain::STRING AS source_type,
-    user_name AS modified_by,
-    query_start_time,
-    ARRAY_SIZE(base_objects_accessed) AS source_count,
+    doa.value:objectName::STRING AS target_object,
+    doa.value:objectDomain::STRING AS target_type,
+    boa.value:objectName::STRING AS source_object,
+    boa.value:objectDomain::STRING AS source_type,
+    h.user_name AS modified_by,
+    h.query_start_time,
+    ARRAY_SIZE(h.base_objects_accessed) AS source_count,
     CASE
-        WHEN ARRAY_SIZE(base_objects_accessed) > 0 THEN 'HAS_LINEAGE'
+        WHEN ARRAY_SIZE(h.base_objects_accessed) > 0 THEN 'HAS_LINEAGE'
         ELSE 'NO_LINEAGE'
     END AS lineage_status
-FROM snowflake.account_usage.access_history
-WHERE query_start_time >= DATEADD(day, -30, CURRENT_TIMESTAMP())
-    AND ARRAY_SIZE(direct_objects_accessed) > 0
+FROM snowflake.account_usage.access_history h,
+    LATERAL FLATTEN(input => h.direct_objects_accessed) doa,
+    LATERAL FLATTEN(input => h.base_objects_accessed) boa
+WHERE h.query_start_time >= DATEADD(day, -30, CURRENT_TIMESTAMP())
     AND (
-        direct_objects_accessed[0]:objectName::STRING LIKE '{{ database }}.{{ schema }}.%'
-        OR base_objects_accessed[0]:objectName::STRING LIKE '{{ database }}.{{ schema }}.%'
+        UPPER(SPLIT_PART(doa.value:objectName::STRING, '.', 1)) = UPPER('{{ database }}')
+        AND UPPER(SPLIT_PART(doa.value:objectName::STRING, '.', 2)) = UPPER('{{ schema }}')
     )
-ORDER BY query_start_time DESC
+ORDER BY h.query_start_time DESC
 LIMIT 100

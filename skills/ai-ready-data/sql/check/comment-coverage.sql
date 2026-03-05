@@ -1,9 +1,14 @@
 WITH column_stats AS (
     SELECT
         COUNT(*) AS total_columns,
-        COUNT_IF(comment IS NOT NULL AND comment != '') AS commented_columns
-    FROM {{ database }}.information_schema.columns
-    WHERE table_schema = '{{ schema }}'
+        COUNT_IF(c.comment IS NOT NULL AND c.comment != '') AS commented_columns
+    FROM {{ database }}.information_schema.columns c
+    JOIN {{ database }}.information_schema.tables t
+        ON c.table_catalog = t.table_catalog
+        AND c.table_schema = t.table_schema
+        AND c.table_name = t.table_name
+    WHERE c.table_schema = '{{ schema }}'
+        AND t.table_type = 'BASE TABLE'
 )
 SELECT
     commented_columns,

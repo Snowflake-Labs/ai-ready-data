@@ -3,8 +3,8 @@ WITH query_stats AS (
         COUNT(*) AS total_queries,
         COUNT_IF(total_elapsed_time <= {{ latency_threshold_ms }}) AS compliant_queries
     FROM snowflake.account_usage.query_history
-    WHERE database_name = '{{ database }}'
-        AND schema_name = '{{ schema }}'
+    WHERE UPPER(database_name) = UPPER('{{ database }}')
+        AND UPPER(schema_name) = UPPER('{{ schema }}')
         AND start_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
         AND query_type IN ('SELECT')
         AND execution_status = 'SUCCESS'

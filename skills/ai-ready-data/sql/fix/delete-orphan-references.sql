@@ -1,5 +1,5 @@
 DELETE FROM {{ database }}.{{ schema }}.{{ asset }}
-WHERE {{ column }} NOT IN (
-    SELECT {{ column }}
-    FROM {{ database }}.{{ schema }}.{{ reference_table }}
+WHERE {{ fk_column }} NOT IN (
+    SELECT {{ target_key }}
+    FROM {{ database }}.{{ target_namespace }}.{{ target_asset }}
 )

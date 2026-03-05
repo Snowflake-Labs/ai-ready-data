@@ -5,12 +5,16 @@ WITH table_count AS (
         AND table_type = 'BASE TABLE'
 ),
 tagged_retention AS (
-    SELECT COUNT(DISTINCT object_name) AS cnt
-    FROM snowflake.account_usage.tag_references
-    WHERE object_database = '{{ database }}'
-        AND object_schema = '{{ schema }}'
-        AND domain = 'TABLE'
-        AND LOWER(tag_name) IN ('retention_days', 'retention_policy', 'data_retention', 'ttl')
+    SELECT COUNT(DISTINCT tr.object_name) AS cnt
+    FROM snowflake.account_usage.tag_references tr
+    JOIN {{ database }}.information_schema.tables t
+        ON UPPER(tr.object_name) = UPPER(t.table_name)
+        AND t.table_schema = '{{ schema }}'
+        AND t.table_type = 'BASE TABLE'
+    WHERE UPPER(tr.object_database) = UPPER('{{ database }}')
+        AND UPPER(tr.object_schema) = UPPER('{{ schema }}')
+        AND tr.domain = 'TABLE'
+        AND LOWER(tr.tag_name) IN ('retention_days', 'retention_policy', 'data_retention', 'ttl')
 )
 SELECT
     tagged_retention.cnt AS tables_with_retention,

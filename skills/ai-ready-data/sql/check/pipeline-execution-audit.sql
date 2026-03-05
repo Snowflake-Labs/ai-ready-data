@@ -13,8 +13,8 @@ WITH task_runs AS (
         error_message
     FROM snowflake.account_usage.task_history
     WHERE scheduled_time >= DATEADD(day, -7, CURRENT_TIMESTAMP())
-        AND database_name = '{{ database }}'
-        AND schema_name = '{{ schema }}'
+        AND UPPER(database_name) = UPPER('{{ database }}')
+        AND UPPER(schema_name) = UPPER('{{ schema }}')
 ),
 audited_runs AS (
     SELECT * FROM task_runs
@@ -23,8 +23,5 @@ audited_runs AS (
 SELECT
     (SELECT COUNT(*) FROM audited_runs) AS audited_runs,
     (SELECT COUNT(*) FROM task_runs) AS total_runs,
-    CASE
-        WHEN (SELECT COUNT(*) FROM task_runs) = 0 THEN 1.0
-        ELSE (SELECT COUNT(*) FROM audited_runs)::FLOAT / 
-             (SELECT COUNT(*) FROM task_runs)::FLOAT
-    END AS value
+    (SELECT COUNT(*) FROM audited_runs)::FLOAT / 
+        NULLIF((SELECT COUNT(*) FROM task_runs)::FLOAT, 0) AS value
