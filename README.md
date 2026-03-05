@@ -1,19 +1,19 @@
 # AI-Ready Data Agent
 
-Assess and optimize Snowflake data for AI workloads. Pick an assessment, point it at your schema, and get a scored report across six factors of AI-ready data — with guided remediation for anything that fails.
+Assess and optimize Snowflake data for AI workloads. Pick an assessment, point it at your schema, and get a scored report across six factors of AI-ready data, with guided steps to making your data AI-ready.
 
 ## Quick Start
 
 Point your coding agent at this repo and say:
 
-> Assess my database for RAG readiness. I'm connected to MY_DB.MY_SCHEMA.
+> Assess my [data assets] for RAG readiness. 
 
 The agent loads the RAG assessment, discovers your tables, runs checks, and presents a scored report. From there you can drill into failures, remediate stage-by-stage, or export results as JSON.
 
 ### Install as a skill
 
 ```bash
-npx skills add your-org/ai-ready-data -a cortex
+npx skills add Snowflake-Labs/ai-ready-data -a cortex
 ```
 
 ### Standalone
