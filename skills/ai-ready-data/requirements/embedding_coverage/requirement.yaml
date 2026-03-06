@@ -1,0 +1,10 @@
+name: embedding_coverage
+description: Fraction of unstructured data assets with pre-computed vector embeddings
+  available for retrieval
+factor: consumable
+workload:
+- rag
+scope: schema
+placeholders:
+- database
+- schema

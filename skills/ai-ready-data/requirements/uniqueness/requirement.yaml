@@ -1,0 +1,19 @@
+name: uniqueness
+description: Fraction of duplicate records across scoped key columns
+factor: clean
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: table
+placeholders:
+- database
+- schema
+- asset
+- key_columns
+- tiebreaker_column
+constraints:
+- CREATE OR REPLACE TABLE drops grants, policies, streams, and change tracking
+- key_columns should be the logical primary key
+- For tables >1M rows, use sampled check

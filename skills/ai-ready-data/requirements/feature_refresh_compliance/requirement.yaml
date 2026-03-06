@@ -1,0 +1,13 @@
+name: feature_refresh_compliance
+description: Fraction of served features updated within their defined staleness tolerance
+  threshold
+factor: current
+workload:
+- feature-serving
+scope: schema
+placeholders:
+- database
+- schema
+- asset
+constraints:
+- Requires SHOW DYNAMIC TABLES + RESULT_SCAN in same session

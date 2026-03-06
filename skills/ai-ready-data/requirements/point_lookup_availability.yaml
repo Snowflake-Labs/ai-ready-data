@@ -1,8 +1,0 @@
-name: point_lookup_availability
-description: Fraction of entity records accessible via low-latency key-based point lookups
-factor: consumable
-workload: [feature-serving, agents]
-check: sql/check/point-lookup-availability.sql
-diagnostic: sql/diagnostic/point-lookup-availability.sql
-scope: schema
-placeholders: [database, schema]

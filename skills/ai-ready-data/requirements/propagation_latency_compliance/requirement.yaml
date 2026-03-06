@@ -1,0 +1,11 @@
+name: propagation_latency_compliance
+description: Fraction of data pipelines where end-to-end propagation latency meets
+  the defined freshness SLA
+factor: current
+workload:
+- feature-serving
+- agents
+scope: schema
+placeholders:
+- database
+- schema

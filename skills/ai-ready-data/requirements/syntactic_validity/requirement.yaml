@@ -1,0 +1,18 @@
+name: syntactic_validity
+description: Fraction of raw data records that parse without structural errors, including
+  well-formed serialization and correct delimiters
+factor: clean
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: column
+placeholders:
+- database
+- schema
+- asset
+- column
+- key_columns
+constraints:
+- JSON validity uses TRY_PARSE_JSON which returns NULL for invalid JSON

@@ -1,0 +1,12 @@
+name: impact_analysis_capability
+description: Fraction of datasets for which the downstream impact of a schema or content
+  change can be automatically enumerated
+factor: correlated
+workload:
+- training
+scope: schema
+placeholders:
+- database
+- schema
+constraints:
+- account_usage.object_dependencies has ~2 hour latency

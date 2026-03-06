@@ -1,0 +1,17 @@
+name: change_detection
+description: Fraction of tables with change tracking and streams enabled
+factor: current
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+- asset
+- stream_name
+constraints:
+- SHOW TABLES + RESULT_SCAN must run in the same session
+- change_tracking is NOT in information_schema — use SHOW TABLES

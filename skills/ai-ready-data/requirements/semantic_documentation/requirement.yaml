@@ -1,0 +1,27 @@
+name: semantic_documentation
+description: Fraction of objects with machine-readable semantic descriptions
+factor: contextual
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+- asset
+- column
+- table_comment
+- column_comment
+- semantic_view_name
+- table_definitions
+- relationship_definitions
+- fact_definitions
+- dimension_definitions
+- metric_definitions
+- comment
+constraints:
+- Comments alone don't enable Text-to-SQL — use semantic views for full coverage
+- Delegate to semantic-view-optimization skill for semantic view creation
+delegates_to: semantic-view-optimization

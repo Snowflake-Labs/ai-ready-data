@@ -1,0 +1,12 @@
+name: native_format_availability
+description: Fraction of datasets stored in consumption-ready formats without requiring
+  runtime format conversion
+factor: consumable
+workload:
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema

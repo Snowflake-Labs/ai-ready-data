@@ -1,0 +1,15 @@
+name: referential_accuracy
+description: Fraction of column values verified as correct against an authoritative
+  reference or ground-truth source
+factor: clean
+workload:
+- training
+scope: table
+placeholders:
+- database
+- schema
+- asset
+- column
+- ref_namespace
+- ref_asset
+- ref_column

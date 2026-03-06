@@ -1,8 +1,0 @@
-name: embedding_dimension_consistency
-description: Fraction of embedding collections with uniform dimensionality matching their consuming model's expected input
-factor: consumable
-workload: [rag]
-check: sql/check/embedding-dimension-consistency.sql
-diagnostic: sql/diagnostic/embedding-dimension-consistency.sql
-scope: schema
-placeholders: [database, schema]

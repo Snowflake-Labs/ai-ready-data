@@ -1,0 +1,11 @@
+name: unit_of_measure_declaration
+description: Fraction of numeric fields with explicit unit of measure declarations
+factor: contextual
+workload:
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema

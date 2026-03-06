@@ -1,0 +1,19 @@
+name: encoding_validity
+description: Fraction of text column values free of encoding errors, garbled characters,
+  or Unicode replacement characters
+factor: clean
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: column
+placeholders:
+- database
+- schema
+- asset
+- column
+- key_columns
+constraints:
+- Uses CHR(65533) for U+FFFD replacement character detection
+- Stripping bad characters may change string length and semantics

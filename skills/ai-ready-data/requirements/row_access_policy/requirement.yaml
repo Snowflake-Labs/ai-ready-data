@@ -1,0 +1,14 @@
+name: row_access_policy
+description: Fraction of tables with row access policies enforcing row-level security
+factor: compliant
+workload:
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+constraints:
+- account_usage.policy_references has ~2 hour latency for new policies
+- policy_references uses ref_entity_name, not table_name

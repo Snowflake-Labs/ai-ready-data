@@ -1,0 +1,11 @@
+name: feature_materialization_coverage
+description: Fraction of ML features pre-materialized in both online and offline serving
+  stores
+factor: consumable
+workload:
+- feature-serving
+- training
+scope: schema
+placeholders:
+- database
+- schema

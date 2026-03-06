@@ -1,8 +1,0 @@
-name: native_format_availability
-description: Fraction of datasets stored in consumption-ready formats without requiring runtime format conversion
-factor: consumable
-workload: [feature-serving, training, agents]
-check: sql/check/native-format-availability.sql
-diagnostic: sql/diagnostic/native-format-availability.sql
-scope: schema
-placeholders: [database, schema]

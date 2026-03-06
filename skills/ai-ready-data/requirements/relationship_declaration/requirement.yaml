@@ -1,0 +1,21 @@
+name: relationship_declaration
+description: Fraction of cross-entity references with explicit, machine-readable relationship
+  declarations
+factor: contextual
+workload:
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+- semantic_view_name
+- table_definitions
+- relationship_definitions
+- fact_definitions
+- dimension_definitions
+- metric_definitions
+- comment
+constraints:
+- Relationships define join paths — ensure they match actual foreign keys

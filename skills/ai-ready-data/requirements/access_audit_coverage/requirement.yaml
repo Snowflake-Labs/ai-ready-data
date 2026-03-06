@@ -1,0 +1,15 @@
+name: access_audit_coverage
+description: Fraction of AI data access events captured in immutable audit logs
+factor: compliant
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+constraints:
+- account_usage.access_history has ~2 hour latency
+- Requires IMPORTED PRIVILEGES on SNOWFLAKE database

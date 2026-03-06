@@ -1,0 +1,12 @@
+name: chunk_readiness
+description: Fraction of document assets pre-chunked to sizes aligned with target
+  context windows
+factor: consumable
+workload:
+- rag
+scope: schema
+placeholders:
+- database
+- schema
+- asset
+- text_column

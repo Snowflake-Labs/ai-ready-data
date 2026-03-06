@@ -1,0 +1,13 @@
+name: lineage_completeness
+description: Fraction of datasets with documented end-to-end lineage from source through
+  transformations, at both dataset and column level
+factor: correlated
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema

@@ -1,0 +1,13 @@
+name: temporal_scope_declaration
+description: Fraction of datasets with declared temporal validity windows (effective
+  dates, as-of dates, or valid-time ranges)
+factor: contextual
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema

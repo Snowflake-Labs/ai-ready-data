@@ -1,0 +1,19 @@
+name: value_range_validity
+description: Fraction of numeric column values that fall within declared valid ranges
+  or domain boundaries
+factor: clean
+workload:
+- feature-serving
+- training
+- agents
+scope: column
+placeholders:
+- database
+- schema
+- asset
+- column
+- min_value
+- max_value
+constraints:
+- Clamping changes data values — verify business rules before applying
+- Deletion is irreversible — prefer clamping for recoverable data

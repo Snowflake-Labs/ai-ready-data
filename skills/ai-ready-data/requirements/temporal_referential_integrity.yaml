@@ -1,8 +1,0 @@
-name: temporal_referential_integrity
-description: Fraction of records with valid, non-null event timestamps traceable to source system origination time
-factor: current
-workload: [training]
-check: sql/check/temporal-referential-integrity.sql
-diagnostic: sql/diagnostic/temporal-referential-integrity.sql
-scope: table
-placeholders: [database, schema, asset, timestamp_column, key_columns]

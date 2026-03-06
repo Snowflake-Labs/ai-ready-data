@@ -1,8 +1,0 @@
-name: dependency_graph_completeness
-description: Fraction of datasets with fully enumerated upstream and downstream dependency relationships
-factor: correlated
-workload: [training]
-check: sql/check/dependency-graph-completeness.sql
-diagnostic: sql/diagnostic/dependency-graph.sql
-scope: schema
-placeholders: [database, schema]

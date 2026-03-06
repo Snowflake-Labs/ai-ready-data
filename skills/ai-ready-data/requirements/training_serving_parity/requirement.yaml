@@ -1,0 +1,14 @@
+name: training_serving_parity
+description: Fraction of ML features with consistent computation logic between training
+  (batch) and serving (real-time) paths
+factor: current
+workload:
+- feature-serving
+- training
+scope: schema
+placeholders:
+- database
+- schema
+constraints:
+- Heuristic check based on dynamic table presence for feature tables
+- True parity verification requires comparing transformation logic across pipelines

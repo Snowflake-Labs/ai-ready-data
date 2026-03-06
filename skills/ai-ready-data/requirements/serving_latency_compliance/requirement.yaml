@@ -1,0 +1,15 @@
+name: serving_latency_compliance
+description: Fraction of data serving endpoints meeting their defined latency SLA
+  at p99
+factor: consumable
+workload:
+- feature-serving
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+- latency_threshold_ms
+constraints:
+- account_usage.query_history has ~2 hour latency
+- Measures SELECT queries only — does not cover API-based serving

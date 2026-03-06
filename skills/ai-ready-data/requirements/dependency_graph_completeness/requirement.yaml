@@ -1,0 +1,10 @@
+name: dependency_graph_completeness
+description: Fraction of datasets with fully enumerated upstream and downstream dependency
+  relationships
+factor: correlated
+workload:
+- training
+scope: schema
+placeholders:
+- database
+- schema

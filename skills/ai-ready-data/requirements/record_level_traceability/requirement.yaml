@@ -1,0 +1,13 @@
+name: record_level_traceability
+description: Fraction of records with a unique correlation identifier enabling trace-back
+  to their originating source record
+factor: correlated
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema

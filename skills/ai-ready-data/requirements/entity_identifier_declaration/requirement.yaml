@@ -1,0 +1,15 @@
+name: entity_identifier_declaration
+description: Fraction of entities or datasets with explicitly declared primary or
+  natural key definitions
+factor: contextual
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+constraints:
+- Primary key constraints in Snowflake are not enforced — they are metadata hints

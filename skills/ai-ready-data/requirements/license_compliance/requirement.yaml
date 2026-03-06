@@ -1,0 +1,17 @@
+name: license_compliance
+description: Fraction of externally sourced datasets with documented and valid usage
+  licenses permitting AI training
+factor: compliant
+workload:
+- training
+scope: schema
+placeholders:
+- database
+- schema
+- tag_name
+- tag_value
+- allowed_values
+- asset
+- comment
+constraints:
+- account_usage.tag_references has ~2 hour latency for new tags

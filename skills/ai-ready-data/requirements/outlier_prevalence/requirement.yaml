@@ -1,0 +1,13 @@
+name: outlier_prevalence
+description: Fraction of records containing values flagged as statistical outliers
+  beyond declared distance thresholds
+factor: clean
+workload:
+- training
+scope: table
+placeholders:
+- database
+- schema
+- asset
+- column
+- stddev_threshold

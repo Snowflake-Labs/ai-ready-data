@@ -1,0 +1,13 @@
+name: data_version_coverage
+description: Fraction of datasets with Time Travel retention enabled for point-in-time
+  state reconstruction
+factor: correlated
+workload:
+- training
+scope: schema
+placeholders:
+- database
+- schema
+constraints:
+- Check measures Time Travel retention_time > 0; diagnostic looks for explicit version
+  columns — these are complementary signals

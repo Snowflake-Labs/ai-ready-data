@@ -1,0 +1,10 @@
+name: point_in_time_correctness
+description: Fraction of feature datasets that support point-in-time joins preventing
+  future data leakage
+factor: current
+workload:
+- training
+scope: schema
+placeholders:
+- database
+- schema

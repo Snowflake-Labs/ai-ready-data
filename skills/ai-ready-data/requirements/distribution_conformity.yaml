@@ -1,8 +1,0 @@
-name: distribution_conformity
-description: Fraction of features whose statistical distributions conform to declared baseline distributions within tolerance thresholds
-factor: clean
-workload: [training]
-check: sql/check/distribution-conformity.sql
-diagnostic: sql/diagnostic/distribution-conformity.sql
-scope: table
-placeholders: [database, schema, asset, column, baseline_mean, baseline_stddev]

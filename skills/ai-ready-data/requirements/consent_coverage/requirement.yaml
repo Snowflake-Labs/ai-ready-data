@@ -1,0 +1,19 @@
+name: consent_coverage
+description: Fraction of personal data records with documented and valid legal basis
+  for AI-specific processing
+factor: compliant
+workload:
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+- tag_name
+- tag_value
+- allowed_values
+- asset
+- comment
+constraints:
+- account_usage.tag_references has ~2 hour latency for new tags

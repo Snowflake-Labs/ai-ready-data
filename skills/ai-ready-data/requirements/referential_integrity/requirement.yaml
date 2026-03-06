@@ -1,0 +1,20 @@
+name: referential_integrity
+description: Fraction of foreign-key or cross-dataset reference values that successfully
+  resolve to valid target records
+factor: clean
+workload:
+- feature-serving
+- training
+- agents
+scope: table
+placeholders:
+- database
+- schema
+- asset
+- fk_column
+- target_namespace
+- target_asset
+- target_key
+constraints:
+- Deletion is irreversible — verify orphan records are truly invalid before removing
+- Foreign key constraints in Snowflake are not enforced — they are metadata hints

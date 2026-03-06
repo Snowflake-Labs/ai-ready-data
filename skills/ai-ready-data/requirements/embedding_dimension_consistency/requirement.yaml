@@ -1,0 +1,10 @@
+name: embedding_dimension_consistency
+description: Fraction of embedding collections with uniform dimensionality matching
+  their consuming model's expected input
+factor: consumable
+workload:
+- rag
+scope: schema
+placeholders:
+- database
+- schema

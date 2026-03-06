@@ -5,7 +5,7 @@ description: Assess and optimize Snowflake data for AI workloads. Runs SQL check
 
 # AI-Ready Data
 
-Assess Snowflake data products for AI-readiness and remediate gaps. Each requirement has a check SQL that returns a 0–1 score, a threshold from the assessment, and fix SQL for remediation. Stages map to the six factors of AI-ready data: Clean, Contextual, Consumable, Current, Correlated, Compliant.
+Assess Snowflake data products for AI-readiness and remediate gaps. Each requirement is a self-contained directory with check SQL (returns 0–1 score), diagnostic SQL, fix SQL, and metadata. Stages map to the six factors of AI-ready data: Clean, Contextual, Consumable, Current, Correlated, Compliant.
 
 ## What This Skill Does
 
@@ -67,15 +67,15 @@ discover → assess → report → [approve] → remediate → verify
 | Phase | What Happens | SQL Type |
 |-------|-------------|----------|
 | Discover | Confirm scope (database, schema, tables) | Ad-hoc |
-| Assess | Run `check` SQL for each requirement in the assessment | `sql/check/` (read-only) |
+| Assess | Run `check.sql` for each requirement in the assessment | `requirements/{name}/check.sql` (read-only) |
 | Report | Present scores grouped by stage, show pass/fail | None |
 | Approve | User approves remediation per stage | None |
-| Remediate | Run `fix` SQL for failing requirements | `sql/fix/` (mutating) |
-| Verify | Re-run `check` SQL to confirm improvement | `sql/check/` (read-only) |
+| Remediate | Run `fix.*.sql` for failing requirements | `requirements/{name}/fix.*.sql` (mutating) |
+| Verify | Re-run `check.sql` to confirm improvement | `requirements/{name}/check.sql` (read-only) |
 
 ### How Checks Work
 
-All `check` SQL files return a `value` column: a float between 0.0 and 1.0, where **1.0 is perfect**. A requirement passes when `value >= threshold`.
+Every requirement directory contains a `check.sql` that returns a `value` column: a float between 0.0 and 1.0, where **1.0 is perfect**. A requirement passes when `value >= threshold`. Some requirements have variant checks (e.g., `check.sampled.sql` for large tables).
 
 ### How Assessments Work
 
@@ -83,10 +83,23 @@ An assessment (in `assessments/`) lists six stages — one per factor of AI-read
 
 Load the assessment YAML, apply any overrides, then for each stage, for each requirement:
 
-1. Load `requirements/{requirement_name}.yaml` to get the check SQL path, scope, and placeholders.
-2. Read the SQL file, substitute `{{ placeholder }}` values from context.
+1. Load `requirements/{requirement_name}/requirement.yaml` for metadata (scope, placeholders, constraints).
+2. Read `requirements/{requirement_name}/check.sql`, substitute `{{ placeholder }}` values from context.
 3. Execute the SQL, read the `value` column.
 4. Compare `value >= threshold` to determine pass/fail.
+
+### Requirement Directory Convention
+
+Each requirement is a self-contained directory under `requirements/`. File discovery is by naming convention — no path pointers in YAML:
+
+| File Pattern | Purpose |
+|---|---|
+| `requirement.yaml` | Metadata: name, description, factor, workload, scope, placeholders, constraints |
+| `check.sql` | Default check query (read-only, returns 0–1 `value`) |
+| `check.{variant}.sql` | Named variant check (e.g., `check.sampled.sql`, `check.column.sql`) |
+| `diagnostic.sql` | Default diagnostic query (detail drill-down) |
+| `diagnostic.{variant}.sql` | Named variant diagnostic (e.g., `diagnostic.untagged.sql`) |
+| `fix.{name}.sql` | Fix operations (mutating, requires approval) |
 
 ### Scope Inference
 
@@ -122,8 +135,8 @@ Present as inventory, confirm scope with the user.
 
 For each stage in the assessment (in order), for each requirement:
 
-1. Load `requirements/{requirement_name}.yaml`.
-2. Read the `check` SQL file.
+1. Load `requirements/{requirement_name}/requirement.yaml` for scope and placeholders.
+2. Read `requirements/{requirement_name}/check.sql` (or a variant like `check.sampled.sql` if appropriate).
 3. Substitute placeholders with actual values.
 4. Execute the SQL.
 5. Compare `value` against the threshold.
@@ -144,7 +157,7 @@ Summary: {N} of {total} stages passing ({M} of {R} requirements passing)
 
 ### Diagnostics
 
-When the user wants detail on a failing requirement, run the `diagnostic` SQL from the requirement YAML and present the results.
+When the user wants detail on a failing requirement, read `requirements/{requirement_name}/diagnostic.sql` (or a variant), substitute placeholders, execute, and present the results.
 
 ### JSON Export
 
@@ -189,14 +202,14 @@ Failing requirements:
 
 For each failing requirement:
 
-1. Load `requirements/{requirement_name}.yaml`.
-2. Read each `fixes` SQL file.
-3. Substitute placeholders with actual values.
+1. Load `requirements/{requirement_name}/requirement.yaml` for placeholders and constraints.
+2. List all `fix.*.sql` files in `requirements/{requirement_name}/`.
+3. Read each fix SQL file, substitute placeholders with actual values.
 4. Check skill delegation (see below).
 
 ### Step 3: Present Remediation Plan
 
-Show the substituted SQL, affected objects, and any constraints from the requirement YAML.
+Show the substituted SQL, affected objects, and any constraints from `requirement.yaml`.
 
 **Checkpoint:** Options: `approve` (execute), `skip` (next stage), `modify` (edit SQL), `tell-me-more` (diagnostics), `abort` (stop).
 
@@ -216,7 +229,7 @@ Skipped guards are not failures — the desired state already exists. Never use 
 
 ### Step 5: Verify
 
-Re-run the `check` SQL for each requirement in the stage. Show before/after:
+Re-run `check.sql` for each requirement in the stage. Show before/after:
 
 ```
 {Stage Name} — remediation complete
@@ -309,7 +322,7 @@ SQL files use `{{ placeholder }}` syntax. Substitute from context:
 1. **Read-only during assessment.** Never CREATE, INSERT, UPDATE, DELETE, or DROP during assess/discover phases.
 2. **Fix operations require approval.** Execute only with explicit user consent per stage.
 3. **Never batch without consent.** Present the plan first, execute stage-by-stage with approval.
-4. **Surface all constraints.** Show constraints from the requirement YAML before executing fix operations.
+4. **Surface all constraints.** Show constraints from `requirement.yaml` before executing fix operations.
 5. **No credentials in output.** Connection strings stay in environment variables.
 6. **Read `reference/gotchas.md`** before executing SQL to avoid common Snowflake pitfalls.
 7. **Delegate to specialized skills** for `semantic_documentation`, `column_masking`, and `classification` remediation.
@@ -347,29 +360,40 @@ Critical pitfalls — see `reference/gotchas.md` for full details. Key ones:
 
 ```
 skills/ai-ready-data/
-  SKILL.md                          ← You are here
-  requirements/                     ← One YAML per requirement (61 total)
-    data_completeness.yaml
-    uniqueness.yaml
+  SKILL.md                              ← You are here
+  requirements/                         ← One directory per requirement (61 total)
+    data_completeness/
+      requirement.yaml                  ← Metadata (no SQL paths)
+      check.sql                         ← Default check query
+      check.sampled.sql                 ← Variant for large tables
+      diagnostic.sql                    ← Detail drill-down
+      fix.fill-default.sql              ← Fix: fill nulls with default
+      fix.fill-placeholder.sql          ← Fix: fill nulls with expression
+      fix.delete-incomplete.sql         ← Fix: delete null rows
+      fix.add-not-null.sql              ← Fix: add NOT NULL constraint
+    uniqueness/
+      requirement.yaml
+      check.sql
+      check.sampled.sql
+      diagnostic.sql
+      fix.deduplicate-keep-first.sql
+      fix.deduplicate-keep-last.sql
     ...
-  sql/
-    check/                          ← Assessment queries (read-only)
-    diagnostic/                     ← Detail queries (read-only)
-    fix/                            ← Remediation queries (mutating)
   assessments/
-    rag.yaml                        ← RAG workload assessment
-    feature-serving.yaml            ← Feature serving workload assessment
-    training.yaml                   ← Training workload assessment
-    agents.yaml                     ← Agents workload assessment
+    rag.yaml                            ← RAG workload assessment
+    feature-serving.yaml                ← Feature serving workload assessment
+    training.yaml                       ← Training workload assessment
+    agents.yaml                         ← Agents workload assessment
   reference/
-    gotchas.md                      ← Snowflake pitfalls
+    gotchas.md                          ← Snowflake pitfalls
 ```
 
 ### Adding a New Requirement
 
-1. Create `requirements/{name}.yaml` with metadata, check/diagnostic/fix paths, placeholders, constraints.
-2. Add SQL files to `sql/check/`, `sql/diagnostic/`, and/or `sql/fix/`.
-3. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
+1. Create `requirements/{name}/` directory.
+2. Add `requirement.yaml` with metadata: name, description, factor, workload, scope, placeholders, constraints.
+3. Add `check.sql` (required), `diagnostic.sql`, and any `fix.{name}.sql` files.
+4. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
 
 ### Adding a New Assessment
 

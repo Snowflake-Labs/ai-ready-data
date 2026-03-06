@@ -1,0 +1,18 @@
+name: schema_conformity
+description: Fraction of records that conform to the declared schema, including correct
+  data types, required fields present, and structural rules satisfied
+factor: clean
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: column
+placeholders:
+- database
+- schema
+- asset
+- column
+- expected_type
+constraints:
+- Uses TRY_TO_NUMBER, TRY_TO_DATE, TRY_TO_TIMESTAMP for type checking

@@ -1,0 +1,16 @@
+name: batch_throughput_sufficiency
+description: Fraction of training data pipelines with I/O throughput sufficient to
+  avoid compute idle time
+factor: consumable
+workload:
+- training
+scope: schema
+placeholders:
+- database
+- schema
+constraints:
+- Measures COPY INTO load success rate as a throughput proxy
+- True throughput measurement requires warehouse-level monitoring
+- Only covers COPY INTO loads — does not capture Snowpipe, INSERT...SELECT, or dynamic
+  table refreshes
+- information_schema.load_history has a 14-day retention limit

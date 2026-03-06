@@ -35,19 +35,20 @@ When the user wants to **build or customize** an assessment, read `skills/build-
 ```
 skills/
   ai-ready-data/
-    SKILL.md                ← Assessment & remediation instructions
-    requirements/           ← One YAML per requirement (61 total)
-    sql/
-      check/                ← Assessment queries (read-only)
-      diagnostic/           ← Detail queries (read-only)
-      fix/                  ← Remediation queries (mutating)
+    SKILL.md                    ← Assessment & remediation instructions
+    requirements/               ← One directory per requirement (61 total)
+      {name}/
+        requirement.yaml        ← Metadata (no SQL paths)
+        check.sql               ← Assessment query (read-only)
+        diagnostic.sql          ← Detail query (read-only)
+        fix.*.sql               ← Remediation queries (mutating)
     assessments/
-      rag.yaml              ← RAG workload assessment
-      feature-serving.yaml  ← Feature serving workload assessment
-      training.yaml         ← Training workload assessment
-      agents.yaml           ← Agents workload assessment
+      rag.yaml                  ← RAG workload assessment
+      feature-serving.yaml      ← Feature serving workload assessment
+      training.yaml             ← Training workload assessment
+      agents.yaml               ← Agents workload assessment
     reference/
-      gotchas.md            ← Snowflake pitfalls
+      gotchas.md                ← Snowflake pitfalls
   build-assessment/
-    SKILL.md                ← Guided assessment builder
+    SKILL.md                    ← Guided assessment builder
 ```

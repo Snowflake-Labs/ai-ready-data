@@ -146,9 +146,8 @@ The builder pre-selects aggressively so you approve batches, not individual item
 
 #### Adding a Requirement
 
-1. Create `requirements/{name}.yaml` with metadata, check/diagnostic/fix SQL paths, placeholders, and constraints.
-2. Add SQL files to `sql/check/`, `sql/diagnostic/`, and/or `sql/fix/`.
-3. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
+1. Create `requirements/{name}/` directory with `requirement.yaml` (metadata), `check.sql`, `diagnostic.sql`, and any `fix.{name}.sql` files.
+2. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
 
 #### Adding an Assessment
 
@@ -161,24 +160,26 @@ See [`demo/DEMO.md`](demo/DEMO.md) for a full walkthrough: provision a demo data
 ## Structure
 
 ```
-factors/                        ← The five factors of AI-ready data (prose + requirements)
+factors/                            ← The five factors of AI-ready data (prose + requirements)
 skills/
   ai-ready-data/
-    SKILL.md                    ← Agent instructions for assessment & remediation
-    requirements/               ← One YAML per requirement (61 total)
-    sql/
-      check/                    ← Assessment queries (read-only)
-      diagnostic/               ← Detail queries (read-only)
-      fix/                      ← Remediation queries (mutating)
+    SKILL.md                        ← Agent instructions for assessment & remediation
+    requirements/                   ← One directory per requirement (61 total)
+      data_completeness/
+        requirement.yaml            ← Metadata (no SQL paths)
+        check.sql                   ← Assessment query (read-only)
+        diagnostic.sql              ← Detail query (read-only)
+        fix.*.sql                   ← Remediation queries (mutating)
+      ...
     assessments/
-      rag.yaml                  ← RAG workload assessment
-      feature-serving.yaml      ← Feature serving workload assessment
-      training.yaml             ← Training workload assessment
-      agents.yaml               ← Agents workload assessment
+      rag.yaml                      ← RAG workload assessment
+      feature-serving.yaml          ← Feature serving workload assessment
+      training.yaml                 ← Training workload assessment
+      agents.yaml                   ← Agents workload assessment
     reference/
-      gotchas.md                ← Snowflake pitfalls
+      gotchas.md                    ← Snowflake pitfalls
   build-assessment/
-    SKILL.md                    ← Guided assessment builder
+    SKILL.md                        ← Guided assessment builder
 ```
 
 ## Related Resources

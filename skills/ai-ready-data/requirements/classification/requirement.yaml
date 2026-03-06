@@ -1,0 +1,22 @@
+name: classification
+description: Fraction of objects with governance tags applied
+factor: compliant
+workload:
+- rag
+- feature-serving
+- training
+- agents
+scope: schema
+placeholders:
+- database
+- schema
+- tag_name
+- tag_value
+- allowed_values
+- asset
+- column
+- comment
+constraints:
+- account_usage.tag_references has ~2 hour latency for new tags
+- tag_references has no deleted column — don't filter on it
+delegates_to: sensitive-data-classification
