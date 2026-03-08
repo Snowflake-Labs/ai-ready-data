@@ -12,11 +12,11 @@
 
 ## Introduction
 
-The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means. The five factors of AI-ready data provide criteria and requirements to help you evaluate your data, pipelines, and platforms against the demands of AI workloads. Use this framework to assess where you stand and prioritize what matters most for your specific AI ambitions.
+The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means. The six factors of AI-ready data provide criteria and requirements to help you evaluate your data, pipelines, and platforms against the demands of AI workloads. Use this framework to assess where you stand and prioritize what matters most for your specific AI ambitions.
 
 ### Background
 
-The contributors to this framework include practicing data engineers, ML practitioners, and platform architects who have built and operated AI systems across industries.
+The contributors to this framework include practicing data engineers, ML engineers, and platform architects who have built and operated AI systems across industries.
 
 This document synthesizes our collective experience building data infrastructure that can reliably power AI. Our goal is to help data practitioners design infrastructure that produces trustworthy AI decisions.
 
@@ -28,8 +28,9 @@ This document synthesizes our collective experience building data infrastructure
 * **Data leaders** who need to assess organizational AI readiness and communicate gaps to their teams.
 * **Coding Agents** building the data infrastructure they will eventually consume
 
-## The Five Factors of AI-Ready Data
+## The Six Factors of AI-Ready Data
 
+0. [**Clean**](factors/0-clean.md) — Clean data is consistently accurate, complete, valid, and free of errors that would compromise downstream consumption.
 1. [**Contextual**](factors/1-contextual.md) — Contextual data carries canonical semantics; meaning is explicit and co-located.
 2. [**Consumable**](factors/2-consumable.md) — Consumable data is served in the right format and at the right latencies for AI workloads.
 3. [**Current**](factors/3-current.md) — Current data reflects the present state with freshness enforced by systems, not assumed by AI consumers.
@@ -46,7 +47,7 @@ The factor markdown files above describe the *why* and *what* of each factor in 
 
 ## AI-Ready Data Agent
 
-Assess and optimize Snowflake data for AI workloads. Pick an assessment, point it at your schema, and get a scored report across the five factors of AI-ready data, with guided steps to making your data AI-ready.
+Assess and optimize Snowflake data for AI workloads. Pick an assessment, point it at your schema, and get a scored report across the six factors of AI-ready data, with guided steps to making your data AI-ready.
 
 ### Quick Start
 
@@ -72,17 +73,18 @@ Clone or add this repo as workspace context. The agent reads `skills/ai-ready-da
 2. **Discover** — agent inventories your schema (tables, row counts, sizes)
 3. **Adjust** — skip, set, or add requirements before running
 4. **Assess** — read-only SQL checks score each requirement 0–1, compared against thresholds
-5. **Report** — results grouped by the five factors, with pass/fail per requirement
+5. **Report** — results grouped by the six factors, with pass/fail per requirement
 6. **Remediate** — for failures, the agent presents fix SQL, gets your approval, executes, and verifies
 
 All operations are SQL. No Python, no packages, no infrastructure.
 
 ### Factor Stages
 
-Every assessment is organized into five stages — one per factor of AI-ready data:
+Every assessment is organized into six stages — one per factor of AI-ready data:
 
 | Factor | What It Measures | Example Requirements |
 |---|---|---|
+| **Clean** | Accuracy, completeness, validity, and error-free records | `data_completeness`, `uniqueness`, `referential_integrity` |
 | **Contextual** | Schema documentation and metadata for machines and humans | `semantic_documentation`, `relationship_declaration`, `entity_identifier_declaration` |
 | **Consumable** | Data in the right format, indexed, and accessible at the right latency | `embedding_coverage`, `vector_index_coverage`, `serving_latency_compliance` |
 | **Current** | Freshness guarantees — change detection, SLAs, propagation latency | `change_detection`, `data_freshness`, `incremental_update_coverage` |
@@ -100,7 +102,7 @@ All scores are 0–1 where **1.0 is perfect**. Requirements pass when `score >= 
 | **training** | 50 | Fine-tuning and ML training — temporal integrity, reproducibility, bias testing, licensing |
 | **agents** | 37 | Text-to-SQL and agentic tool use — highest bar on schema documentation, strong audit trail |
 
-Each assessment selects a different subset of the 61 total requirements, with thresholds tuned for the workload. Every assessment uses the same five stages.
+Each assessment selects a different subset of the 61 total requirements, with thresholds tuned for the workload. Every assessment uses the same six stages.
 
 ### Overrides
 
@@ -133,13 +135,11 @@ Say **"build me an assessment"** and the agent will interview you:
 3. Set thresholds with guidance on what the numbers mean
 4. Name it, review the YAML, save it
 
-The builder pre-selects aggressively so you approve batches, not individual items. Most users say "looks good" on 4–5 of the five factors.
-
 ### Key Concepts
 
-- **Assessment** — A YAML file selecting requirements and thresholds for a workload, organized into the five factor stages. Four built-in, unlimited custom.
-- **Stage** — One per factor: Contextual, Consumable, Current, Correlated, Compliant.
-- **Requirement** — A single testable dimension with check SQL (returns 0–1 score), diagnostic SQL (detail drill-down), and fix SQL (remediation). 61 total.
+- **Assessment** — A YAML file selecting requirements and thresholds for a workload, organized into the six factor stages. Four built-in, unlimited custom.
+- **Stage** — One per factor: Clean, Contextual, Consumable, Current, Correlated, Compliant.
+- **Requirement** — A single testable dimension with check SQL (returns 0–1 score), diagnostic SQL (detail drill-down), and fix SQL (remediation). 
 - **Override** — skip/set/add adjustments applied before running an assessment.
 
 ### Extending
@@ -151,7 +151,7 @@ The builder pre-selects aggressively so you approve batches, not individual item
 
 #### Adding an Assessment
 
-Create `assessments/{name}.yaml` with five stages, or use `extends` to derive from an existing one. Or say **"build me an assessment"** and let the agent generate it through conversation.
+Create `assessments/{name}.yaml` with six stages, or use `extends` to derive from an existing one. Or say **"build me an assessment"** and let the agent generate it through conversation.
 
 ### Demo
 
@@ -160,7 +160,7 @@ See [`demo/DEMO.md`](demo/DEMO.md) for a full walkthrough: provision a demo data
 ## Structure
 
 ```
-factors/                            ← The five factors of AI-ready data (prose + requirements)
+factors/                            ← The six factors of AI-ready data (prose + requirements)
 skills/
   ai-ready-data/
     SKILL.md                        ← Agent instructions for assessment & remediation
@@ -181,11 +181,6 @@ skills/
   build-assessment/
     SKILL.md                        ← Guided assessment builder
 ```
-
-## Related Resources
-
-- [A Brief History of Data](factors/history-of-data.md)
-- Contribute to this framework
 
 ## Contributors
 
