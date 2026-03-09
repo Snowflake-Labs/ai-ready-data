@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "ai-ready-data": {
+      "source": "/Users/jprall/Desktop/Projects/snowflake/ai-ready-data-agent",
+      "sourceType": "local",
+      "computedHash": "b276d91c5365de36f81418d3cc20d7da64d9556eb3457b57cdf2a5297ae29018"
+    },
+    "build-assessment": {
+      "source": "/Users/jprall/Desktop/Projects/snowflake/ai-ready-data-agent",
+      "sourceType": "local",
+      "computedHash": "8d811e00e11b8e89b791fa6641f960c397724ba864043e1437ce0ca0d690b6fb"
+    }
+  }
+}

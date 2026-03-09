@@ -7,7 +7,7 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
-
+.cortex
 # Skills CLI install artifacts
 .agents/
 

@@ -5,7 +5,7 @@ description: Assess and optimize Snowflake data for AI workloads. Runs SQL check
 
 # AI-Ready Data
 
-Assess Snowflake data products for AI-readiness and remediate gaps. Each requirement is a self-contained directory with check SQL (returns 0–1 score), diagnostic SQL, fix SQL, and metadata. Stages map to the six factors of AI-ready data: Clean, Contextual, Consumable, Current, Correlated, Compliant.
+Assess Snowflake data products for AI-readiness and remediate gaps. Each requirement is a self-contained directory with check SQL (returns 0–1 score), diagnostic SQL, fix SQL, and metadata. Every assessment has exactly six stages named after the six factors of AI-ready data — use these exact names everywhere (reports, plans, tasks): **Clean**, **Contextual**, **Consumable**, **Current**, **Correlated**, **Compliant**.
 
 ## What This Skill Does
 
@@ -79,7 +79,16 @@ Every requirement directory contains a `check.sql` that returns a `value` column
 
 ### How Assessments Work
 
-An assessment (in `assessments/`) lists six stages — one per factor of AI-ready data: Clean, Contextual, Consumable, Current, Correlated, Compliant. Each stage has a `why` and a set of requirements with thresholds. Run stages in order. A stage passes when all its requirements pass.
+An assessment (in `assessments/`) lists exactly six stages — one per factor of AI-ready data. The stage names **are** the factor names and must be used exactly as written in the YAML:
+
+1. **Clean**
+2. **Contextual**
+3. **Consumable**
+4. **Current**
+5. **Correlated**
+6. **Compliant**
+
+Do NOT rename, paraphrase, or invent alternative stage names. Use the `name` field from each stage entry in the assessment YAML verbatim. Each stage has a `why` and a set of requirements with thresholds. Run stages in order. A stage passes when all its requirements pass.
 
 Load the assessment YAML, apply any overrides, then for each stage, for each requirement:
 
@@ -146,12 +155,14 @@ For each stage in the assessment (in order), for each requirement:
 ```
 {Assessment Name} Assessment — {DATABASE}.{SCHEMA}
 
-{Stage Name (Factor)}                                 {PASS/FAIL}
+Stage {N}: {name}                                      {PASS/FAIL}
   "{why}"
   {requirement}    {value}  (need {op} {threshold})    {PASS/FAIL}
 
 Summary: {N} of {total} stages passing ({M} of {R} requirements passing)
 ```
+
+Where `{name}` is the literal `name` field from the assessment YAML (Clean, Contextual, Consumable, Current, Correlated, or Compliant). Do not substitute with descriptive labels.
 
 **Checkpoint:** Options: `remediate` (fix gaps), `export` (JSON), `tell-me-more` (run diagnostics), `done` (stop).
 
