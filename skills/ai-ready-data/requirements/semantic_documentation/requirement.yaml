@@ -22,6 +22,6 @@ placeholders:
 - metric_definitions
 - comment
 constraints:
-- Comments alone don't enable Text-to-SQL — use semantic views for full coverage
-- Delegate to semantic-view-optimization skill for semantic view creation
-delegates_to: semantic-view-optimization
+- Comments alone don't enable Text-to-SQL — prefer semantic views for full coverage
+- Use the Semantic View Builder workflow (see SKILL.md) to guide semantic view creation
+- Fall back to fix.add-comments.sql only when the user explicitly opts for comments over semantic views
