@@ -1,14 +1,14 @@
 # AWS Platform Pack
 
-Initial scaffold for AWS support.
+AWS implementation pack for the multi-platform framework.
 
-## Status
+## Runtime Docs
 
-- Capability manifest is defined.
-- Requirement implementations are pending in a later phase.
+- Execution playbook: `docs/platforms/aws/execution-playbook.md`
+- Gotchas: `skills/ai-ready-data/platforms/aws/gotchas.md`
+- Capability manifest: `skills/ai-ready-data/platforms/aws/capabilities.yaml`
 
-## Next Steps
+## Coverage
 
-- Define target services per requirement (for example: Glue, Lake Formation, Athena).
-- Add pilot implementations under:
-  `requirements/{requirement}/implementations/aws/`
+- This platform currently has capability scaffolding only.
+- See `docs/support-matrix.md` for requirement-level implementation status.

@@ -10,5 +10,4 @@ placeholders:
 - database
 - schema
 constraints:
-- account_usage.tag_references has ~2 hour latency
 - Primary signal is column-level tags; secondary signal is comments > 20 chars

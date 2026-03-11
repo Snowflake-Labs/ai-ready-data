@@ -11,5 +11,4 @@ placeholders:
 - schema
 - latency_threshold_ms
 constraints:
-- account_usage.query_history has ~2 hour latency
-- Measures SELECT queries only — does not cover API-based serving
+- "Measures SELECT queries only \u2014 does not cover API-based serving"

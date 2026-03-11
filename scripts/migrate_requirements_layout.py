@@ -9,9 +9,10 @@ Behavior:
 
 from __future__ import annotations
 
-import re
 import shutil
 from pathlib import Path
+
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,27 +21,13 @@ INDEX_FILE = REQ_ROOT / "index.yaml"
 
 
 def parse_requirement_yaml(path: Path) -> tuple[str | None, str | None, list[str]]:
-    name = None
-    factor = None
-    workloads: list[str] = []
-    in_workload = False
-
-    for raw in path.read_text(encoding="utf-8").splitlines():
-        line = raw.rstrip()
-        if line.startswith("name: "):
-            name = line.split(":", 1)[1].strip()
-        elif line.startswith("factor: "):
-            factor = line.split(":", 1)[1].strip()
-        elif line.startswith("workload:"):
-            in_workload = True
-            continue
-        elif re.match(r"^[a-z_]+:", line):
-            in_workload = False
-
-        if in_workload and line.strip().startswith("- "):
-            workloads.append(line.strip()[2:].strip())
-
-    return name, factor, workloads
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    name = data.get("name")
+    factor = data.get("factor")
+    workloads = data.get("workload") or []
+    if not isinstance(workloads, list):
+        workloads = []
+    return name, factor, [str(w) for w in workloads]
 
 
 def detect_implementations(req_dir: Path) -> list[str]:

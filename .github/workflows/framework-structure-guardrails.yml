@@ -18,8 +18,17 @@ jobs:
         with:
           python-version: "3.x"
 
+      - name: Install validation dependencies
+        run: pip install pyyaml
+
       - name: Validate docs and capability manifests
         run: python3 scripts/validate_phase0.py
 
       - name: Validate requirement structure and skill sync
         run: python3 scripts/validate_structure.py
+
+      - name: Validate requirement contracts and conformance
+        run: python3 scripts/validate_requirements_contracts.py
+
+      - name: Check support matrix freshness
+        run: python3 scripts/generate_support_matrix.py --check

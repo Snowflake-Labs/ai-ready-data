@@ -1,0 +1,16 @@
+version: v1
+platform: databricks
+requirements:
+  - key: semantic_documentation
+    check_patterns:
+      - "as value"
+      - "information_schema\\.columns"
+      - "information_schema\\.tables"
+  - key: classification
+    check_patterns:
+      - "as value"
+      - "information_schema\\.table_tags"
+  - key: lineage_completeness
+    check_patterns:
+      - "as value"
+      - "system\\.access\\.table_lineage"

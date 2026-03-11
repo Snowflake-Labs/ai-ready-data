@@ -8,8 +8,7 @@ placeholders:
 - database
 - schema
 constraints:
-- account_usage.policy_references has ~2 hour latency
-- PII detection is heuristic (column-name based) — delegate to sensitive-data-classification
-  for thorough scanning
-- Only masking policies count toward the score — privacy tags indicate awareness but
-  do not protect data
+- "PII detection is heuristic (column-name based) \u2014 delegate to sensitive-data-classification\
+  \ for thorough scanning"
+- "Only masking policies count toward the score \u2014 privacy tags indicate awareness\
+  \ but do not protect data"

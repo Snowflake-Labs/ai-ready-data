@@ -1,13 +1,17 @@
 # Databricks Platform Pack
 
-Initial scaffold for Databricks support.
+Databricks implementation pack for the multi-platform framework.
 
-## Status
+## Runtime Docs
 
-- Capability manifest is defined.
-- Requirement implementations are pending in a later phase.
+- Execution playbook: `docs/platforms/databricks/execution-playbook.md`
+- Gotchas: `skills/ai-ready-data/platforms/databricks/gotchas.md`
+- Capability manifest: `skills/ai-ready-data/platforms/databricks/capabilities.yaml`
 
-## Next Steps
+## Current Coverage
 
-- Add pilot requirement implementations under:
-  `requirements/{requirement}/implementations/databricks/`
+- Pilot requirements are implemented for:
+  - `semantic_documentation`
+  - `classification`
+  - `lineage_completeness`
+- See `docs/support-matrix.md` for full coverage status.

@@ -1,14 +1,14 @@
 # Azure Platform Pack
 
-Initial scaffold for Azure support.
+Azure implementation pack for the multi-platform framework.
 
-## Status
+## Runtime Docs
 
-- Capability manifest is defined.
-- Requirement implementations are pending in a later phase.
+- Execution playbook: `docs/platforms/azure/execution-playbook.md`
+- Gotchas: `skills/ai-ready-data/platforms/azure/gotchas.md`
+- Capability manifest: `skills/ai-ready-data/platforms/azure/capabilities.yaml`
 
-## Next Steps
+## Coverage
 
-- Define target services per requirement (for example: Fabric, Synapse, Purview).
-- Add pilot implementations under:
-  `requirements/{requirement}/implementations/azure/`
+- This platform currently has capability scaffolding only.
+- See `docs/support-matrix.md` for requirement-level implementation status.

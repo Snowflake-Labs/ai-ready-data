@@ -15,6 +15,4 @@ placeholders:
 - constraint_name
 - constraint_type
 constraints:
-- Primary key and unique constraints in Snowflake are not enforced — they are metadata
-  hints
-- NOT NULL constraint will fail if NULLs still exist — fill or delete first
+- "NOT NULL constraint will fail if NULLs still exist \u2014 fill or delete first"

@@ -24,6 +24,23 @@ Resolver lookup order:
 
 For non-SQL execution types in future phases, this contract remains valid and only backend adapters change.
 
+### Resolver Pseudocode
+
+```text
+resolve(requirement_key, platform, operation, variant):
+  check capability manifest for required feature flags
+  if capability missing:
+    return N/A(reason = "MISSING_CAPABILITY: ...")
+
+  if variant provided and operation.variant.sql exists:
+    return that file
+
+  if operation.sql exists:
+    return that file
+
+  return N/A(reason = "MISSING_IMPLEMENTATION: ...")
+```
+
 ## Output Shape
 
 All operations return normalized envelopes:
@@ -78,6 +95,25 @@ All operations return normalized envelopes:
 - `N/A`: unsupported on platform or blocked by capability constraints.
 
 `N/A` must include a non-empty `reason`.
+
+### Error Taxonomy
+
+Use stable error classes in `reason`:
+
+- `MISSING_CAPABILITY` - platform cannot support required behavior
+- `MISSING_IMPLEMENTATION` - operation file does not exist for platform
+- `INVALID_OUTPUT_SHAPE` - operation result cannot be normalized to contract
+- `EXECUTION_ERROR` - runtime execution failure
+
+### `N/A` Reason Format
+
+Use this structure to improve user/operator guidance:
+
+`<ERROR_CLASS>: <short cause>. Suggested action: <next step>`
+
+Example:
+
+`MISSING_CAPABILITY: Databricks workspace has no lineage table visibility. Suggested action: enable Unity Catalog lineage tables or skip lineage_completeness for this run.`
 
 ## Capability Gating
 

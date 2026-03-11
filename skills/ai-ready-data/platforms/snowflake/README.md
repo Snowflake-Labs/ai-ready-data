@@ -2,8 +2,12 @@
 
 This platform pack is the baseline implementation for the current framework.
 
-## Notes
+## Runtime Docs
 
-- Uses SQL-based checks, diagnostics, and fixes.
-- Full behavior is currently defined by `skills/ai-ready-data/SKILL.md`.
-- Snowflake gotchas are documented in `gotchas.md`.
+- Execution playbook: `docs/platforms/snowflake/execution-playbook.md`
+- Gotchas: `skills/ai-ready-data/platforms/snowflake/gotchas.md`
+- Capability manifest: `skills/ai-ready-data/platforms/snowflake/capabilities.yaml`
+
+## Coverage
+
+- See `docs/support-matrix.md` for requirement-level implementation coverage.

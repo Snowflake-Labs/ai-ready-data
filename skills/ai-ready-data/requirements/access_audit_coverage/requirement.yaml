@@ -10,6 +10,4 @@ scope: schema
 placeholders:
 - database
 - schema
-constraints:
-- account_usage.access_history has ~2 hour latency
-- Requires IMPORTED PRIVILEGES on SNOWFLAKE database
+constraints: []

@@ -17,6 +17,5 @@ placeholders:
 - column
 - comment
 constraints:
-- account_usage.tag_references has ~2 hour latency for new tags
-- tag_references has no deleted column — don't filter on it
+- "tag_references has no deleted column \u2014 don't filter on it"
 delegates_to: sensitive-data-classification

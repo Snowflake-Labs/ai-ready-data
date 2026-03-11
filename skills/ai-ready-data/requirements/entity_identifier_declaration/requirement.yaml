@@ -11,5 +11,4 @@ scope: schema
 placeholders:
 - database
 - schema
-constraints:
-- Primary key constraints in Snowflake are not enforced — they are metadata hints
+constraints: []

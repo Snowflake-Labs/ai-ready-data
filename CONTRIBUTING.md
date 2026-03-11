@@ -45,6 +45,9 @@ Run:
 
 ```bash
 python3 scripts/validate_phase0.py
+python3 scripts/validate_structure.py
+python3 scripts/validate_requirements_contracts.py
+python3 scripts/generate_support_matrix.py --check
 ```
 
 This checks:
@@ -52,8 +55,19 @@ This checks:
 - Required docs exist
 - Capability manifests exist and include minimum fields
 - Capability keys follow naming conventions
+- Requirement metadata schema and index consistency
+- SQL check contract (`AS value`) and pilot conformance fixtures
+- Support matrix artifact freshness
 
 ## Notes on Skill Source of Truth
 
 Skill instructions currently exist in both `skills/` and `.agents/skills/`.
-Do not edit one copy in isolation. A sync/guardrail policy will be enforced in a follow-up phase before resolver migration.
+Do not edit one copy in isolation.
+
+Recommended local hook setup:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Then use `.githooks/pre-commit` to prevent mirror drift and stale artifacts.

@@ -13,5 +13,4 @@ placeholders:
 - asset
 - column
 constraints:
-- account_usage.tag_references has ~2 hour latency for new tags
-- Demographic attributes are sensitive — handle with appropriate access controls
+- "Demographic attributes are sensitive \u2014 handle with appropriate access controls"

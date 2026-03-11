@@ -17,7 +17,5 @@ placeholders:
 - asset
 - column
 constraints:
-- Always use IS_ROLE_IN_SESSION() — never CURRENT_ROLE()
 - policy_references uses ref_column_name, not column_name
-- account_usage.policy_references has ~2 hour latency
 delegates_to: data-policy

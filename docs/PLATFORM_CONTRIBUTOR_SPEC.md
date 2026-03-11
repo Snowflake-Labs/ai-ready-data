@@ -30,6 +30,7 @@ Recommended:
 
 - `diagnostic.sql`
 - one or more `fix.{name}.sql` files when safe and practical
+- `constraints.md` for platform-specific operational constraints (if needed)
 
 ## Capability Declaration
 
@@ -44,6 +45,7 @@ Declare only capabilities that are verified and supportable.
 - If a requirement operation is not supported, return `N/A`.
 - `N/A` must include a clear reason.
 - Unsupported operations must not be misreported as `PASS` or `FAIL`.
+- Follow `N/A` reason format from `docs/contracts/execution-contract.md`.
 
 ## Safety and Idempotency for Fixes
 
@@ -60,10 +62,20 @@ Platform `README.md` must include:
 - known gotchas
 - supported requirement coverage notes
 
+## Conformance Requirements
+
+- Add or update platform fixtures in `tests/conformance/` when adding platform support.
+- Ensure check queries satisfy contract expectations (`AS value` for SQL checks).
+- Ensure support matrix artifacts are up to date.
+
 ## Suggested PR Checklist
 
 - [ ] Added or updated `capabilities.yaml`
 - [ ] Added or updated requirement implementation files
 - [ ] Added or updated platform docs
-- [ ] Validated with `python3 scripts/validate_phase0.py`
+- [ ] Validated with:
+  - `python3 scripts/validate_phase0.py`
+  - `python3 scripts/validate_structure.py`
+  - `python3 scripts/validate_requirements_contracts.py`
+  - `python3 scripts/generate_support_matrix.py --check`
 - [ ] Included rationale for any `N/A` behavior

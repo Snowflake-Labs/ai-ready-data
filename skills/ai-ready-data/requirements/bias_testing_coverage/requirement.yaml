@@ -14,5 +14,4 @@ placeholders:
 - asset
 - comment
 constraints:
-- account_usage.tag_references has ~2 hour latency for new tags
-- Tag records test completion — actual bias testing is done externally
+- "Tag records test completion \u2014 actual bias testing is done externally"

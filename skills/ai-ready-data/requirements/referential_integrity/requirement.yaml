@@ -16,5 +16,5 @@ placeholders:
 - target_asset
 - target_key
 constraints:
-- Deletion is irreversible — verify orphan records are truly invalid before removing
-- Foreign key constraints in Snowflake are not enforced — they are metadata hints
+- "Deletion is irreversible \u2014 verify orphan records are truly invalid before\
+  \ removing"
