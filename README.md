@@ -47,7 +47,7 @@ The factor markdown files above describe the *why* and *what* of each factor in 
 
 ## AI-Ready Data Agent
 
-Assess and optimize Snowflake data for AI workloads. Pick an assessment, point it at your schema, and get a scored report across the six factors of AI-ready data, with guided steps to making your data AI-ready.
+Assess and optimize data for AI workloads across platforms. Pick a workload profile, point it at your schema, and get a scored report across the six factors of AI-ready data, with guided steps to making your data AI-ready.
 
 ### Quick Start
 
@@ -55,7 +55,7 @@ Point your coding agent at this repo and say:
 
 > Assess my [data assets] for RAG readiness.
 
-The agent loads the RAG assessment, discovers your tables, runs checks, and presents a scored report. From there you can drill into failures, remediate stage-by-stage, or export results as JSON.
+The agent asks your platform and scope, loads the RAG workload profile, runs checks, and presents a scored report. From there you can drill into failures and remediate stage-by-stage.
 
 #### Install as a skill
 
@@ -69,14 +69,13 @@ Clone or add this repo as workspace context. The agent reads `skills/ai-ready-da
 
 ### How It Works
 
-1. **Choose a platform + assessment** — platform (Snowflake, Databricks, AWS, Azure) and workload assessment (RAG, feature serving, training, agents, or custom)
-2. **Discover** — agent inventories your schema (tables, row counts, sizes)
-3. **Adjust** — skip, set, or add requirements before running
-4. **Assess** — read-only SQL checks score each requirement 0–1, compared against thresholds
-5. **Report** — results grouped by the six factors, with pass/fail per requirement
-6. **Remediate** — for failures, the agent presents fix SQL, gets your approval, executes, and verifies
-
-Checks and fixes are platform implementations with normalized outputs. SQL remains the default implementation style where supported.
+1. **Choose a platform** — Snowflake, Databricks, AWS, or Azure
+2. **Discovery** — tell the agent your database, schema, and tables
+3. **Choose a workload** — RAG, feature serving, training, agents, full assessment, or pick specific requirements
+4. **Adjust** — skip, set, or add requirements before running
+5. **Coverage** — see what's runnable on your platform before executing
+6. **Assess** — platform-specific checks score each requirement 0–1
+7. **Remediate** — for failures, the agent presents platform-specific fixes for your approval
 
 ### Factor Stages
 
@@ -93,29 +92,29 @@ Every assessment is organized into six stages — one per factor of AI-ready dat
 
 All scores are 0–1 where **1.0 is perfect**. Requirements pass when `score >= threshold`.
 
-### Built-In Assessments
+### Built-In Workload Profiles
 
-| Assessment | Requirements | Best For |
+| Workload | Requirements | Best For |
 |---|---|---|
 | **rag** | 27 | Retrieval-augmented generation — chunking, embeddings, vector search, document governance |
 | **feature-serving** | 39 | Online feature stores — low-latency lookups, materialized features, freshness SLAs |
 | **training** | 50 | Fine-tuning and ML training — temporal integrity, reproducibility, bias testing, licensing |
 | **agents** | 37 | Text-to-SQL and agentic tool use — highest bar on schema documentation, strong audit trail |
 
-Each assessment selects a different subset of the 61 total requirements, with thresholds tuned for the workload. Every assessment uses the same six stages.
+Each workload profile selects a different subset of the 61 total requirements, with thresholds tuned for the workload. Every assessment uses the same six stages.
 
 ### Overrides
 
-Before running, you can adjust any assessment on the fly:
+Before running, you can adjust any workload profile on the fly:
 
 - **`skip <requirement>`** — exclude a check entirely
 - **`set <requirement> <threshold>`** — override a threshold
-- **`add <requirement> <threshold>`** — include a check not in the base assessment
+- **`add <requirement> <threshold>`** — include a check not in the base profile
 
-For repeatability, save overrides as a custom assessment using `extends`:
+For repeatability, save overrides as a custom workload profile using `extends`:
 
 ```yaml
-name: my-rag-assessment
+name: my-rag-profile
 extends: rag
 overrides:
   skip:
@@ -126,33 +125,31 @@ overrides:
     row_access_policy: { min: 0.50 }
 ```
 
-### Build Your Own Assessment
-
-Say **"build me an assessment"** and the agent will interview you:
-
-1. What are you building? What data? Who consumes it?
-2. Walk through each factor with pre-selected requirements based on your answers
-3. Set thresholds with guidance on what the numbers mean
-4. Name it, review the YAML, save it
-
 ### Key Concepts
 
-- **Assessment** — A YAML file selecting requirements and thresholds for a workload, organized into the six factor stages. Four built-in, unlimited custom.
+- **Workload Profile** — A YAML file selecting requirements and thresholds for a workload, organized into the six factor stages. Four built-in, unlimited custom.
+- **Assessment** — The ephemeral runtime compilation of workload profile + platform + scope. Not a file.
 - **Stage** — One per factor: Clean, Contextual, Consumable, Current, Correlated, Compliant.
-- **Requirement** — A single testable dimension with check SQL (returns 0–1 score), diagnostic SQL (detail drill-down), and fix SQL (remediation). 
+- **Requirement** — A single testable dimension with platform-specific check SQL (returns 0–1 score), diagnostic SQL, and fix SQL.
+- **Platform Reference** — Everything the agent needs to operate on a specific platform: capabilities, nuances, permissions, dialect notes.
 - **Override** — skip/set/add adjustments applied before running an assessment.
 
 ### Extending
 
 #### Adding a Requirement
 
-1. Create `requirements/{name}/` directory with `requirement.yaml` (canonical metadata) and add platform implementations under `implementations/{platform}/`.
-2. For each supported platform, add at minimum `check.sql`, and optionally `diagnostic.sql` and `fix.{name}.sql`.
-3. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
+1. Create `requirements/{name}/` directory with `requirement.yaml` (canonical metadata).
+2. Add platform files under `requirements/{name}/{platform}/` — at minimum `check.sql`.
+3. Add the requirement to relevant workload profile YAML(s) under the matching factor stage.
 
-#### Adding an Assessment
+#### Adding a Workload Profile
 
-Create `assessments/{name}.yaml` with six stages, or use `extends` to derive from an existing one. Or say **"build me an assessment"** and let the agent generate it through conversation.
+Create `workloads/{name}.yaml` with six stages, or use `extends` to derive from an existing one.
+
+#### Adding a Platform
+
+1. Create `platforms/{PLATFORM}.md` covering capabilities, dialect, permissions, and nuances.
+2. Add requirement files under `requirements/{key}/{platform}/`.
 
 ### Demo
 
@@ -164,39 +161,22 @@ See [`demo/DEMO.md`](demo/DEMO.md) for a full walkthrough: provision a demo data
 factors/                            ← The six factors of AI-ready data (prose + requirements)
 skills/
   ai-ready-data/
-    SKILL.md                        ← Agent instructions for assessment & remediation
-    platforms/                      ← Platform capability manifests + platform gotchas
-      snowflake/
-        capabilities.yaml
-        gotchas.md
-      databricks/
-        capabilities.yaml
-        gotchas.md
-      aws/
-        capabilities.yaml
-        gotchas.md
-      azure/
-        capabilities.yaml
-        gotchas.md
+    SKILL.md                        ← Generic orchestration protocol
+    platforms/                      ← Platform references
+      {PLATFORM}.md                 ← Capabilities, nuances, permissions, dialect
     requirements/                   ← One directory per requirement (61 total)
-      index.yaml                    ← Requirement registry for deterministic discovery
-      data_completeness/
-        requirement.yaml            ← Metadata (no SQL paths)
-        implementations/
-          snowflake/
-            check.sql               ← Platform assessment query (read-only)
-            diagnostic.sql          ← Platform detail query (read-only)
-            fix.*.sql               ← Platform remediation queries (mutating)
-      ...
-    assessments/
-      rag.yaml                      ← RAG workload assessment
-      feature-serving.yaml          ← Feature serving workload assessment
-      training.yaml                 ← Training workload assessment
-      agents.yaml                   ← Agents workload assessment
-    reference/
-      gotchas.md                    ← Snowflake pitfalls
-  build-assessment/
-    SKILL.md                        ← Guided assessment builder
+      index.yaml                    ← Requirement registry
+      {requirement_key}/
+        requirement.yaml            ← Canonical metadata
+        {platform}/
+          check.sql               ← Platform check query (read-only)
+          diagnostic.sql          ← Platform detail query (read-only)
+          fix.*.sql               ← Platform remediation queries (mutating)
+    workloads/                      ← Workload profiles
+      rag.yaml
+      feature-serving.yaml
+      training.yaml
+      agents.yaml
 ```
 
 ## Contributors

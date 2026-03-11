@@ -2,72 +2,49 @@
 
 Thanks for contributing to the AI-Ready Data framework.
 
-This project is evolving from a Snowflake-first skillset to a multi-platform framework. The immediate architecture direction is:
+## Architecture
 
-- Canonical requirement intent in `requirement.yaml`
-- Platform-specific execution implementations
-- Explicit platform capabilities and normalized results
+The framework has five layers:
 
-## Repository Conventions
-
-- Keep requirement intent platform-agnostic.
-- Keep platform-specific logic isolated from canonical metadata.
-- Preserve the six factor stage names exactly: `Clean`, `Contextual`, `Consumable`, `Current`, `Correlated`, `Compliant`.
-- Keep scoring normalized between `0.0` and `1.0` when a check is supported.
+- **Factors** — the six categories (Clean, Contextual, Consumable, Current, Correlated, Compliant)
+- **Requirements** — platform-agnostic testable claims about data quality
+- **Workload Profiles** — curated selections of requirements with thresholds (`workloads/*.yaml`)
+- **Platform References** — everything the agent needs to operate on a specific platform (`platforms/`)
+- **Assessments** — ephemeral runtime compilations of workload + platform + scope
 
 ## Contribution Types
 
 - New or improved requirements
-- New assessments
+- New workload profiles
 - Platform implementations (Snowflake, Databricks, AWS, Azure)
-- Contributor docs and validation guardrails
+- Platform pack improvements
 
-## Phase 0 Contracts
+## Adding a Requirement
 
-Before adding platform implementations, align with:
+1. Create `requirements/{name}/requirement.yaml` with canonical metadata.
+2. Add platform files under `requirements/{name}/{platform}/`.
+3. Add to relevant workload profiles.
 
-- `docs/contracts/execution-contract.md`
-- `docs/platforms/capability-schema.md`
-- `docs/PLATFORM_CONTRIBUTOR_SPEC.md`
+## Adding a Platform
+
+1. Create `platforms/{PLATFORM}.md` covering capabilities, dialect, permissions, nuances.
+2. Add `guards.yaml` for idempotency patterns (if applicable).
+3. Add `delegations.yaml` for skill delegation targets (if applicable).
+4. Add requirement implementations.
+
+## Conventions
+
+- Keep requirement metadata platform-agnostic.
+- Keep platform-specific logic in platform packs and implementation files.
+- Preserve the six factor stage names exactly.
+- Scoring: 0.0 to 1.0 where 1.0 is perfect. Alias as `value` in check SQL.
 
 ## Pull Request Expectations
 
 - Document behavior changes clearly.
 - Keep changes scoped (one concern per PR).
-- For platform work, include or update:
-  - platform capability manifest
-  - supported requirement matrix/docs
-  - guardrail validation coverage where applicable
+- For platform work, include or update the platform reference in `platforms/`.
 
-## Local Validation
+## Skill Source of Truth
 
-Run:
-
-```bash
-python3 scripts/validate_phase0.py
-python3 scripts/validate_structure.py
-python3 scripts/validate_requirements_contracts.py
-python3 scripts/generate_support_matrix.py --check
-```
-
-This checks:
-
-- Required docs exist
-- Capability manifests exist and include minimum fields
-- Capability keys follow naming conventions
-- Requirement metadata schema and index consistency
-- SQL check contract (`AS value`) and pilot conformance fixtures
-- Support matrix artifact freshness
-
-## Notes on Skill Source of Truth
-
-Skill instructions currently exist in both `skills/` and `.agents/skills/`.
-Do not edit one copy in isolation.
-
-Recommended local hook setup:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-Then use `.githooks/pre-commit` to prevent mirror drift and stale artifacts.
+Canonical skill files live in `skills/`. Mirror copies in `.agents/skills/` must stay in sync.

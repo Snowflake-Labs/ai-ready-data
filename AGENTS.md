@@ -1,11 +1,11 @@
 ---
 name: ai-ready-data
-description: Assess and optimize Snowflake data for AI workloads. Runs SQL checks against workload-specific assessments, identifies gaps, and guides remediation.
+description: Assess and optimize data for AI workloads across platforms. Runs checks against workload-specific profiles, identifies gaps, and guides remediation.
 ---
 
 # AI-Ready Data Agent
 
-A skill for assessing and optimizing Snowflake data for AI workloads.
+A skill for assessing and optimizing data for AI workloads.
 
 ## Entry Point
 
@@ -23,39 +23,25 @@ This skill activates when the user mentions:
 - "semantic documentation", "document my schema"
 - "PII detection", "masking audit", "data classification"
 
-For building custom assessments:
-
-- "build me an assessment", "create a custom assessment", "customize an assessment"
-- "none of the built-in assessments fit", "I need a custom profile"
-
-When the user wants to **build or customize** an assessment, read `skills/build-assessment/SKILL.md`.
-
 ## Structure
 
 ```
 skills/
   ai-ready-data/
-    SKILL.md                    ← Assessment & remediation instructions
-    platforms/                  ← Platform capability manifests and gotchas
-      {platform}/
-        capabilities.yaml
-        gotchas.md
+    SKILL.md                    ← Orchestration protocol
+    platforms/                  ← Platform references
+      {PLATFORM}.md             ← Capabilities, nuances, permissions, dialect
     requirements/               ← One directory per requirement (61 total)
       index.yaml                ← Requirement registry
       {name}/
         requirement.yaml        ← Metadata (no SQL paths)
-        implementations/
-          {platform}/
-            check.sql           ← Platform check query (read-only)
-            diagnostic.sql      ← Platform detail query (read-only)
-            fix.*.sql           ← Platform remediation queries (mutating)
-    assessments/
-      rag.yaml                  ← RAG workload assessment
-      feature-serving.yaml      ← Feature serving workload assessment
-      training.yaml             ← Training workload assessment
-      agents.yaml               ← Agents workload assessment
-    reference/
-      gotchas.md                ← Snowflake pitfalls
-  build-assessment/
-    SKILL.md                    ← Guided assessment builder
+        {platform}/
+          check.sql           ← Platform check query (read-only)
+          diagnostic.sql      ← Platform detail query (read-only)
+          fix.*.sql           ← Platform remediation queries (mutating)
+    workloads/
+      rag.yaml                  ← RAG workload profile
+      feature-serving.yaml      ← Feature serving workload profile
+      training.yaml             ← Training workload profile
+      agents.yaml               ← Agents workload profile
 ```

@@ -1,8 +1,0 @@
-#!/usr/bin/env sh
-set -e
-
-python3 scripts/sync_skill_mirrors.py --check
-python3 scripts/validate_phase0.py
-python3 scripts/validate_structure.py
-python3 scripts/validate_requirements_contracts.py
-python3 scripts/generate_support_matrix.py --check

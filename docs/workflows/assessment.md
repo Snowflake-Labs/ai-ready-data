@@ -1,24 +1,30 @@
-# Assessment Workflow (Platform-Aware)
+# Assessment Workflow
 
-## Inputs
+## Flow
 
-- platform
-- assessment name
-- database/schema scope
-- optional requirement overrides
+1. User selects platform.
+2. Discovery: agent asks about database, schema, tables (conversational).
+3. User picks workload profile or selects requirements.
+4. Optional overrides (skip/set/add).
+5. Coverage summary: show runnable vs N/A, user confirms.
+6. Execute checks, score, report.
 
-## Steps
+## Coverage Summary
 
-1. Load assessment YAML and apply overrides.
-2. For each requirement, load canonical metadata from `requirement.yaml`.
-3. Resolve platform implementation path:
-   - required: `implementations/{platform}/check.sql`
-4. Gate by capability manifest.
-5. Execute check and normalize output (`PASS|FAIL|N/A`).
-6. Aggregate by stage and produce report.
+Before execution, intersect selected requirements with platform implementations. Present:
+
+```
+{Workload} Assessment — {platform} — {DATABASE}.{SCHEMA}
+
+Selected: {N} requirements
+Runnable: {R}
+Not available: {N-R}
+
+Proceed?
+```
 
 ## Rules
 
-- `N/A` is valid and must include reason.
-- Threshold pass/fail applies only to supported checks.
-- Stage names remain exactly the six factor names.
+- `N/A` is identified before execution, not at runtime.
+- Stage names are exactly the six factor names.
+- Thresholds come from the workload profile.

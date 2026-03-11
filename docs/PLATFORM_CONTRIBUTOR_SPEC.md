@@ -1,81 +1,62 @@
 # Platform Contributor Spec
 
-This guide defines how maintainers add or extend platform support.
+How to add or extend platform support.
 
-## Scope
+## Required Files
 
-Applies to any platform implementation (Snowflake, Databricks, AWS, Azure, others).
+For each platform:
 
-## Required Platform Files
-
-For each platform `{platform}`:
-
-```text
-skills/ai-ready-data/platforms/{platform}/
-  capabilities.yaml
-  gotchas.md
-  README.md
+```
+skills/ai-ready-data/platforms/{PLATFORM}.md
 ```
 
-## Required Requirement Implementation Files
+If the platform needs extra files (guards, delegations, etc.), use a directory instead:
+
+```
+skills/ai-ready-data/platforms/{platform}/
+  {PLATFORM}.md
+  guards.yaml
+  delegations.yaml
+```
+
+Recommended:
+
+- `guards.yaml` — idempotency guard patterns for safe remediation
+- `delegations.yaml` — skill delegation targets for specific requirements
+
+## Platform Reference
+
+The platform markdown file must cover:
+
+- What the platform supports (capabilities)
+- What is NOT supported (and why)
+- SQL dialect notes and behavioral quirks
+- Metadata access patterns
+- Required permissions
+- Anything the agent needs to operate correctly on this platform
+
+## Requirement Implementations
 
 For each supported requirement `{requirement_key}`:
 
-```text
-skills/ai-ready-data/requirements/{requirement_key}/implementations/{platform}/
-  check.sql
+```
+skills/ai-ready-data/requirements/{requirement_key}/{platform}/
+  check.sql         ← required (returns `value` column, float 0-1)
 ```
 
 Recommended:
 
 - `diagnostic.sql`
-- one or more `fix.{name}.sql` files when safe and practical
-- `constraints.md` for platform-specific operational constraints (if needed)
-
-## Capability Declaration
-
-`capabilities.yaml` must conform to:
-
-- `docs/platforms/capability-schema.md`
-
-Declare only capabilities that are verified and supportable.
+- `fix.{name}.sql` files when safe and practical
+- `constraints.md` for platform-specific operational constraints
 
 ## Support Semantics
 
-- If a requirement operation is not supported, return `N/A`.
-- `N/A` must include a clear reason.
+- If a requirement operation is not supported, report `N/A`.
 - Unsupported operations must not be misreported as `PASS` or `FAIL`.
-- Follow `N/A` reason format from `docs/contracts/execution-contract.md`.
 
-## Safety and Idempotency for Fixes
+## Safety
 
-- Prefer idempotent operations.
-- When idempotency is not guaranteed, add explicit pre-check guards.
+- Prefer idempotent operations for fixes.
+- When idempotency is not guaranteed, add guard patterns.
 - Never execute mutating fixes without user approval.
-
-## Documentation Requirements
-
-Platform `README.md` must include:
-
-- supported services and assumptions
-- required permissions
-- known gotchas
-- supported requirement coverage notes
-
-## Conformance Requirements
-
-- Add or update platform fixtures in `tests/conformance/` when adding platform support.
-- Ensure check queries satisfy contract expectations (`AS value` for SQL checks).
-- Ensure support matrix artifacts are up to date.
-
-## Suggested PR Checklist
-
-- [ ] Added or updated `capabilities.yaml`
-- [ ] Added or updated requirement implementation files
-- [ ] Added or updated platform docs
-- [ ] Validated with:
-  - `python3 scripts/validate_phase0.py`
-  - `python3 scripts/validate_structure.py`
-  - `python3 scripts/validate_requirements_contracts.py`
-  - `python3 scripts/generate_support_matrix.py --check`
-- [ ] Included rationale for any `N/A` behavior

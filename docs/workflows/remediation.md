@@ -1,20 +1,22 @@
-# Remediation Workflow (Platform-Aware)
+# Remediation Workflow
 
 ## Inputs
 
-- failing requirements from assessment output
-- selected platform
-- user approval per stage
+- Failing requirements from assessment results
+- Selected platform
+- User approval per stage
 
 ## Steps
 
-1. Resolve fix files from `implementations/{platform}/fix.*.sql`.
-2. Present plan and constraints from `requirement.yaml`.
-3. Execute only after explicit user approval.
-4. Re-run resolved platform check to verify improvement.
+1. Load fix files from `{platform}/fix.*`.
+2. Check `platforms/{platform}/delegations.yaml` for delegation targets.
+3. Check `platforms/{platform}/guards.yaml` for idempotency guards.
+4. Present plan and constraints from `requirement.yaml`.
+5. Execute only after explicit user approval.
+6. Re-run platform check to verify improvement.
 
 ## Rules
 
-- Never run mutating SQL during assess/discover.
+- Never run mutating SQL during assess phases.
 - Use idempotency guards for non-idempotent operations.
-- If fix is unsupported, return `N/A` with reason.
+- If fix is unsupported, report `N/A`.
