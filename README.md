@@ -130,7 +130,7 @@ overrides:
 - **Workload Profile** — A YAML file selecting requirements and thresholds for a workload, organized into the six factor stages. Four built-in, unlimited custom.
 - **Assessment** — The ephemeral runtime compilation of workload profile + platform + scope. Not a file.
 - **Stage** — One per factor: Clean, Contextual, Consumable, Current, Correlated, Compliant.
-- **Requirement** — A single testable dimension with platform-specific check SQL (returns 0–1 score), diagnostic SQL, and fix SQL.
+- **Requirement** — A single testable dimension with platform-specific check (returns 0–1 score), diagnostic (detail drill-down), and fix (remediation).
 - **Platform Reference** — Everything the agent needs to operate on a specific platform: capabilities, nuances, permissions, dialect notes.
 - **Override** — skip/set/add adjustments applied before running an assessment.
 

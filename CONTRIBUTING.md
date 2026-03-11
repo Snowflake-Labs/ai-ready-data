@@ -17,7 +17,7 @@ The framework has five layers:
 - New or improved requirements
 - New workload profiles
 - Platform implementations (Snowflake, Databricks, AWS, Azure)
-- Platform pack improvements
+- Platform reference improvements
 
 ## Adding a Requirement
 
@@ -27,17 +27,15 @@ The framework has five layers:
 
 ## Adding a Platform
 
-1. Create `platforms/{PLATFORM}.md` covering capabilities, dialect, permissions, nuances.
-2. Add `guards.yaml` for idempotency patterns (if applicable).
-3. Add `delegations.yaml` for skill delegation targets (if applicable).
-4. Add requirement implementations.
+1. Create `platforms/{PLATFORM}.md` covering capabilities, dialect, permissions, nuances, guards, and delegations.
+2. Add requirement files under `requirements/{name}/{platform}/`.
 
 ## Conventions
 
 - Keep requirement metadata platform-agnostic.
-- Keep platform-specific logic in platform packs and implementation files.
+- Keep platform-specific logic in platform references and requirement platform directories.
 - Preserve the six factor stage names exactly.
-- Scoring: 0.0 to 1.0 where 1.0 is perfect. Alias as `value` in check SQL.
+- Scoring: 0.0 to 1.0 where 1.0 is perfect. Alias as `value` in check implementations.
 
 ## Pull Request Expectations
 

@@ -10,19 +10,7 @@ For each platform:
 skills/ai-ready-data/platforms/{PLATFORM}.md
 ```
 
-If the platform needs extra files (guards, delegations, etc.), use a directory instead:
-
-```
-skills/ai-ready-data/platforms/{platform}/
-  {PLATFORM}.md
-  guards.yaml
-  delegations.yaml
-```
-
-Recommended:
-
-- `guards.yaml` — idempotency guard patterns for safe remediation
-- `delegations.yaml` — skill delegation targets for specific requirements
+Include idempotency guards, skill delegation targets, and any other platform-specific operational details directly in the platform markdown file.
 
 ## Platform Reference
 
@@ -30,7 +18,7 @@ The platform markdown file must cover:
 
 - What the platform supports (capabilities)
 - What is NOT supported (and why)
-- SQL dialect notes and behavioral quirks
+- Dialect notes and behavioral quirks
 - Metadata access patterns
 - Required permissions
 - Anything the agent needs to operate correctly on this platform
@@ -58,5 +46,5 @@ Recommended:
 ## Safety
 
 - Prefer idempotent operations for fixes.
-- When idempotency is not guaranteed, add guard patterns.
+- When idempotency is not guaranteed, document guard patterns in the platform reference.
 - Never execute mutating fixes without user approval.

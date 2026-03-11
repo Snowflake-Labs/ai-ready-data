@@ -25,7 +25,7 @@ else:
 
 ## Check Output
 
-Check SQL must return a `value` column: float in [0, 1] where 1.0 is perfect.
+Check implementations must return a `value` result: float in [0, 1] where 1.0 is perfect.
 
 ## Status
 
