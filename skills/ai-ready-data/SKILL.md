@@ -16,10 +16,11 @@ Assess Snowflake data products for AI-readiness and remediate gaps. Each require
 
 Ask the user:
 
-1. **What workload?** RAG, feature serving, training, or agents. Load `assessments/{name}.yaml`. Default: rag.
-2. **What scope?** Database, schema, and optionally specific tables.
-3. **Any adjustments?** User may skip, set, or add requirements before running. See [Overrides](#overrides).
-4. **Assess or remediate?** If no prior assessment exists, assess first.
+1. **What platform?** `snowflake`, `databricks`, `aws`, or `azure`. Default: `snowflake`.
+2. **What workload?** RAG, feature serving, training, or agents. Load `assessments/{name}.yaml`. Default: rag.
+3. **What scope?** Database, schema, and optionally specific tables.
+4. **Any adjustments?** User may skip, set, or add requirements before running. See [Overrides](#overrides).
+5. **Assess or remediate?** If no prior assessment exists, assess first.
 
 ### Available Assessments
 
@@ -64,18 +65,18 @@ When loading an assessment with `extends`, first load the base assessment, then 
 discover → assess → report → [approve] → remediate → verify
 ```
 
-| Phase | What Happens | SQL Type |
-|-------|-------------|----------|
-| Discover | Confirm scope (database, schema, tables) | Ad-hoc |
-| Assess | Run `check.sql` for each requirement in the assessment | `requirements/{name}/check.sql` (read-only) |
+| Phase | What Happens | Implementation Type |
+|-------|-------------|---------------------|
+| Discover | Confirm scope (database, schema, tables) | Platform metadata queries |
+| Assess | Run platform `check` implementation for each requirement | `requirements/{name}/implementations/{platform}/check*.sql` |
 | Report | Present scores grouped by stage, show pass/fail | None |
 | Approve | User approves remediation per stage | None |
-| Remediate | Run `fix.*.sql` for failing requirements | `requirements/{name}/fix.*.sql` (mutating) |
-| Verify | Re-run `check.sql` to confirm improvement | `requirements/{name}/check.sql` (read-only) |
+| Remediate | Run platform `fix` implementations for failing requirements | `requirements/{name}/implementations/{platform}/fix.*.sql` |
+| Verify | Re-run platform `check` implementation | `requirements/{name}/implementations/{platform}/check*.sql` |
 
 ### How Checks Work
 
-Every requirement directory contains a `check.sql` that returns a `value` column: a float between 0.0 and 1.0, where **1.0 is perfect**. A requirement passes when `value >= threshold`. Some requirements have variant checks (e.g., `check.sampled.sql` for large tables).
+The default implementation contract expects a check to return a `value` column: a float between 0.0 and 1.0, where **1.0 is perfect**. A requirement passes when `value >= threshold`. Some requirements have variant checks (e.g., `check.sampled.sql` for large tables).
 
 ### How Assessments Work
 
@@ -93,22 +94,25 @@ Do NOT rename, paraphrase, or invent alternative stage names. Use the `name` fie
 Load the assessment YAML, apply any overrides, then for each stage, for each requirement:
 
 1. Load `requirements/{requirement_name}/requirement.yaml` for metadata (scope, placeholders, constraints).
-2. Read `requirements/{requirement_name}/check.sql`, substitute `{{ placeholder }}` values from context.
-3. Execute the SQL, read the `value` column.
-4. Compare `value >= threshold` to determine pass/fail.
+2. Resolve implementation path by platform:
+   - Required: `requirements/{requirement_name}/implementations/{platform}/check.sql`
+   - Optional variant: `requirements/{requirement_name}/implementations/{platform}/check.{variant}.sql`
+3. Substitute `{{ placeholder }}` values from context.
+4. Execute and read the normalized result (`value`, `status`, optional `reason`).
+5. If capability or implementation is unavailable, return `N/A` with reason (do not force FAIL).
 
 ### Requirement Directory Convention
 
-Each requirement is a self-contained directory under `requirements/`. File discovery is by naming convention — no path pointers in YAML:
+Each requirement is a self-contained directory under `requirements/`. Keep canonical metadata in `requirement.yaml`, and implementation files under platform folders:
 
 | File Pattern | Purpose |
 |---|---|
-| `requirement.yaml` | Metadata: name, description, factor, workload, scope, placeholders, constraints |
-| `check.sql` | Default check query (read-only, returns 0–1 `value`) |
-| `check.{variant}.sql` | Named variant check (e.g., `check.sampled.sql`, `check.column.sql`) |
-| `diagnostic.sql` | Default diagnostic query (detail drill-down) |
-| `diagnostic.{variant}.sql` | Named variant diagnostic (e.g., `diagnostic.untagged.sql`) |
-| `fix.{name}.sql` | Fix operations (mutating, requires approval) |
+| `requirement.yaml` | Canonical metadata: name, description, factor, workload, scope, placeholders, constraints |
+| `implementations/{platform}/check.sql` | Platform check query (returns normalized score) |
+| `implementations/{platform}/check.{variant}.sql` | Platform check variant |
+| `implementations/{platform}/diagnostic.sql` | Platform diagnostic query |
+| `implementations/{platform}/diagnostic.{variant}.sql` | Platform diagnostic variant |
+| `implementations/{platform}/fix.{name}.sql` | Platform fix operation (mutating, requires approval) |
 
 ### Scope Inference
 
@@ -145,10 +149,10 @@ Present as inventory, confirm scope with the user.
 For each stage in the assessment (in order), for each requirement:
 
 1. Load `requirements/{requirement_name}/requirement.yaml` for scope and placeholders.
-2. Read `requirements/{requirement_name}/check.sql` (or a variant like `check.sampled.sql` if appropriate).
+2. Resolve platform implementation path (`implementations/{platform}/check.sql` or variant).
 3. Substitute placeholders with actual values.
-4. Execute the SQL.
-5. Compare `value` against the threshold.
+4. Execute the implementation.
+5. Compare normalized result against threshold (`PASS`, `FAIL`, or `N/A`).
 
 ### Step 3: Present Results
 
@@ -168,7 +172,7 @@ Where `{name}` is the literal `name` field from the assessment YAML (Clean, Cont
 
 ### Diagnostics
 
-When the user wants detail on a failing requirement, read `requirements/{requirement_name}/diagnostic.sql` (or a variant), substitute placeholders, execute, and present the results.
+When the user wants detail on a failing requirement, resolve `implementations/{platform}/diagnostic.sql` (or variant), substitute placeholders, execute, and present results. If unavailable, return `N/A` with reason.
 
 ### JSON Export
 
@@ -214,7 +218,7 @@ Failing requirements:
 For each failing requirement:
 
 1. Load `requirements/{requirement_name}/requirement.yaml` for placeholders and constraints.
-2. List all `fix.*.sql` files in `requirements/{requirement_name}/`.
+2. List all `fix.*.sql` files in `requirements/{requirement_name}/implementations/{platform}/`.
 3. Read each fix SQL file, substitute placeholders with actual values.
 4. Check skill delegation (see below).
 
@@ -240,7 +244,7 @@ Skipped guards are not failures — the desired state already exists. Never use 
 
 ### Step 5: Verify
 
-Re-run `check.sql` for each requirement in the stage. Show before/after:
+Re-run the resolved platform check implementation for each requirement in the stage. Show before/after:
 
 ```
 {Stage Name} — remediation complete
@@ -628,8 +632,9 @@ SQL files use `{{ placeholder }}` syntax. Substitute from context:
 3. **Never batch without consent.** Present the plan first, execute stage-by-stage with approval.
 4. **Surface all constraints.** Show constraints from `requirement.yaml` before executing fix operations.
 5. **No credentials in output.** Connection strings stay in environment variables.
-6. **Read `reference/gotchas.md`** before executing SQL to avoid common Snowflake pitfalls.
+6. **Read platform gotchas first.** Use `platforms/{platform}/gotchas.md` and, for Snowflake, `reference/gotchas.md`.
 7. **Delegate to specialized workflows** for `semantic_documentation` (Semantic View Builder), `column_masking`, and `classification` remediation.
+8. **Use capability gating.** If platform capability is unavailable, return `N/A` with reason.
 
 ---
 
@@ -665,23 +670,38 @@ Critical pitfalls — see `reference/gotchas.md` for full details. Key ones:
 ```
 skills/ai-ready-data/
   SKILL.md                              ← You are here
+  platforms/                            ← Platform capability manifests + gotchas
+    snowflake/
+      capabilities.yaml
+      gotchas.md
+    databricks/
+      capabilities.yaml
+      gotchas.md
+    aws/
+      capabilities.yaml
+      gotchas.md
+    azure/
+      capabilities.yaml
+      gotchas.md
   requirements/                         ← One directory per requirement (61 total)
+    index.yaml                          ← Requirement registry
     data_completeness/
       requirement.yaml                  ← Metadata (no SQL paths)
-      check.sql                         ← Default check query
-      check.sampled.sql                 ← Variant for large tables
-      diagnostic.sql                    ← Detail drill-down
-      fix.fill-default.sql              ← Fix: fill nulls with default
-      fix.fill-placeholder.sql          ← Fix: fill nulls with expression
-      fix.delete-incomplete.sql         ← Fix: delete null rows
-      fix.add-not-null.sql              ← Fix: add NOT NULL constraint
+      implementations/
+        snowflake/
+          check.sql                     ← Platform check query
+          check.sampled.sql             ← Platform variant
+          diagnostic.sql                ← Platform drill-down
+          fix.fill-default.sql          ← Platform fix
     uniqueness/
       requirement.yaml
-      check.sql
-      check.sampled.sql
-      diagnostic.sql
-      fix.deduplicate-keep-first.sql
-      fix.deduplicate-keep-last.sql
+      implementations/
+        snowflake/
+          check.sql
+          check.sampled.sql
+          diagnostic.sql
+          fix.deduplicate-keep-first.sql
+          fix.deduplicate-keep-last.sql
     ...
   assessments/
     rag.yaml                            ← RAG workload assessment
@@ -696,7 +716,10 @@ skills/ai-ready-data/
 
 1. Create `requirements/{name}/` directory.
 2. Add `requirement.yaml` with metadata: name, description, factor, workload, scope, placeholders, constraints.
-3. Add `check.sql` (required), `diagnostic.sql`, and any `fix.{name}.sql` files.
+3. Add implementation files under `implementations/{platform}/`:
+   - required: `check.sql`
+   - recommended: `diagnostic.sql`
+   - optional: `fix.{name}.sql`
 4. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
 
 ### Adding a New Assessment

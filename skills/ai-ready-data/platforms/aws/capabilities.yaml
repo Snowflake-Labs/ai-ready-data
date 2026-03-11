@@ -1,0 +1,13 @@
+platform: aws
+version: v1
+capabilities:
+  supports_semantic_views: false
+  supports_native_column_masking: false
+  supports_row_access_policies: false
+  supports_vector_index_introspection: false
+  supports_lineage_api: true
+  supports_governance_tag_introspection: true
+  supports_account_usage_equivalent: false
+  supports_change_tracking_introspection: false
+  supports_sql_check_execution: true
+  supports_sql_fix_execution: false

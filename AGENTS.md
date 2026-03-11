@@ -36,12 +36,19 @@ When the user wants to **build or customize** an assessment, read `skills/build-
 skills/
   ai-ready-data/
     SKILL.md                    ← Assessment & remediation instructions
+    platforms/                  ← Platform capability manifests and gotchas
+      {platform}/
+        capabilities.yaml
+        gotchas.md
     requirements/               ← One directory per requirement (61 total)
+      index.yaml                ← Requirement registry
       {name}/
         requirement.yaml        ← Metadata (no SQL paths)
-        check.sql               ← Assessment query (read-only)
-        diagnostic.sql          ← Detail query (read-only)
-        fix.*.sql               ← Remediation queries (mutating)
+        implementations/
+          {platform}/
+            check.sql           ← Platform check query (read-only)
+            diagnostic.sql      ← Platform detail query (read-only)
+            fix.*.sql           ← Platform remediation queries (mutating)
     assessments/
       rag.yaml                  ← RAG workload assessment
       feature-serving.yaml      ← Feature serving workload assessment

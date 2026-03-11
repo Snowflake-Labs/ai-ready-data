@@ -1,0 +1,25 @@
+name: framework-structure-guardrails
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate-framework-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Validate docs and capability manifests
+        run: python3 scripts/validate_phase0.py
+
+      - name: Validate requirement structure and skill sync
+        run: python3 scripts/validate_structure.py

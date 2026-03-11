@@ -69,14 +69,14 @@ Clone or add this repo as workspace context. The agent reads `skills/ai-ready-da
 
 ### How It Works
 
-1. **Choose an assessment** — RAG, feature serving, training, agents, or build your own
+1. **Choose a platform + assessment** — platform (Snowflake, Databricks, AWS, Azure) and workload assessment (RAG, feature serving, training, agents, or custom)
 2. **Discover** — agent inventories your schema (tables, row counts, sizes)
 3. **Adjust** — skip, set, or add requirements before running
 4. **Assess** — read-only SQL checks score each requirement 0–1, compared against thresholds
 5. **Report** — results grouped by the six factors, with pass/fail per requirement
 6. **Remediate** — for failures, the agent presents fix SQL, gets your approval, executes, and verifies
 
-All operations are SQL. No Python, no packages, no infrastructure.
+Checks and fixes are platform implementations with normalized outputs. SQL remains the default implementation style where supported.
 
 ### Factor Stages
 
@@ -146,8 +146,9 @@ Say **"build me an assessment"** and the agent will interview you:
 
 #### Adding a Requirement
 
-1. Create `requirements/{name}/` directory with `requirement.yaml` (metadata), `check.sql`, `diagnostic.sql`, and any `fix.{name}.sql` files.
-2. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
+1. Create `requirements/{name}/` directory with `requirement.yaml` (canonical metadata) and add platform implementations under `implementations/{platform}/`.
+2. For each supported platform, add at minimum `check.sql`, and optionally `diagnostic.sql` and `fix.{name}.sql`.
+3. Add the requirement to the relevant assessment YAML(s) under the matching factor stage.
 
 #### Adding an Assessment
 
@@ -164,12 +165,28 @@ factors/                            ← The six factors of AI-ready data (prose 
 skills/
   ai-ready-data/
     SKILL.md                        ← Agent instructions for assessment & remediation
+    platforms/                      ← Platform capability manifests + platform gotchas
+      snowflake/
+        capabilities.yaml
+        gotchas.md
+      databricks/
+        capabilities.yaml
+        gotchas.md
+      aws/
+        capabilities.yaml
+        gotchas.md
+      azure/
+        capabilities.yaml
+        gotchas.md
     requirements/                   ← One directory per requirement (61 total)
+      index.yaml                    ← Requirement registry for deterministic discovery
       data_completeness/
         requirement.yaml            ← Metadata (no SQL paths)
-        check.sql                   ← Assessment query (read-only)
-        diagnostic.sql              ← Detail query (read-only)
-        fix.*.sql                   ← Remediation queries (mutating)
+        implementations/
+          snowflake/
+            check.sql               ← Platform assessment query (read-only)
+            diagnostic.sql          ← Platform detail query (read-only)
+            fix.*.sql               ← Platform remediation queries (mutating)
       ...
     assessments/
       rag.yaml                      ← RAG workload assessment

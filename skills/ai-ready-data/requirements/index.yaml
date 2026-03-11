@@ -1,0 +1,307 @@
+version: v1
+requirements:
+  - key: access_audit_coverage
+    name: access_audit_coverage
+    factor: compliant
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: access_optimization
+    name: access_optimization
+    factor: consumable
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: agent_attribution
+    name: agent_attribution
+    factor: correlated
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: anonymization_effectiveness
+    name: anonymization_effectiveness
+    factor: compliant
+    workload: [training]
+    implementations: [snowflake]
+  - key: batch_throughput_sufficiency
+    name: batch_throughput_sufficiency
+    factor: consumable
+    workload: [training]
+    implementations: [snowflake]
+  - key: bias_testing_coverage
+    name: bias_testing_coverage
+    factor: compliant
+    workload: [training]
+    implementations: [snowflake]
+  - key: business_glossary_linkage
+    name: business_glossary_linkage
+    factor: contextual
+    workload: [training, agents]
+    implementations: [snowflake]
+  - key: categorical_validity
+    name: categorical_validity
+    factor: clean
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: change_detection
+    name: change_detection
+    factor: current
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: chunk_readiness
+    name: chunk_readiness
+    factor: consumable
+    workload: [rag]
+    implementations: [snowflake]
+  - key: classification
+    name: classification
+    factor: compliant
+    workload: [rag, feature-serving, training, agents]
+    implementations: [databricks, snowflake]
+  - key: column_masking
+    name: column_masking
+    factor: compliant
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: consent_coverage
+    name: consent_coverage
+    factor: compliant
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: constraint_declaration
+    name: constraint_declaration
+    factor: contextual
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: cross_column_consistency
+    name: cross_column_consistency
+    factor: clean
+    workload: [feature-serving, training]
+    implementations: [snowflake]
+  - key: data_completeness
+    name: data_completeness
+    factor: clean
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: data_freshness
+    name: data_freshness
+    factor: current
+    workload: [rag, feature-serving, agents]
+    implementations: [snowflake]
+  - key: data_provenance
+    name: data_provenance
+    factor: correlated
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: data_version_coverage
+    name: data_version_coverage
+    factor: correlated
+    workload: [training]
+    implementations: [snowflake]
+  - key: demographic_representation
+    name: demographic_representation
+    factor: compliant
+    workload: [training]
+    implementations: [snowflake]
+  - key: dependency_graph_completeness
+    name: dependency_graph_completeness
+    factor: correlated
+    workload: [training]
+    implementations: [snowflake]
+  - key: distribution_conformity
+    name: distribution_conformity
+    factor: clean
+    workload: [training]
+    implementations: [snowflake]
+  - key: embedding_coverage
+    name: embedding_coverage
+    factor: consumable
+    workload: [rag]
+    implementations: [snowflake]
+  - key: embedding_dimension_consistency
+    name: embedding_dimension_consistency
+    factor: consumable
+    workload: [rag]
+    implementations: [snowflake]
+  - key: encoding_validity
+    name: encoding_validity
+    factor: clean
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: entity_identifier_declaration
+    name: entity_identifier_declaration
+    factor: contextual
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: feature_materialization_coverage
+    name: feature_materialization_coverage
+    factor: consumable
+    workload: [feature-serving, training]
+    implementations: [snowflake]
+  - key: feature_refresh_compliance
+    name: feature_refresh_compliance
+    factor: current
+    workload: [feature-serving]
+    implementations: [snowflake]
+  - key: impact_analysis_capability
+    name: impact_analysis_capability
+    factor: correlated
+    workload: [training]
+    implementations: [snowflake]
+  - key: incremental_update_coverage
+    name: incremental_update_coverage
+    factor: current
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: license_compliance
+    name: license_compliance
+    factor: compliant
+    workload: [training]
+    implementations: [snowflake]
+  - key: lineage_completeness
+    name: lineage_completeness
+    factor: correlated
+    workload: [rag, feature-serving, training, agents]
+    implementations: [databricks, snowflake]
+  - key: native_format_availability
+    name: native_format_availability
+    factor: consumable
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: outlier_prevalence
+    name: outlier_prevalence
+    factor: clean
+    workload: [training]
+    implementations: [snowflake]
+  - key: pipeline_execution_audit
+    name: pipeline_execution_audit
+    factor: correlated
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: point_in_time_correctness
+    name: point_in_time_correctness
+    factor: current
+    workload: [training]
+    implementations: [snowflake]
+  - key: point_lookup_availability
+    name: point_lookup_availability
+    factor: consumable
+    workload: [feature-serving, agents]
+    implementations: [snowflake]
+  - key: propagation_latency_compliance
+    name: propagation_latency_compliance
+    factor: current
+    workload: [feature-serving, agents]
+    implementations: [snowflake]
+  - key: purpose_limitation
+    name: purpose_limitation
+    factor: compliant
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: record_level_traceability
+    name: record_level_traceability
+    factor: correlated
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: referential_accuracy
+    name: referential_accuracy
+    factor: clean
+    workload: [training]
+    implementations: [snowflake]
+  - key: referential_integrity
+    name: referential_integrity
+    factor: clean
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: relationship_declaration
+    name: relationship_declaration
+    factor: contextual
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: retention_policy
+    name: retention_policy
+    factor: compliant
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: retrieval_recall_compliance
+    name: retrieval_recall_compliance
+    factor: consumable
+    workload: [rag]
+    implementations: [snowflake]
+  - key: row_access_policy
+    name: row_access_policy
+    factor: compliant
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: schema_conformity
+    name: schema_conformity
+    factor: clean
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: schema_evolution_tracking
+    name: schema_evolution_tracking
+    factor: current
+    workload: [training]
+    implementations: [snowflake]
+  - key: schema_type_coverage
+    name: schema_type_coverage
+    factor: contextual
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: search_optimization
+    name: search_optimization
+    factor: consumable
+    workload: [rag, agents]
+    implementations: [snowflake]
+  - key: semantic_documentation
+    name: semantic_documentation
+    factor: contextual
+    workload: [rag, feature-serving, training, agents]
+    implementations: [databricks, snowflake]
+  - key: serving_latency_compliance
+    name: serving_latency_compliance
+    factor: consumable
+    workload: [feature-serving, agents]
+    implementations: [snowflake]
+  - key: syntactic_validity
+    name: syntactic_validity
+    factor: clean
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: temporal_referential_integrity
+    name: temporal_referential_integrity
+    factor: current
+    workload: [training]
+    implementations: [snowflake]
+  - key: temporal_scope_declaration
+    name: temporal_scope_declaration
+    factor: contextual
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: training_serving_parity
+    name: training_serving_parity
+    factor: current
+    workload: [feature-serving, training]
+    implementations: [snowflake]
+  - key: transformation_documentation
+    name: transformation_documentation
+    factor: correlated
+    workload: [training]
+    implementations: [snowflake]
+  - key: uniqueness
+    name: uniqueness
+    factor: clean
+    workload: [rag, feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: unit_of_measure_declaration
+    name: unit_of_measure_declaration
+    factor: contextual
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: value_range_validity
+    name: value_range_validity
+    factor: clean
+    workload: [feature-serving, training, agents]
+    implementations: [snowflake]
+  - key: vector_index_coverage
+    name: vector_index_coverage
+    factor: consumable
+    workload: [rag]
+    implementations: [snowflake]
