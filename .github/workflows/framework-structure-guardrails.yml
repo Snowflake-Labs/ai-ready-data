@@ -13,21 +13,49 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate check.sql score aliasing
+      - name: Validate check.md score aliasing
         run: |
           ERRORS=0
           REQ_ROOT="skills/ai-ready-data/requirements"
           for req_dir in "$REQ_ROOT"/*/; do
             [ -d "$req_dir" ] || continue
             [ -d "$req_dir/snowflake" ] || continue
-            check_sql="$req_dir/snowflake/check.sql"
-            if [ -f "$check_sql" ]; then
-              if ! grep -qi '\bas\s\+value\b' "$check_sql" 2>/dev/null; then
-                echo "ERROR: $check_sql must alias score as \`value\`"
+            check_md="$req_dir/snowflake/check.md"
+            if [ -f "$check_md" ]; then
+              if ! grep -qi '\bas\s\+value\b' "$check_md" 2>/dev/null; then
+                echo "ERROR: $check_md must alias score as \`value\` in its SQL block"
                 ERRORS=$((ERRORS + 1))
               fi
             fi
           done
+          [ "$ERRORS" -eq 0 ] || exit 1
+
+      - name: Validate requirement file completeness
+        run: |
+          ERRORS=0
+          REQ_ROOT="skills/ai-ready-data/requirements"
+          for req_dir in "$REQ_ROOT"/*/; do
+            [ -d "$req_dir" ] || continue
+            [ -d "$req_dir/snowflake" ] || continue
+            for file in check.md diagnostic.md fix.md; do
+              if [ ! -f "$req_dir/snowflake/$file" ]; then
+                echo "ERROR: Missing $req_dir/snowflake/$file"
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+          done
+          [ "$ERRORS" -eq 0 ] || exit 1
+
+      - name: Validate no stale SQL files remain
+        run: |
+          ERRORS=0
+          REQ_ROOT="skills/ai-ready-data/requirements"
+          stale=$(find "$REQ_ROOT" -name '*.sql' -type f 2>/dev/null)
+          if [ -n "$stale" ]; then
+            echo "ERROR: Found .sql files that should have been converted to .md:"
+            echo "$stale"
+            ERRORS=1
+          fi
           [ "$ERRORS" -eq 0 ] || exit 1
 
       - name: Validate manifest factors and scopes

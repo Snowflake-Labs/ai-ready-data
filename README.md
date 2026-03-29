@@ -135,8 +135,9 @@ overrides:
 
 - **Factor**: one of six categories of AI-ready data (Clean, Contextual, Consumable, Current, Correlated, Compliant). Factors define the dimensions along which data is evaluated.
 - **Requirement**: a platform-agnostic criterion that must be true of the data. Requirements define *what* to measure, not *how*. All requirements live in a single manifest (`requirements/requirements.yaml`).
-- **Test**: a platform-specific implementation that measures a requirement and returns a normalized 0–1 score. Tests are `check.sql` files under `requirements/{key}/{platform}/`. Diagnostic queries (`diagnostic.sql`) provide detail drill-downs on test results.
-- **Remediation**: a platform-specific implementation that addresses a gap surfaced by a test. Fix files (`fix.*.sql`) under `requirements/{key}/{platform}/` are executed only with explicit user approval.
+- **Check**: a platform-specific markdown file (`check.md`) containing prose context and SQL that measures a requirement, returning a normalized 0–1 score. Context, constraints, and variant guidance are co-located directly above the SQL they apply to.
+- **Diagnostic**: a platform-specific markdown file (`diagnostic.md`) containing prose context and SQL that provides detail drill-downs on check results.
+- **Fix**: a platform-specific markdown file (`fix.md`) containing remediation options — executable SQL and/or organizational process guidance. A single file can contain multiple remediation paths with prose explaining when to use each. Fixes are executed only with explicit user approval.
 - **Profile**: a curated collection of requirements with thresholds, organized into the six factor stages. Profiles can target a workload (RAG, training, feature-serving, agents) or an estate-level scan. Five built-in, unlimited custom.
 - **Assessment**: the guided flow where the agent discovers scope and profile, runs tests, and produces a scored report.
 - **Scan**: estate-level sweep using the lightweight scan profile across many schemas for comparative prioritization. Scans turn into assessments when the user drills into a specific schema.
@@ -147,8 +148,11 @@ overrides:
 
 #### Adding a Requirement
 
-1. Add an entry to `requirements/requirements.yaml` with: description, factor, scope, placeholders, constraints, implementations.
-2. Add platform files under `requirements/{name}/{platform}/` — at minimum `check.sql`.
+1. Add an entry to `requirements/requirements.yaml` with: description, factor, scope, placeholders, implementations.
+2. Create `requirements/{name}/{platform}/` with three markdown files:
+   - `check.md` (required) — context + SQL returning a `value` score 0–1
+   - `diagnostic.md` (required) — context + SQL for detail drill-down
+   - `fix.md` (required) — remediation SQL and/or organizational guidance
 3. Add the requirement to relevant profile YAML(s) under the matching factor stage.
 
 #### Adding a Profile
@@ -177,9 +181,9 @@ skills/
       requirements.yaml             # Single manifest (all requirement metadata)
       {requirement_key}/
         {platform}/
-          check.sql               # Platform check query (read-only)
-          diagnostic.sql          # Platform detail query (read-only)
-          fix.*.sql               # Platform remediation queries (mutating)
+          check.md                # Context + check SQL (read-only, returns 0–1 score)
+          diagnostic.md           # Context + diagnostic SQL (read-only detail)
+          fix.md                  # Context + remediation SQL/guidance (mutating)
     profiles/                       # Assessment profiles
       scan.yaml                     # Estate-level scan (lightweight)
       rag.yaml

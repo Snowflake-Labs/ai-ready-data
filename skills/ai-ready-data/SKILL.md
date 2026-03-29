@@ -5,7 +5,7 @@ description: Assess and optimize data for AI workloads across platforms. Scan es
 
 # AI-Ready Data
 
-Assess data products for AI-readiness and remediate gaps. Each requirement is a self-contained directory with a check (returns 0–1 score), diagnostic (detail drill-down), fix (remediation), and platform-specific implementations. All requirement metadata lives in a single manifest (`requirements/requirements.yaml`). Every assessment has exactly six stages named after the six factors of AI-ready data — use these exact names everywhere (reports, plans, tasks): **Clean**, **Contextual**, **Consumable**, **Current**, **Correlated**, **Compliant**.
+Assess data products for AI-readiness and remediate gaps. Each requirement is a self-contained directory with three markdown files per platform: `check.md` (context + SQL returning a 0–1 score), `diagnostic.md` (context + detail SQL), and `fix.md` (context + remediation SQL and/or organizational guidance). Each file co-locates all relevant context — constraints, gotchas, variant selection guidance, and platform-specific notes — directly above the SQL it applies to. The manifest (`requirements/requirements.yaml`) provides lightweight metadata for profile-load time. Every assessment has exactly six stages named after the six factors of AI-ready data — use these exact names everywhere (reports, plans, tasks): **Clean**, **Contextual**, **Consumable**, **Current**, **Correlated**, **Compliant**.
 
 ## What This Skill Does
 
@@ -247,7 +247,7 @@ After loading the profile, offer three adjustment verbs:
 
 ### Step 5: Coverage Summary
 
-Before executing, intersect the selected requirements with what the platform can actually run. For each requirement, check if `requirements/{key}/{platform}/check.sql` exists.
+Before executing, intersect the selected requirements with what the platform can actually run. For each requirement, check if `requirements/{key}/{platform}/check.md` exists.
 
 Present the coverage summary:
 
@@ -267,18 +267,19 @@ Proceed?
 
 ### Step 6: Assess
 
-Load `requirements/requirements.yaml` once at session start. This manifest contains all requirement metadata: description, factor, scope, placeholders, constraints, delegates_to, and implementations.
+Load `requirements/requirements.yaml` once at session start. This manifest provides lightweight metadata: description, factor, scope, placeholders, and implementations.
 
 For each stage in order (Clean, Contextual, Consumable, Current, Correlated, Compliant), for each requirement:
 
-1. Look up the requirement entry in `requirements/requirements.yaml` for metadata (scope, placeholders, constraints).
-2. Read the platform check implementation from `requirements/{requirement_name}/{platform}/`.
-3. Substitute `{{ placeholder }}` values from the user's scope context (database, schema, asset, column, etc.).
-4. Execute the check. Read the `value` result (float 0.0–1.0, where 1.0 is perfect).
-5. Compare `value >= threshold` to determine pass/fail.
-6. If no implementation exists for this platform, report `N/A`.
+1. Look up the requirement entry in `requirements/requirements.yaml` for metadata (scope, placeholders).
+2. Read `requirements/{requirement_name}/{platform}/check.md`. This file contains all context (constraints, gotchas, variant guidance) and one or more SQL blocks.
+3. Use the context in the file to determine which SQL block to execute (e.g., sampled vs full scan based on row count, primary vs variant based on available platform features).
+4. Substitute `{{ placeholder }}` values from the user's scope context (database, schema, asset, column, etc.).
+5. Execute the SQL. Read the `value` result (float 0.0–1.0, where 1.0 is perfect).
+6. Compare `value >= threshold` to determine pass/fail.
+7. If no implementation exists for this platform, report `N/A`.
 
-Implementation files use `{{ placeholder }}` syntax for variable substitution. The `scope` field in the manifest tells you whether the check is schema-scoped, table-scoped, or column-scoped:
+SQL blocks within markdown files use `{{ placeholder }}` syntax for variable substitution. The `scope` field in the manifest tells you whether the check is schema-scoped, table-scoped, or column-scoped:
 
 - **Schema-scoped** (only `database`, `schema`): run once per schema.
 - **Table-scoped** (includes `asset`): run per table, aggregate results.
@@ -374,7 +375,7 @@ If the user ran a custom selection (option 6), note which requirements were incl
 
 ### Diagnostics
 
-When the user wants detail on a failing requirement, resolve the platform diagnostic implementation, substitute placeholders, execute, and present the results. If unavailable, explain that diagnostics aren't available for this requirement on this platform.
+When the user wants detail on a failing requirement, read `requirements/{requirement_name}/{platform}/diagnostic.md`. The file contains context explaining what the diagnostic measures and one or more SQL blocks. Use the context to select the appropriate SQL, substitute placeholders, execute, and present the results. If the file doesn't exist, explain that diagnostics aren't available for this requirement on this platform.
 
 ---
 
@@ -396,10 +397,10 @@ Failing requirements:
 
 For each failing requirement:
 
-1. Look up the requirement entry in `requirements/requirements.yaml` for placeholders, constraints, and delegates_to.
-2. List all fix files (`fix.*`) in `requirements/{requirement_name}/{platform}/`.
-3. Read each fix implementation, substitute placeholders.
-4. Check the platform reference for delegation targets. If a delegation exists for this requirement, follow the delegated workflow.
+1. Read `requirements/{requirement_name}/{platform}/fix.md`. This file contains all context (constraints, preconditions, delegation notes) and one or more remediation options — each with its own SQL block and/or organizational guidance.
+2. Use the context to determine which remediation option(s) to present. Some fixes are executable SQL; others are organizational process guidance for humans.
+3. Substitute `{{ placeholder }}` values in the SQL blocks.
+4. Check the platform reference for delegation targets. If the fix references a delegated workflow, follow it.
 
 ### Present Remediation Plan
 
@@ -469,7 +470,7 @@ When loading a profile with `extends`, first load the base profile, then apply o
 1. **Read-only during assessment.** Never execute mutating operations during scan or assess phases.
 2. **Fix operations require approval.** Execute only with explicit user consent per stage.
 3. **Never batch without consent.** Present the plan first, execute stage-by-stage with approval.
-4. **Surface all constraints.** Show constraints from the manifest before executing fix operations.
+4. **Surface all constraints.** Show constraints from the fix file's context section before executing fix operations.
 5. **No credentials in output.** Connection strings stay in environment variables.
 6. **Read platform docs first.** Load the platform reference from `platforms/` before executing any operations.
 7. **Use capability gating.** If platform doesn't support an operation, return `N/A` with reason.
@@ -478,17 +479,39 @@ When loading a profile with `extends`, first load the base profile, then apply o
 
 ## Requirement Directory Convention
 
-Each requirement has a directory under `requirements/` containing platform-specific implementations. All metadata lives in the single manifest (`requirements/requirements.yaml`).
+Each requirement has a directory under `requirements/` containing platform-specific implementations as markdown files. The manifest (`requirements/requirements.yaml`) provides lightweight metadata needed at profile-load time. All detailed context — constraints, gotchas, variant selection guidance, platform-specific notes — lives in the markdown files themselves, co-located directly above the SQL they apply to.
 
-| File Pattern | Purpose |
+| File | Purpose |
 |---|---|
-| `requirements.yaml` | Single manifest: all requirement metadata (description, factor, scope, placeholders, constraints, delegates_to, implementations) |
-| `{requirement_key}/{platform}/check.*` | Platform check implementation (returns normalized score) |
-| `{requirement_key}/{platform}/check.{variant}.*` | Platform check variant |
-| `{requirement_key}/{platform}/diagnostic.*` | Platform diagnostic implementation |
-| `{requirement_key}/{platform}/diagnostic.{variant}.*` | Platform diagnostic variant |
-| `{requirement_key}/{platform}/fix.{name}.*` | Platform fix operation (mutating, requires approval) |
-| `{requirement_key}/{platform}/constraints.md` | Platform-specific constraints and gotchas |
+| `requirements.yaml` | Single manifest: lightweight metadata (description, factor, scope, placeholders, implementations) |
+| `{requirement_key}/{platform}/check.md` | Context + check SQL (read-only, returns normalized 0–1 score) |
+| `{requirement_key}/{platform}/diagnostic.md` | Context + diagnostic SQL (read-only detail drill-down) |
+| `{requirement_key}/{platform}/fix.md` | Context + remediation SQL and/or organizational guidance (mutating, requires approval) |
+
+### Markdown file format
+
+Each file follows this structure:
+
+```
+# {Type}: {requirement_key}
+
+{One-line description}
+
+## Context
+
+{Prose: what it measures, constraints, gotchas, platform-specific notes,
+ variant selection guidance, preconditions. Everything the agent needs
+ to understand before executing the SQL.}
+
+## SQL
+
+{One or more fenced SQL blocks. If multiple variants or options exist,
+ use ### subheadings with prose explaining when to use each one.}
+```
+
+A single file can contain multiple SQL implementations. For example, `check.md` can contain both a full-scan and a sampled variant; `fix.md` can contain multiple remediation options with different tradeoffs. The agent reads the context to determine which SQL block to use.
+
+Fix files may contain organizational process guidance (not just SQL) — for example, governance decisions, ownership assignments, or data model restructuring advice.
 
 ## File Layout
 
@@ -507,19 +530,18 @@ skills/ai-ready-data/
     requirements.yaml                   ← Single manifest (all requirement metadata)
     {requirement_key}/
       {platform}/
-        check.sql
-        diagnostic.sql
-        fix.*.sql
-        constraints.md
+        check.md                        ← Context + check SQL
+        diagnostic.md                   ← Context + diagnostic SQL
+        fix.md                          ← Context + remediation SQL/guidance
 ```
 
 ## Adding a New Requirement
 
-1. Add an entry to `requirements/requirements.yaml` with: description, factor, scope, placeholders, constraints, implementations.
-2. Create `requirements/{name}/{platform}/` directory with platform files:
-   - required: `check.sql`
-   - recommended: `diagnostic.sql`
-   - optional: `fix.{name}.sql`, `constraints.md`
+1. Add an entry to `requirements/requirements.yaml` with: description, factor, scope, placeholders, implementations.
+2. Create `requirements/{name}/{platform}/` directory with three markdown files:
+   - `check.md` (required) — context + SQL returning a `value` score 0–1
+   - `diagnostic.md` (required) — context + SQL for detail drill-down
+   - `fix.md` (required) — remediation SQL and/or organizational guidance
 3. Add the requirement to the relevant profile YAML(s) under the matching factor stage.
 
 ## Adding a New Profile

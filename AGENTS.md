@@ -36,9 +36,9 @@ skills/
       requirements.yaml         ← Single manifest (all requirement metadata)
       {name}/
         {platform}/
-          check.sql           ← Platform check query (read-only)
-          diagnostic.sql      ← Platform detail query (read-only)
-          fix.*.sql           ← Platform remediation queries (mutating)
+          check.md            ← Context + check SQL (read-only, returns 0–1 score)
+          diagnostic.md       ← Context + diagnostic SQL (read-only detail)
+          fix.md              ← Context + remediation SQL/guidance (mutating)
     profiles/
       scan.yaml                 ← Estate-level scan profile (lightweight)
       rag.yaml                  ← RAG readiness profile
