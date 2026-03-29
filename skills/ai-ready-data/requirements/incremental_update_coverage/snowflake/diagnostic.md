@@ -1,0 +1,59 @@
+# Diagnostic: incremental_update_coverage
+
+Fraction of data pipelines that use incremental processing (CDC or streaming) rather than full-reload extraction.
+
+## Context
+
+Shows tables and their incremental update capabilities, including dynamic table and stream status.
+
+For stream details, run `SHOW STREAMS IN SCHEMA {{ database }}.{{ schema }};`
+
+## SQL
+
+```sql
+WITH base_tables AS (
+    SELECT 
+        table_catalog,
+        table_schema,
+        table_name,
+        row_count,
+        'BASE TABLE' AS table_type
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
+        AND table_type = 'BASE TABLE'
+),
+dynamic_tables AS (
+    SELECT 
+        table_catalog,
+        table_schema,
+        table_name,
+        row_count,
+        'DYNAMIC TABLE' AS table_type
+    FROM {{ database }}.information_schema.tables
+    WHERE table_schema = '{{ schema }}'
+        AND table_type = 'DYNAMIC TABLE'
+),
+all_tables AS (
+    SELECT * FROM base_tables
+    UNION ALL
+    SELECT * FROM dynamic_tables
+)
+SELECT
+    t.table_catalog AS database_name,
+    t.table_schema AS schema_name,
+    t.table_name,
+    t.row_count,
+    t.table_type,
+    CASE
+        WHEN t.table_type = 'DYNAMIC TABLE' THEN 'DYNAMIC_TABLE'
+        ELSE 'NO_INCREMENTAL'
+    END AS incremental_capability,
+    CASE
+        WHEN t.table_type = 'DYNAMIC TABLE' THEN 'Auto-refreshes based on target lag'
+        ELSE 'Consider adding stream or converting to dynamic table'
+    END AS recommendation
+FROM all_tables t
+ORDER BY 
+    incremental_capability DESC,
+    t.table_name
+```
