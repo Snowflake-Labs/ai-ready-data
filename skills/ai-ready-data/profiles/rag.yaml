@@ -1,0 +1,54 @@
+name: rag
+description: RAG pipeline readiness — chunking, embedding, retrieval, and governance for retrieval-augmented generation
+stages:
+  - name: Clean
+    why: Dirty source documents produce hallucinations and retrieval noise
+    requirements:
+      data_completeness: { min: 0.98 }
+      uniqueness: { min: 0.99 }
+      schema_conformity: { min: 0.999 }
+      syntactic_validity: { min: 1.0 }
+      encoding_validity: { min: 1.0 }
+
+  - name: Contextual
+    why: Semantic metadata powers hybrid search and context-aware retrieval
+    requirements:
+      semantic_documentation: { min: 0.90 }
+      schema_type_coverage: { min: 0.80 }
+      entity_identifier_declaration: { min: 0.80 }
+      temporal_scope_declaration: { min: 0.70 }
+
+  - name: Consumable
+    why: RAG retrieval quality depends on chunk sizing, embeddings, and vector indexes
+    requirements:
+      chunk_readiness: { min: 0.90 }
+      embedding_coverage: { min: 0.90 }
+      embedding_dimension_consistency: { min: 1.00 }
+      vector_index_coverage: { min: 0.90 }
+      retrieval_recall_compliance: { min: 0.85 }
+      search_optimization: { min: 0.80 }
+      eval_coverage: { min: 0.30 }
+
+  - name: Current
+    why: Stale documents mean stale answers
+    requirements:
+      change_detection: { min: 1.00 }
+      data_freshness: { min: 1.00 }
+      incremental_update_coverage: { min: 0.50 }
+
+  - name: Correlated
+    why: Traceability lets you debug which source documents produced which answers
+    requirements:
+      data_provenance: { min: 0.50 }
+      lineage_completeness: { min: 0.50 }
+      record_level_traceability: { min: 0.50 }
+      agent_attribution: { min: 0.30 }
+
+  - name: Compliant
+    why: Prevents sensitive content from leaking into generated responses
+    requirements:
+      classification: { min: 0.50 }
+      column_masking: { min: 1.00 }
+      access_audit_coverage: { min: 0.80 }
+      retention_policy: { min: 0.30 }
+      purpose_limitation: { min: 0.30 }

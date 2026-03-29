@@ -1,0 +1,92 @@
+name: update-contributors
+
+on:
+  push:
+    branches: [main]
+    paths: [CONTRIBUTORS.md]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate contributor tiles and update README
+        run: |
+          python3 - <<'PYEOF'
+          import re, sys
+          from pathlib import Path
+
+          COLS = 8
+          START = "<!-- CONTRIBUTORS:START -->"
+          END = "<!-- CONTRIBUTORS:END -->"
+
+          contributors_path = Path("CONTRIBUTORS.md")
+          readme_path = Path("README.md")
+
+          # Parse contributors table
+          contributors = []
+          in_table = False
+          for line in contributors_path.read_text().splitlines():
+              s = line.strip()
+              if s.startswith("|") and "Name" in s and "Username" in s:
+                  in_table = True
+                  continue
+              if in_table and s.startswith("|") and all(c in "-| " for c in s):
+                  continue
+              if in_table and s.startswith("|"):
+                  parts = [p.strip() for p in s.split("|") if p.strip()]
+                  if len(parts) >= 2:
+                      contributors.append((parts[0], parts[1]))
+              elif in_table:
+                  break
+
+          if not contributors:
+              print("No contributors found", file=sys.stderr)
+              sys.exit(1)
+
+          # Build HTML tiles
+          lines = ["<table>"]
+          for i, (name, username) in enumerate(contributors):
+              if i % COLS == 0:
+                  if i > 0:
+                      lines.append("  </tr>")
+                  lines.append("  <tr>")
+              lines.extend([
+                  '    <td align="center">',
+                  f'      <a href="https://github.com/{username}">',
+                  f'        <img src="https://github.com/{username}.png" width="80px;" alt="{username}"/>',
+                  f"        <br /><sub><b>{name}</b></sub>",
+                  "      </a>",
+                  "    </td>",
+              ])
+          lines.append("  </tr>")
+          lines.append("</table>")
+          html = "\n".join(lines)
+
+          # Update README
+          content = readme_path.read_text()
+          pattern = re.compile(rf"({re.escape(START)})\n(?:.*\n)*?({re.escape(END)})", re.DOTALL)
+          if not pattern.search(content):
+              print("Markers not found in README.md", file=sys.stderr)
+              sys.exit(1)
+          new_content = pattern.sub(rf"\1\n{html}\n\2", content)
+          if new_content == content:
+              print("No changes needed.")
+          else:
+              readme_path.write_text(new_content)
+              print("README.md updated.")
+          PYEOF
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --cached --quiet || git commit -m "docs: update contributor avatars in README"
+          git push

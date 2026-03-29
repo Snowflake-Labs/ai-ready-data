@@ -1,0 +1,190 @@
+name: Beta Feedback
+description: Share your experience beta testing the AI-Ready Data Framework
+title: "[Beta Feedback]: "
+labels: ["beta", "feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for beta testing! This should take **5–10 minutes**. Be honest and specific — your feedback shapes the framework.
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform did you test on?
+      placeholder: "Snowflake"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Workload profile used
+      options:
+        - Scan
+        - RAG
+        - Agents
+        - Training
+        - Feature Serving
+        - Custom
+    validations:
+      required: true
+
+  - type: input
+    id: schema
+    attributes:
+      label: Schema/dataset assessed
+      placeholder: "e.g. ANALYTICS.PRODUCT_METRICS"
+
+  - type: markdown
+    attributes:
+      value: "## Setup & Installation"
+
+  - type: textarea
+    id: setup-friction
+    attributes:
+      label: Any friction during setup?
+      description: Did the install command work? Any confusion with scope selection or permissions?
+      placeholder: "Worked fine / Had to do X / Got stuck on Y"
+
+  - type: markdown
+    attributes:
+      value: "## Assessment Flow"
+
+  - type: dropdown
+    id: flow-intuitive
+    attributes:
+      label: Was the assessment flow intuitive?
+      options:
+        - "Yes — easy to follow"
+        - "Mostly — minor confusion"
+        - "No — got lost"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: completed-without-errors
+    attributes:
+      label: Did the assessment complete without errors?
+      options:
+        - "Yes"
+        - "Yes, but with warnings"
+        - "No — hit errors"
+    validations:
+      required: true
+
+  - type: input
+    id: duration
+    attributes:
+      label: How long did a full assessment take?
+      placeholder: "e.g. 8 minutes"
+
+  - type: textarea
+    id: assessment-friction
+    attributes:
+      label: Any friction during assessment?
+      placeholder: "Scoping questions were clear / Agent asked too many questions / Check X was slow"
+
+  - type: markdown
+    attributes:
+      value: "## Results & Scoring"
+
+  - type: dropdown
+    id: scores-meaningful
+    attributes:
+      label: Were the scores meaningful and easy to interpret?
+      options:
+        - "Yes"
+        - "Somewhat"
+        - "No"
+    validations:
+      required: true
+
+  - type: textarea
+    id: results-feedback
+    attributes:
+      label: Feedback on results
+      description: Any surprising results? Did scores match your intuition? Which requirements felt most/least valuable?
+      placeholder: "Scores for X seemed off because..."
+
+  - type: markdown
+    attributes:
+      value: "## Remediation"
+
+  - type: textarea
+    id: remediation-feedback
+    attributes:
+      label: Feedback on remediation
+      description: Were fixes clear and actionable? Did you apply any? Did re-assessment show improvement?
+      placeholder: "Applied fix for X — worked / Fix for Y seemed risky because..."
+
+  - type: markdown
+    attributes:
+      value: "## The Framework"
+
+  - type: textarea
+    id: framework-feedback
+    attributes:
+      label: Feedback on the framework itself
+      description: |
+        Requirements to add or remove? Do the six factors cover the right dimensions?
+        Are the workload profiles realistic? Thresholds too strict or too lenient?
+      placeholder: "Missing a requirement for... / Threshold for X is too strict"
+
+  - type: markdown
+    attributes:
+      value: "## Overall"
+
+  - type: dropdown
+    id: usefulness
+    attributes:
+      label: Overall usefulness (1–5)
+      options:
+        - "5 — extremely useful"
+        - "4 — very useful"
+        - "3 — somewhat useful"
+        - "2 — slightly useful"
+        - "1 — not useful"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: recommend
+    attributes:
+      label: Would you recommend this to a colleague?
+      options:
+        - "Yes — definitely"
+        - "Maybe — with caveats"
+        - "No"
+    validations:
+      required: true
+
+  - type: input
+    id: best-thing
+    attributes:
+      label: Single best thing about the framework?
+
+  - type: input
+    id: biggest-change
+    attributes:
+      label: Single biggest thing that needs to change?
+
+  - type: markdown
+    attributes:
+      value: "## Friction Log"
+
+  - type: textarea
+    id: friction-log
+    attributes:
+      label: Specific issues encountered
+      description: Log specific friction points with severity. Include timestamps if possible.
+      placeholder: |
+        - [blocker] Couldn't connect to account_usage — missing IMPORTED PRIVILEGES
+        - [annoying] Lineage check took 4 minutes
+        - [minor] Report formatting was hard to read in narrow terminal
+
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else?

@@ -1,0 +1,26 @@
+name: scan
+description: Lightweight estate-level scan — fast readiness proxies for portfolio analysis and prioritization across many schemas
+stages:
+  - name: Contextual
+    why: Can AI understand the data?
+    requirements:
+      semantic_documentation: { min: 0.50 }
+      entity_identifier_declaration: { min: 0.50 }
+      schema_type_coverage: { min: 0.50 }
+
+  - name: Consumable
+    why: Is data structured for AI consumption?
+    requirements:
+      access_optimization: { min: 0.50 }
+
+  - name: Current
+    why: Is the data fresh and actively maintained?
+    requirements:
+      change_detection: { min: 0.50 }
+      data_freshness: { min: 0.50 }
+
+  - name: Compliant
+    why: Is governance in place?
+    requirements:
+      classification: { min: 0.50 }
+      column_masking: { min: 0.50 }

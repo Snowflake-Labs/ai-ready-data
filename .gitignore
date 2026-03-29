@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.cortex
+# Skills CLI install artifacts
+.agents/
+
+# Python (in case any helper scripts are added)
+__pycache__/
+*.pyc
+
+# Assessment artifacts
+*.db
+*.jsonl
+.claude
+
+skills-lock.json

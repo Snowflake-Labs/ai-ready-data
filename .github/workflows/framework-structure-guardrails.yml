@@ -1,0 +1,62 @@
+name: framework-structure-guardrails
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  validate-framework-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate check.sql score aliasing
+        run: |
+          ERRORS=0
+          REQ_ROOT="skills/ai-ready-data/requirements"
+          for req_dir in "$REQ_ROOT"/*/; do
+            [ -d "$req_dir" ] || continue
+            [ -d "$req_dir/snowflake" ] || continue
+            check_sql="$req_dir/snowflake/check.sql"
+            if [ -f "$check_sql" ]; then
+              if ! grep -qi '\bas\s\+value\b' "$check_sql" 2>/dev/null; then
+                echo "ERROR: $check_sql must alias score as \`value\`"
+                ERRORS=$((ERRORS + 1))
+              fi
+            fi
+          done
+          [ "$ERRORS" -eq 0 ] || exit 1
+
+      - name: Validate manifest factors and scopes
+        run: |
+          MANIFEST="skills/ai-ready-data/requirements/requirements.yaml"
+          [ -f "$MANIFEST" ] || { echo "No manifest found"; exit 0; }
+
+          ERRORS=0
+          VALID_FACTORS="clean contextual consumable current correlated compliant"
+
+          for factor in $(grep '^\s\+factor:' "$MANIFEST" | sed 's/.*factor:[[:space:]]*//' | sort -u); do
+            matched=false
+            for vf in $VALID_FACTORS; do
+              [ "$factor" = "$vf" ] && matched=true
+            done
+            if ! $matched; then
+              echo "ERROR: Invalid factor in manifest: $factor"
+              ERRORS=$((ERRORS + 1))
+            fi
+          done
+
+          for scope in $(grep '^\s\+scope:' "$MANIFEST" | sed 's/.*scope:[[:space:]]*//' | sort -u); do
+            case "$scope" in
+              schema|table|column) ;;
+              *)
+                echo "ERROR: Invalid scope in manifest: $scope"
+                ERRORS=$((ERRORS + 1))
+                ;;
+            esac
+          done
+
+          [ "$ERRORS" -eq 0 ] || exit 1

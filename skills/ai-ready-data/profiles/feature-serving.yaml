@@ -1,0 +1,65 @@
+name: feature-serving
+description: Online feature store and real-time inference readiness — low-latency lookups, materialized features, and freshness guarantees
+stages:
+  - name: Clean
+    why: Dirty features produce wrong predictions and failed lookups
+    requirements:
+      data_completeness: { min: 0.99 }
+      uniqueness: { min: 0.99 }
+      schema_conformity: { min: 0.999 }
+      value_range_validity: { min: 0.999 }
+      categorical_validity: { min: 0.999 }
+      syntactic_validity: { min: 1.0 }
+      encoding_validity: { min: 1.0 }
+      referential_integrity: { min: 0.99 }
+      cross_column_consistency: { min: 0.99 }
+
+  - name: Contextual
+    why: Documented schemas prevent feature misuse and enable automated feature discovery
+    requirements:
+      semantic_documentation: { min: 0.80 }
+      relationship_declaration: { min: 1.00 }
+      entity_identifier_declaration: { min: 0.90 }
+      temporal_scope_declaration: { min: 0.80 }
+      schema_type_coverage: { min: 0.70 }
+      constraint_declaration: { min: 0.50 }
+      unit_of_measure_declaration: { min: 0.50 }
+
+  - name: Consumable
+    why: Serving features at inference time demands low latency and pre-materialized values
+    requirements:
+      access_optimization: { min: 0.80 }
+      point_lookup_availability: { min: 0.80 }
+      serving_latency_compliance: { min: 0.95 }
+      feature_materialization_coverage: { min: 0.80 }
+      native_format_availability: { min: 0.80 }
+
+  - name: Current
+    why: Stale features mean outdated predictions — changes must propagate before the next request
+    requirements:
+      change_detection: { min: 1.00 }
+      data_freshness: { min: 1.00 }
+      propagation_latency_compliance: { min: 1.00 }
+      incremental_update_coverage: { min: 0.50 }
+      feature_refresh_compliance: { min: 1.00 }
+      training_serving_parity: { min: 0.50 }
+
+  - name: Correlated
+    why: Feature serving pipelines need traceable data for debugging, auditing, and incident response
+    requirements:
+      data_provenance: { min: 0.50 }
+      lineage_completeness: { min: 0.50 }
+      record_level_traceability: { min: 0.50 }
+      agent_attribution: { min: 0.30 }
+      pipeline_execution_audit: { min: 0.50 }
+
+  - name: Compliant
+    why: Prevents sensitive data from leaking into model predictions and API responses
+    requirements:
+      classification: { min: 0.50 }
+      column_masking: { min: 1.00 }
+      row_access_policy: { min: 0.30 }
+      access_audit_coverage: { min: 0.80 }
+      consent_coverage: { min: 0.30 }
+      purpose_limitation: { min: 0.30 }
+      retention_policy: { min: 0.30 }

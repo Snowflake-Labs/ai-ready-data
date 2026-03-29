@@ -1,0 +1,64 @@
+name: agents
+description: Agentic AI readiness — Text-to-SQL, tool use, and autonomous data access by LLM agents
+stages:
+  - name: Clean
+    why: Agents that query dirty data return wrong answers and erode user trust
+    requirements:
+      data_completeness: { min: 0.99 }
+      uniqueness: { min: 0.99 }
+      schema_conformity: { min: 0.999 }
+      value_range_validity: { min: 0.999 }
+      categorical_validity: { min: 0.999 }
+      syntactic_validity: { min: 1.0 }
+      encoding_validity: { min: 1.0 }
+      referential_integrity: { min: 0.99 }
+
+  - name: Contextual
+    why: Schema metadata is the agent's only map — without it, Text-to-SQL fails
+    requirements:
+      semantic_documentation: { min: 0.95 }
+      relationship_declaration: { min: 1.00 }
+      entity_identifier_declaration: { min: 0.95 }
+      temporal_scope_declaration: { min: 0.90 }
+      schema_type_coverage: { min: 0.80 }
+      constraint_declaration: { min: 0.70 }
+      business_glossary_linkage: { min: 0.50 }
+      unit_of_measure_declaration: { min: 0.60 }
+
+  - name: Consumable
+    why: Agents need fast query responses and predictable data formats
+    requirements:
+      access_optimization: { min: 0.80 }
+      search_optimization: { min: 0.80 }
+      point_lookup_availability: { min: 0.70 }
+      serving_latency_compliance: { min: 0.90 }
+      native_format_availability: { min: 0.70 }
+      eval_coverage: { min: 0.30 }
+
+  - name: Current
+    why: Agents that answer from stale data give confidently wrong responses
+    requirements:
+      change_detection: { min: 1.00 }
+      data_freshness: { min: 1.00 }
+      propagation_latency_compliance: { min: 0.80 }
+      incremental_update_coverage: { min: 0.50 }
+
+  - name: Correlated
+    why: Agentic actions must be auditable — who asked what, what data was used, what was returned
+    requirements:
+      data_provenance: { min: 0.50 }
+      lineage_completeness: { min: 0.50 }
+      agent_attribution: { min: 0.80 }
+      pipeline_execution_audit: { min: 0.50 }
+      record_level_traceability: { min: 0.30 }
+
+  - name: Compliant
+    why: Autonomous agents amplify governance gaps — sensitive data exposure scales with agent autonomy
+    requirements:
+      classification: { min: 0.70 }
+      column_masking: { min: 1.00 }
+      row_access_policy: { min: 0.50 }
+      access_audit_coverage: { min: 0.90 }
+      consent_coverage: { min: 0.30 }
+      purpose_limitation: { min: 0.50 }
+      retention_policy: { min: 0.30 }
