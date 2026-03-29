@@ -1,0 +1,64 @@
+# Diagnostic: column_masking
+
+Identification of unmasked PII columns and policy inventory.
+
+## Context
+
+Two diagnostic views:
+
+1. **Unmasked PII columns** — shows PII-candidate columns (by name-pattern heuristic) that have no masking policy. Use this as a remediation worklist.
+2. **Policy inventory** — shows all masking and row access policies applied in the schema. Use this to understand existing policy coverage before adding new policies.
+
+`account_usage.policy_references` has approximately 2-hour latency. Uses `ref_column_name` and `ref_entity_name`.
+
+## SQL
+
+### Unmasked PII columns
+
+```sql
+WITH pii_columns AS (
+    SELECT c.table_name, c.column_name, c.data_type
+    FROM {{ database }}.information_schema.columns c
+    JOIN {{ database }}.information_schema.tables t
+        ON c.table_name = t.table_name AND c.table_schema = t.table_schema
+    WHERE c.table_schema = '{{ schema }}'
+        AND t.table_type = 'BASE TABLE'
+        AND (
+            LOWER(c.column_name) LIKE '%email%'
+            OR LOWER(c.column_name) LIKE '%phone%'
+            OR LOWER(c.column_name) LIKE '%ssn%'
+            OR LOWER(c.column_name) LIKE '%password%'
+            OR LOWER(c.column_name) LIKE '%credit_card%'
+            OR LOWER(c.column_name) LIKE '%address%'
+        )
+),
+masked AS (
+    SELECT DISTINCT
+        UPPER(ref_entity_name) AS table_name,
+        UPPER(ref_column_name) AS column_name
+    FROM snowflake.account_usage.policy_references
+    WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
+        AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
+        AND policy_kind = 'MASKING_POLICY'
+)
+SELECT p.table_name, p.column_name, p.data_type, 'NEEDS MASKING' AS status
+FROM pii_columns p
+LEFT JOIN masked m
+    ON UPPER(p.table_name) = m.table_name AND UPPER(p.column_name) = m.column_name
+WHERE m.column_name IS NULL
+ORDER BY p.table_name, p.column_name
+```
+
+### Policy inventory
+
+```sql
+SELECT
+    policy_kind,
+    policy_name,
+    ref_entity_name AS table_name,
+    ref_column_name AS column_name
+FROM snowflake.account_usage.policy_references
+WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
+    AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
+ORDER BY policy_kind, ref_entity_name, ref_column_name
+```

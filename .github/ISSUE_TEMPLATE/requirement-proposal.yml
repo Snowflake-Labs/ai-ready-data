@@ -1,0 +1,196 @@
+name: Requirement Proposal
+description: Propose a new requirement, profile change, or assessment capability
+title: "[Requirement Proposal]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to propose a new requirement, a major requirement change, or a profile update.
+
+        Strong proposals explain:
+        - what problem exists today
+        - why it matters for AI workloads
+        - how the framework should detect it
+        - how users should remediate it
+
+  - type: input
+    id: requirement-name
+    attributes:
+      label: Proposed requirement name
+      description: Use snake_case if you are proposing a new requirement id.
+      placeholder: "semantic_overlap"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: factor
+    attributes:
+      label: Factor
+      description: Which factor should this belong to?
+      options:
+        - Clean
+        - Contextual
+        - Consumable
+        - Current
+        - Correlated
+        - Compliant
+        - New factor / not sure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: profiles
+    attributes:
+      label: Profiles affected
+      description: Select all that apply.
+      options:
+        - label: Scan
+        - label: RAG
+        - label: Agents
+        - label: Training
+        - label: Feature Serving
+        - label: Custom / not sure
+
+  - type: input
+    id: platforms
+    attributes:
+      label: Platform(s)
+      description: Which platform implementations are in scope?
+      placeholder: "Snowflake"
+
+  - type: markdown
+    attributes:
+      value: "## Proposal"
+
+  - type: textarea
+    id: proposal-summary
+    attributes:
+      label: Proposal summary
+      description: Describe the requirement or change in 1-3 short paragraphs.
+      placeholder: |
+        Add a new requirement named `semantic_overlap` to the Contextual factor.
+        It should include a check, a diagnostic, and a remediation path.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "## Problem"
+
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Problem statement
+      description: What gap exists today? Why is the current behavior insufficient?
+      placeholder: |
+        The framework currently checks whether metadata exists, but not whether it is unambiguous...
+    validations:
+      required: true
+
+  - type: textarea
+    id: workload-impact
+    attributes:
+      label: AI workload impact
+      description: Explain the practical impact on agents, RAG, feature serving, training, or other AI use cases.
+      placeholder: |
+        1. Agents may choose the wrong table, column, or join path.
+        2. Semantic descriptions become longer and more fragile.
+        3. Evaluation pass rates drop because generated SQL becomes inconsistent.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence, examples, or field observations
+      description: Include concrete patterns, deployment learnings, eval failures, or customer examples.
+      placeholder: |
+        What have you seen in practice that supports this proposal?
+
+  - type: markdown
+    attributes:
+      value: "## Implementation"
+
+  - type: checkboxes
+    id: implementation-artifacts
+    attributes:
+      label: Expected implementation artifacts
+      description: Select the assets you expect this work to add or update.
+      options:
+        - label: New base check (`check.sql`)
+        - label: New variant check (for example `check.cortex.sql`)
+        - label: New base diagnostic (`diagnostic.sql`)
+        - label: New variant diagnostic (for example `diagnostic.cortex.sql`)
+        - label: New remediation asset (`fix.*`)
+        - label: "`requirements.yaml` update"
+        - label: Profile update
+
+  - type: textarea
+    id: detection-approach
+    attributes:
+      label: Detection or evaluation approach
+      description: Describe how the framework should detect, assess, or score this condition.
+      placeholder: |
+        Describe the signals, logic, metadata sources, heuristics, and any platform-specific features involved.
+    validations:
+      required: true
+
+  - type: textarea
+    id: limitations
+    attributes:
+      label: Known limitations or non-goals
+      description: What will this not reliably detect or solve?
+      placeholder: |
+        This would be heuristic, not an oracle. It would not detect...
+
+  - type: textarea
+    id: scoring
+    attributes:
+      label: Scoring or threshold approach
+      description: How should the result be scored or interpreted?
+      placeholder: |
+        Example: 1.0 means no overlap signals detected; 0.0 means every table has at least one signal.
+
+  - type: textarea
+    id: remediation
+    attributes:
+      label: Remediation guidance
+      description: What should the framework tell users to do when this fails?
+      placeholder: |
+        Describe the remediation path, decision framework, or fix assets the framework should provide.
+
+  - type: textarea
+    id: files-to-create
+    attributes:
+      label: Files to create or update
+      description: List the expected implementation surface.
+      placeholder: |
+        requirements/
+          requirement_name/
+            platform/
+              check.sql
+              diagnostic.sql
+              fix.example.sql
+        requirements.yaml
+        profiles/agents.yaml
+
+  - type: markdown
+    attributes:
+      value: "## Additional context"
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Include open questions, trade-offs, prior art, or related issues.
+      placeholder: "Anything else reviewers should know?"
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked for an existing issue or requirement that already covers this idea.
+          required: true
+        - label: I explained why this matters for at least one AI workload.
+          required: true
