@@ -83,14 +83,14 @@ Three phases — Scan, Assess, Remediate — from light to deep:
 Every assessment is organized into six stages — one per factor of AI-ready data:
 
 
-| Factor         | What It Measures                                                          | Example Requirements                                                                  |
-| -------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| **Clean**      | Accuracy, completeness, validity, and error-free records                  | `data_completeness`, `uniqueness`, `referential_integrity`                            |
-| **Contextual** | Schema documentation and metadata for machines and humans                 | `semantic_documentation`, `relationship_declaration`, `entity_identifier_declaration` |
-| **Consumable** | Data in the right format, indexed, and accessible at the right latency    | `embedding_coverage`, `vector_index_coverage`, `serving_latency_compliance`           |
-| **Current**    | Freshness guarantees — change detection, SLAs, propagation latency        | `change_detection`, `data_freshness`, `incremental_update_coverage`                   |
-| **Correlated** | Lineage, provenance, and traceability from source to consumption          | `data_provenance`, `lineage_completeness`, `agent_attribution`                        |
-| **Compliant**  | Governance — classification, masking, access policies, consent, retention | `classification`, `column_masking`, `access_audit_coverage`                           |
+| Factor         | Example Requirements                                                                  |
+| -------------- | ------------------------------------------------------------------------------------- |
+| **Clean**      | `data_completeness`, `uniqueness`, `referential_integrity`                            |
+| **Contextual** | `semantic_documentation`, `relationship_declaration`, `entity_identifier_declaration` |
+| **Consumable** | `embedding_coverage`, `vector_index_coverage`, `serving_latency_compliance`           |
+| **Current**    | `change_detection`, `data_freshness`, `incremental_update_coverage`                   |
+| **Correlated** | `data_provenance`, `lineage_completeness`, `agent_attribution`                        |
+| **Compliant**  | `classification`, `column_masking`, `access_audit_coverage`                           |
 
 
 All scores are 0–1 where **1.0 is perfect**. Requirements pass when `score >= threshold`.
