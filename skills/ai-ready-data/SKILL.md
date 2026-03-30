@@ -131,108 +131,43 @@ If the user picks a schema, transition to the full Assess flow (Step 3 onward) w
 
 Ask the user what they want to assess:
 
+Load each profile YAML from `profiles/` and count its requirements to present accurate numbers:
+
 ```
 What would you like to assess?
-  1. RAG readiness (27 requirements)
-  2. Feature serving readiness (39 requirements)
-  3. Training readiness (50 requirements)
-  4. Agent readiness (37 requirements)
-  5. Full assessment (all 62 requirements)
+  1. RAG readiness ({N} requirements)
+  2. Feature serving readiness ({N} requirements)
+  3. Training readiness ({N} requirements)
+  4. Agent readiness ({N} requirements)
+  5. Full assessment (all {N} requirements)
   6. Let me pick specific requirements
 ```
 
 If the user picks a built-in profile, load `profiles/{name}.yaml`.
 
-If the user picks "full assessment," include all 62 requirements from `requirements/requirements.yaml` with default thresholds of `0.80`.
+If the user picks "full assessment," include all requirements from `requirements/requirements.yaml` with default thresholds of `0.80`.
 
 #### Option 6: Fine-Grained Requirement Picker
 
-If the user wants to pick specific requirements, present the full requirement catalog from `requirements/requirements.yaml`, grouped by factor, with descriptions. Show every requirement as a selectable item. The user selects all that apply.
-
-Present the catalog in this format:
+If the user wants to pick specific requirements, **dynamically generate the catalog from `requirements/requirements.yaml`** at runtime. Read every entry, group by `factor`, number sequentially, and present in this format:
 
 ```
 Select the requirements you want to assess (comma-separated numbers, or "all" within a factor):
 
-─── Clean ───
- 1. data_completeness        Fraction of null values across scoped columns
- 2. uniqueness               Fraction of duplicate records across scoped key columns
- 3. schema_conformity        Records conforming to declared schema types and rules
- 4. syntactic_validity       Raw records that parse without structural errors
- 5. encoding_validity        Text values free of encoding errors and garbled characters
- 6. categorical_validity     Categorical values belonging to declared controlled vocabularies
- 7. value_range_validity     Numeric values within declared valid ranges
- 8. referential_integrity    Foreign-key references that resolve to valid targets
- 9. cross_column_consistency Related columns that are mutually consistent
-10. outlier_prevalence       Records containing statistical outlier values
-11. distribution_conformity  Feature distributions conforming to declared baselines
-12. referential_accuracy     Values verified correct against authoritative references
+─── {Factor Name} ───
+ {N}. {requirement_key}    {description}
+ ...
 
-─── Contextual ───
-13. semantic_documentation   Objects with machine-readable semantic descriptions
-14. schema_type_coverage     Fields with explicitly declared data types
-15. entity_identifier_declaration  Entities with declared primary or natural keys
-16. temporal_scope_declaration     Datasets with declared temporal validity windows
-17. relationship_declaration       Cross-entity references with machine-readable declarations
-18. constraint_declaration         Fields with declared constraints (nullability, ranges, patterns)
-19. business_glossary_linkage      Fields linked to business glossary terms
-20. unit_of_measure_declaration    Numeric fields with explicit unit declarations
-
-─── Consumable ───
-21. chunk_readiness            Documents pre-chunked to context-window-aligned sizes
-22. embedding_coverage         Unstructured data with pre-computed vector embeddings
-23. embedding_dimension_consistency  Embeddings with uniform dimensionality
-24. vector_index_coverage      Embedding collections with vector similarity indexes
-25. retrieval_recall_compliance    Vector search indexes achieving target recall
-26. search_optimization        Tables with search optimization enabled
-27. access_optimization        Large tables with clustering keys
-28. point_lookup_availability  Entity records accessible via low-latency point lookups
-29. serving_latency_compliance Data serving endpoints meeting latency SLAs
-30. native_format_availability Datasets in consumption-ready formats
-31. feature_materialization_coverage  ML features pre-materialized for online/offline serving
-32. batch_throughput_sufficiency      Pipelines with sufficient I/O throughput
-33. eval_coverage              Data assets with associated evaluation sets
-
-─── Current ───
-34. change_detection             Tables with change tracking enabled
-35. data_freshness               Assets within their declared freshness SLA
-36. incremental_update_coverage  Pipelines using incremental processing vs full reload
-37. propagation_latency_compliance   Pipeline latency meeting freshness SLAs
-38. feature_refresh_compliance   Served features updated within staleness tolerance
-39. point_in_time_correctness    Feature datasets supporting point-in-time joins
-40. schema_evolution_tracking    Assets with automated schema change detection
-41. temporal_referential_integrity   Records with valid traceable event timestamps
-42. training_serving_parity      Features with consistent logic across training and serving
-
-─── Correlated ───
-43. data_provenance            Datasets with documented source provenance
-44. lineage_completeness       Datasets with end-to-end lineage documentation
-45. record_level_traceability  Records with unique correlation identifiers
-46. agent_attribution          Data modifications tagged with responsible agent/process
-47. pipeline_execution_audit   Pipeline runs with immutable execution records
-48. dependency_graph_completeness  Datasets with fully enumerated dependencies
-49. impact_analysis_capability     Datasets where downstream impact can be auto-enumerated
-50. data_version_coverage          Datasets with Time Travel retention enabled
-51. transformation_documentation   Transformations with documented logic and I/O
-
-─── Compliant ───
-52. classification             Objects with governance tags applied
-53. column_masking             PII columns with masking policies applied
-54. row_access_policy          Tables with row-level security policies
-55. access_audit_coverage      AI data access events captured in audit logs
-56. consent_coverage           Personal data with documented legal basis for AI processing
-57. purpose_limitation         Data access paths with declared permitted AI purposes
-58. retention_policy           Datasets with defined retention and deletion policies
-59. anonymization_effectiveness    PII-candidate columns with masking applied
-60. bias_testing_coverage      Training datasets that have undergone bias testing
-61. demographic_representation Training datasets with documented demographic distributions
-62. license_compliance         External datasets with valid AI usage licenses
+─── {Next Factor} ───
+ ...
 ```
 
+Use the factor order: Clean, Contextual, Consumable, Current, Correlated, Compliant. Number requirements sequentially across all factors starting at 1.
+
 Users can respond with:
-- Specific numbers: `1, 2, 13, 34, 52` (picks those five)
+- Specific numbers: `1, 2, 13, 34, 52` (picks those)
 - Factor groups: `all Clean, all Compliant` (picks every requirement in those factors)
-- Ranges: `1-12, 52-62` (picks Clean and Compliant)
+- Ranges: `1-12, 52-62`
 - Mix: `all Clean, 13, 34-36, 52`
 
 For each selected requirement, apply a default threshold of `0.80`. The user can adjust thresholds in Step 4 (Adjustments).
