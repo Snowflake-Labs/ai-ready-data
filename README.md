@@ -42,7 +42,7 @@ Each factor is backed by a set of measurable **requirements** — specific, plat
 
 The factor markdown files above describe the *why* and *what* of each factor in prose. The manifest provides the machine-readable counterpart: every requirement has a unique key, a description, a factor, and a scope (schema, table, or column). All tests return a normalized score between 0 and 1, making it straightforward to build automated assessments or dashboards on top of the framework.
 
-## AI-Ready Data Agent
+## AI-Ready Data Skill
 
 An installable skill that any coding agent can dynamically load and execute. Scan your data estate for prioritization, assess specific assets against a profile, and get a scored report across the six factors of AI-ready data with guided remediation.
 
@@ -60,7 +60,7 @@ Clone or add this repo as workspace context. The agent reads `skills/ai-ready-da
 
 #### Start assessment
 
-Point your coding agent at this repo and say:
+After installing, ask your coding agent:
 
 > Assess my [data assets] for RAG readiness.
 

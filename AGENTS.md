@@ -20,9 +20,6 @@ This skill activates when the user mentions:
 - "data quality check", "data quality assessment"
 - "optimize for AI", "AI optimization", "make data AI-ready"
 - "assess for RAG", "assess for serving", "assess for training", "assess for agents"
-- "data governance audit", "governance check"
-- "semantic documentation", "document my schema"
-- "PII detection", "masking audit", "data classification"
 
 ## Structure
 
