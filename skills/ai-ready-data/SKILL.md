@@ -202,14 +202,14 @@ Proceed?
 
 ### Step 6: Assess
 
-Load `requirements/requirements.yaml` once at session start. This manifest provides lightweight metadata: description, factor, scope, placeholders, and implementations.
+Load `requirements/requirements.yaml` once at session start. This manifest provides lightweight metadata: description, factor, scope, and implementations.
 
 For each stage in order (Clean, Contextual, Consumable, Current, Correlated, Compliant), for each requirement:
 
-1. Look up the requirement entry in `requirements/requirements.yaml` for metadata (scope, placeholders).
+1. Look up the requirement entry in `requirements/requirements.yaml` for metadata (scope).
 2. Read `requirements/{requirement_name}/{platform}/check.md`. This file contains all context (constraints, gotchas, variant guidance) and one or more SQL blocks.
 3. Use the context in the file to determine which SQL block to execute (e.g., sampled vs full scan based on row count, primary vs variant based on available platform features).
-4. Substitute `{{ placeholder }}` values from the user's scope context (database, schema, asset, column, etc.).
+4. Substitute `{{ placeholder }}` values from the user's scope context and the SQL block itself (database, schema, asset, column, plus any requirement-specific values documented in the check file's context section).
 5. Execute the SQL. Read the `value` result (float 0.0–1.0, where 1.0 is perfect).
 6. Compare `value >= threshold` to determine pass/fail.
 7. If no implementation exists for this platform, report `N/A`.
@@ -418,7 +418,7 @@ Each requirement has a directory under `requirements/` containing platform-speci
 
 | File | Purpose |
 |---|---|
-| `requirements.yaml` | Single manifest: lightweight metadata (description, factor, scope, placeholders, implementations) |
+| `requirements.yaml` | Single manifest: lightweight metadata (description, factor, scope, implementations) |
 | `{requirement_key}/{platform}/check.md` | Context + check SQL (read-only, returns normalized 0–1 score) |
 | `{requirement_key}/{platform}/diagnostic.md` | Context + diagnostic SQL (read-only detail drill-down) |
 | `{requirement_key}/{platform}/fix.md` | Context + remediation SQL and/or organizational guidance (mutating, requires approval) |
@@ -472,7 +472,7 @@ skills/ai-ready-data/
 
 ## Adding a New Requirement
 
-1. Add an entry to `requirements/requirements.yaml` with: description, factor, scope, placeholders, implementations.
+1. Add an entry to `requirements/requirements.yaml` with: description, factor, scope, implementations.
 2. Create `requirements/{name}/{platform}/` directory with three markdown files:
    - `check.md` (required) — context + SQL returning a `value` score 0–1
    - `diagnostic.md` (required) — context + SQL for detail drill-down

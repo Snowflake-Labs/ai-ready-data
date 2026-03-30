@@ -1,0 +1,25 @@
+[project]
+name = "ai-ready-data-eval"
+version = "0.1.0"
+description = "Evaluation harness for the ai-ready-data agent skill"
+requires-python = ">=3.11"
+
+dependencies = [
+    "pytest",
+    "pyyaml",
+]
+
+[project.optional-dependencies]
+workloads = [
+    "snowflake-connector-python",
+]
+viz = [
+    "matplotlib",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "eval_category(name): tag test with a category for grouping/reporting",
+    "slow: requires live infrastructure (use --run-slow)",
+]

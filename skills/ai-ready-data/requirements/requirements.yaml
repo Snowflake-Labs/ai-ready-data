@@ -5,505 +5,370 @@ requirements:
     description: Fraction of AI data access events captured in immutable audit logs
     factor: compliant
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   access_optimization:
     description: Fraction of large tables with clustering keys
     factor: consumable
     scope: schema
-    placeholders: [database, schema, clustering_columns, asset]
-    constraints:
-      - diagnostic_depth (clustering-depth.sql) must only be run on tables that already have a clustering key — SYSTEM$CLUSTERING_DEPTH errors on unclustered tables
     implementations: [snowflake]
 
   agent_attribution:
     description: Fraction of data modifications with a QUERY_TAG identifying the responsible agent, pipeline, or process
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   anonymization_effectiveness:
     description: Fraction of PII-candidate columns with masking policies applied
     factor: compliant
     scope: schema
-    placeholders: [database, schema]
-    constraints:
-      - "PII detection is heuristic (column-name based) — delegate to sensitive-data-classification for thorough scanning"
-      - "Only masking policies count toward the score — privacy tags indicate awareness but do not protect data"
     implementations: [snowflake]
 
   batch_throughput_sufficiency:
     description: Fraction of training data pipelines with I/O throughput sufficient to avoid compute idle time
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
-    constraints:
-      - Measures COPY INTO load success rate as a throughput proxy
-      - True throughput measurement requires warehouse-level monitoring
-      - Only covers COPY INTO loads — does not capture Snowpipe, INSERT...SELECT, or dynamic table refreshes
-      - information_schema.load_history has a 14-day retention limit
     implementations: [snowflake]
 
   bias_testing_coverage:
     description: Fraction of training datasets that have undergone statistical bias testing prior to AI consumption
     factor: compliant
     scope: schema
-    placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, comment]
-    constraints:
-      - "Tag records test completion — actual bias testing is done externally"
     implementations: [snowflake]
 
   business_glossary_linkage:
     description: Fraction of data fields linked to a business glossary or authoritative term definition
     factor: contextual
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   categorical_validity:
     description: Fraction of categorical column values that belong to a declared controlled vocabulary or code set
     factor: clean
     scope: column
-    placeholders: [database, schema, asset, column, allowed_values]
-    constraints:
-      - Categories may change over time — query reference table for allowed values
-      - Nulling preserves row count; deletion is irreversible
     implementations: [snowflake]
 
   change_detection:
     description: Fraction of tables with change tracking and streams enabled
     factor: current
     scope: schema
-    placeholders: [database, schema, asset, stream_name]
     implementations: [snowflake]
 
   chunk_readiness:
     description: Fraction of document assets pre-chunked to sizes aligned with target context windows
     factor: consumable
     scope: schema
-    placeholders: [database, schema, asset, text_column]
     implementations: [snowflake]
 
   classification:
     description: Fraction of objects with governance tags applied
     factor: compliant
     scope: schema
-    placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, column, comment]
-    constraints:
-      - "tag_references has no deleted column — don't filter on it"
-    delegates_to: sensitive-data-classification
     implementations: [snowflake]
 
   column_masking:
     description: Fraction of PII columns with masking policies applied
     factor: compliant
     scope: schema
-    placeholders: [database, schema, policy_name, privileged_role, redacted_value, data_type, asset, column]
-    constraints:
-      - policy_references uses ref_column_name, not column_name
-    delegates_to: data-policy
     implementations: [snowflake]
 
   consent_coverage:
     description: Fraction of personal data records with documented and valid legal basis for AI-specific processing
     factor: compliant
     scope: schema
-    placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, comment]
     implementations: [snowflake]
 
   constraint_declaration:
     description: Fraction of data fields with explicitly declared constraints (nullability, uniqueness, valid ranges, or patterns)
     factor: contextual
     scope: schema
-    placeholders: [database, schema, asset, column, constraint_name, constraint_type]
-    constraints:
-      - "NOT NULL constraint will fail if NULLs still exist — fill or delete first"
     implementations: [snowflake]
 
   cross_column_consistency:
     description: Fraction of records where logically related columns are mutually consistent per declared cross-column rules
     factor: clean
     scope: table
-    placeholders: [database, schema, asset, consistency_rule, filter_nulls, key_columns, column1, column2, rule_description]
-    constraints:
-      - consistency_rule and filter_nulls are injected as raw SQL expressions — the agent must generate them per use case
     implementations: [snowflake]
 
   data_completeness:
     description: Fraction of null values across scoped columns
     factor: clean
     scope: column
-    placeholders: [database, schema, asset, column, sample_rows]
-    constraints:
-      - NOT NULL constraint will fail if NULLs still exist — fill or delete first
-      - For tables >1M rows, use sampled check to avoid full scan
     implementations: [snowflake]
 
   data_freshness:
     description: Fraction of data assets with a declared freshness SLA that are within their defined freshness window
     factor: current
     scope: schema
-    placeholders: [database, schema, asset, freshness_threshold_hours]
-    constraints:
-      - last_altered reflects DDL changes, not DML — see platform reference
-      - For true freshness, prefer streams, dynamic table DATA_TIMESTAMP, or explicit timestamp columns
     implementations: [snowflake]
 
   data_provenance:
     description: Fraction of datasets with documented source provenance including origin system, collection method, and upstream lineage
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   data_version_coverage:
     description: Fraction of datasets with Time Travel retention enabled for point-in-time state reconstruction
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
-    constraints:
-      - Check measures Time Travel retention_time > 0; diagnostic looks for explicit version columns — these are complementary signals
     implementations: [snowflake]
 
   demographic_representation:
     description: Fraction of training datasets with measured and documented demographic distribution relative to target population
     factor: compliant
     scope: schema
-    placeholders: [database, schema, tag_name, tag_value, asset, column]
-    constraints:
-      - "Demographic attributes are sensitive — handle with appropriate access controls"
     implementations: [snowflake]
 
   dependency_graph_completeness:
     description: Fraction of datasets with fully enumerated upstream and downstream dependency relationships
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   distribution_conformity:
     description: Fraction of features whose statistical distributions conform to declared baseline distributions within tolerance thresholds
     factor: clean
     scope: table
-    placeholders: [database, schema, asset, column, baseline_mean, baseline_stddev]
     implementations: [snowflake]
 
   embedding_coverage:
     description: Fraction of unstructured data assets with pre-computed vector embeddings available for retrieval
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   embedding_dimension_consistency:
     description: Fraction of embedding collections with uniform dimensionality matching their consuming model's expected input
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   encoding_validity:
     description: Fraction of text column values free of encoding errors, garbled characters, or Unicode replacement characters
     factor: clean
     scope: column
-    placeholders: [database, schema, asset, column, key_columns]
-    constraints:
-      - Uses CHR(65533) for U+FFFD replacement character detection
-      - Stripping bad characters may change string length and semantics
     implementations: [snowflake]
 
   entity_identifier_declaration:
     description: Fraction of entities or datasets with explicitly declared primary or natural key definitions
     factor: contextual
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   eval_coverage:
     description: Fraction of data assets with associated evaluation sets that verify AI tool correctness
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
-    constraints:
-      - Checks for the existence of eval artifacts, not whether evals pass
-      - Eval naming conventions are platform-specific
     implementations: [snowflake]
 
   feature_materialization_coverage:
     description: Fraction of ML features pre-materialized in both online and offline serving stores
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   feature_refresh_compliance:
     description: Fraction of served features updated within their defined staleness tolerance threshold
     factor: current
     scope: schema
-    placeholders: [database, schema, asset]
     implementations: [snowflake]
 
   impact_analysis_capability:
     description: Fraction of datasets for which the downstream impact of a schema or content change can be automatically enumerated
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   incremental_update_coverage:
     description: Fraction of data pipelines that use incremental processing (CDC or streaming) rather than full-reload extraction
     factor: current
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   license_compliance:
     description: Fraction of externally sourced datasets with documented and valid usage licenses permitting AI training
     factor: compliant
     scope: schema
-    placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, comment]
     implementations: [snowflake]
 
   lineage_completeness:
     description: Fraction of datasets with documented end-to-end lineage from source through transformations, at both dataset and column level
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   native_format_availability:
     description: Fraction of datasets stored in consumption-ready formats without requiring runtime format conversion
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   outlier_prevalence:
     description: Fraction of records containing values flagged as statistical outliers beyond declared distance thresholds
     factor: clean
     scope: table
-    placeholders: [database, schema, asset, column, stddev_threshold]
     implementations: [snowflake]
 
   pipeline_execution_audit:
     description: Fraction of pipeline runs with immutable execution records capturing inputs, parameters, outputs, and completion status
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   point_in_time_correctness:
     description: Fraction of feature datasets that support point-in-time joins preventing future data leakage
     factor: current
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   point_lookup_availability:
     description: Fraction of entity records accessible via low-latency key-based point lookups
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   propagation_latency_compliance:
     description: Fraction of data pipelines where end-to-end propagation latency meets the defined freshness SLA
     factor: current
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   purpose_limitation:
     description: Fraction of data access paths with declared permitted AI processing purposes and enforced purpose-based authorization
     factor: compliant
     scope: schema
-    placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, comment]
     implementations: [snowflake]
 
   record_level_traceability:
     description: Fraction of records with a unique correlation identifier enabling trace-back to their originating source record
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   referential_accuracy:
     description: Fraction of column values verified as correct against an authoritative reference or ground-truth source
     factor: clean
     scope: table
-    placeholders: [database, schema, asset, column, ref_namespace, ref_asset, ref_column]
     implementations: [snowflake]
 
   referential_integrity:
     description: Fraction of foreign-key or cross-dataset reference values that successfully resolve to valid target records
     factor: clean
     scope: table
-    placeholders: [database, schema, asset, fk_column, target_namespace, target_asset, target_key]
-    constraints:
-      - "Deletion is irreversible — verify orphan records are truly invalid before removing"
     implementations: [snowflake]
 
   relationship_declaration:
     description: Fraction of cross-entity references with explicit, machine-readable relationship declarations
     factor: contextual
     scope: schema
-    placeholders: [database, schema, semantic_view_name, table_definitions, relationship_definitions, fact_definitions, dimension_definitions, metric_definitions, comment]
-    constraints:
-      - Relationships define join paths — ensure they match actual foreign keys
     implementations: [snowflake]
 
   retention_policy:
     description: Fraction of datasets with defined and enforced data retention and deletion schedules
     factor: compliant
     scope: schema
-    placeholders: [database, schema, tag_name, tag_value, allowed_values, asset, comment]
-    constraints:
-      - "tag_references has no deleted column — don't filter on it"
     implementations: [snowflake]
 
   retrieval_recall_compliance:
     description: Fraction of vector search indexes achieving their target recall threshold at required query latency
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
-    constraints:
-      - Recall measurement requires ground-truth queries — this check proxies via index presence
     implementations: [snowflake]
 
   row_access_policy:
     description: Fraction of tables with row access policies enforcing row-level security
     factor: compliant
     scope: schema
-    placeholders: [database, schema]
-    constraints:
-      - policy_references uses ref_entity_name, not table_name
     implementations: [snowflake]
 
   schema_conformity:
     description: Fraction of records that conform to the declared schema, including correct data types, required fields present, and structural rules satisfied
     factor: clean
     scope: column
-    placeholders: [database, schema, asset, column, expected_type]
-    constraints:
-      - Uses TRY_TO_NUMBER, TRY_TO_DATE, TRY_TO_TIMESTAMP for type checking
     implementations: [snowflake]
 
   schema_evolution_tracking:
     description: Fraction of data assets with automated schema change detection, version identifiers, and version history
     factor: current
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   schema_type_coverage:
     description: Fraction of data fields with explicitly declared, machine-readable data types
     factor: contextual
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   search_optimization:
     description: Fraction of tables with search optimization enabled
     factor: consumable
     scope: schema
-    placeholders: [database, schema, asset]
-    constraints:
-      - Only enable on tables >1GB
     implementations: [snowflake]
 
   semantic_documentation:
     description: Fraction of objects with machine-readable semantic descriptions
     factor: contextual
     scope: schema
-    placeholders: [database, schema, asset, column, table_comment, column_comment, semantic_view_name, table_definitions, relationship_definitions, fact_definitions, dimension_definitions, metric_definitions, comment]
-    constraints:
-      - Comments alone don't enable Text-to-SQL — prefer semantic views for full coverage
-      - Use the Semantic View Builder workflow for semantic view creation
-      - Fall back to fix.add-comments.sql only when user explicitly opts for comments over semantic views
     implementations: [snowflake]
 
   serving_latency_compliance:
     description: Fraction of data serving endpoints meeting their defined latency SLA at p99
     factor: consumable
     scope: schema
-    placeholders: [database, schema, latency_threshold_ms]
-    constraints:
-      - "Measures SELECT queries only — does not cover API-based serving"
     implementations: [snowflake]
 
   syntactic_validity:
     description: Fraction of raw data records that parse without structural errors, including well-formed serialization and correct delimiters
     factor: clean
     scope: column
-    placeholders: [database, schema, asset, column, key_columns]
-    constraints:
-      - JSON validity uses TRY_PARSE_JSON which returns NULL for invalid JSON
     implementations: [snowflake]
 
   temporal_referential_integrity:
     description: Fraction of records with valid, non-null event timestamps traceable to source system origination time
     factor: current
     scope: table
-    placeholders: [database, schema, asset, timestamp_column, key_columns]
     implementations: [snowflake]
 
   temporal_scope_declaration:
     description: Fraction of datasets with declared temporal validity windows (effective dates, as-of dates, or valid-time ranges)
     factor: contextual
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   training_serving_parity:
     description: Fraction of ML features with consistent computation logic between training (batch) and serving (real-time) paths
     factor: current
     scope: schema
-    placeholders: [database, schema]
-    constraints:
-      - Heuristic check based on dynamic table presence for feature tables
-      - True parity verification requires comparing transformation logic across pipelines
     implementations: [snowflake]
 
   transformation_documentation:
     description: Fraction of data transformations with documented logic, inputs, and outputs
     factor: correlated
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   uniqueness:
     description: Fraction of duplicate records across scoped key columns
     factor: clean
     scope: table
-    placeholders: [database, schema, asset, key_columns, tiebreaker_column]
-    constraints:
-      - CREATE OR REPLACE TABLE drops grants, policies, streams, and change tracking
-      - key_columns should be the logical primary key
-      - For tables >1M rows, use sampled check
     implementations: [snowflake]
 
   unit_of_measure_declaration:
     description: Fraction of numeric fields with explicit unit of measure declarations
     factor: contextual
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
 
   value_range_validity:
     description: Fraction of numeric column values that fall within declared valid ranges or domain boundaries
     factor: clean
     scope: column
-    placeholders: [database, schema, asset, column, min_value, max_value]
-    constraints:
-      - Clamping changes data values — verify business rules before applying
-      - Deletion is irreversible — prefer clamping for recoverable data
     implementations: [snowflake]
 
   vector_index_coverage:
     description: Fraction of embedding collections with a vector similarity index built and maintained
     factor: consumable
     scope: schema
-    placeholders: [database, schema]
     implementations: [snowflake]
