@@ -2,7 +2,14 @@
 
 ## Introduction
 
-The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means. The six factors of AI-ready data provide criteria and requirements to help you evaluate your data, pipelines, and platforms against the demands of AI workloads. Use this framework to assess where you stand and prioritize what matters most for your specific AI goals.
+The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means. The six factors of AI-ready data provide criteria and requirements to help you evaluate your data, pipelines, and platforms against the demands of AI workloads.
+
+This repo contains two things:
+
+1. **The framework** — six factors, 62 measurable requirements, and five workload profiles that define AI-readiness as a platform-agnostic standard.
+2. **The `ai-ready-data` skill** — an installable agent skill that can scan your data estate, assess specific assets against a profile, score every requirement, and guide you through remediation. Point a coding agent at this repo and say "assess my data for RAG readiness" — it handles the rest.
+
+Use the framework to understand what matters. Use the skill to measure where you stand and fix what doesn't pass.
 
 ### Background
 
@@ -15,8 +22,8 @@ This repo synthesizes our collective experience building data infrastructure tha
 - **Data engineers** building pipelines that power AI systems.
 - **Platform teams** designing infrastructure for ML and AI workloads.
 - **Architects** evaluating whether their stack can support RAG, agents, or real-time inference.
-- **Data leaders** who need to assess organizational AI readiness and communicate gaps to their teams
-- **Coding agents** building the data infrastructure they will eventually consume
+- **Data leaders** who need to assess organizational AI readiness and communicate gaps to their teams.
+- **Coding agents** building the data infrastructure they will eventually consume.
 
 ## The Six Factors of AI-Ready Data
 
