@@ -30,7 +30,7 @@ The framework has five layers:
 
 Each implementation file follows this structure:
 
-```
+```markdown
 # {Type}: {requirement_key}
 
 {One-line description}
@@ -44,7 +44,6 @@ Each implementation file follows this structure:
 
 ```sql
 {SQL with {{ placeholder }} syntax}
-```
 ```
 
 A single file can contain multiple SQL implementations under separate `###` subheadings. For example, `check.md` can contain both a full-scan and a sampled variant; `fix.md` can contain multiple remediation options. The agent reads the context to decide which to use.

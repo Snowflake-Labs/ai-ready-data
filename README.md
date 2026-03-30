@@ -171,9 +171,9 @@ Create `profiles/{name}.yaml` with six stages, or use `extends` to derive from a
 1. Create `platforms/{PLATFORM}.md` covering capabilities, dialect, permissions, and nuances.
 2. Add requirement files under `requirements/{key}/{platform}/`.
 
-### Demo
+### Demos
 
-See [`project-docs/demos/snowflake/DEMO.md`](project-docs/demos/snowflake/DEMO.md) for a full walkthrough: provision a demo dataset with intentional issues, run an assessment, explore diagnostics, remediate, and verify.
+See [`demos/README.md`](demos/README.md) for available demo walkthroughs. Start with **Scan + Agents** for the full estate scan → deep assessment → remediation flow, or **RAG Readiness** for a focused single-schema assessment.
 
 ## Structure
 

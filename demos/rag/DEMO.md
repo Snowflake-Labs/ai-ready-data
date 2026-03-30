@@ -1,17 +1,18 @@
-# AI-Ready Data Assessment — Demo Guide
+# RAG Readiness Assessment — Demo Guide
 
-End-to-end walkthrough: install the skill, provision a demo dataset in Snowflake, run an assessment, remediate failures, and tear down.
+End-to-end walkthrough: install the skill, provision a demo dataset in Snowflake, run a RAG readiness assessment, remediate failures, and tear down.
 
 ## Prerequisites
 
 | Requirement | How to check |
 |---|---|
-| Snowflake account with `SNOWFLAKE_LEARNING_DB` access | `/sql SELECT CURRENT_ACCOUNT()` in Cortex Code |
+| Snowflake account with `SNOWFLAKE_LEARNING_DB` access | `snow sql -q "SELECT CURRENT_ACCOUNT()"` |
+| Snowflake CLI installed | `snow --version` |
+| Connection configured in `~/.snowflake/connections.toml` | `snow sql -q "SELECT 1" -c <connection>` |
 | Cortex Code CLI installed | `cortex --version` |
-| Connection configured in `~/.snowflake/connections.toml` | `cortex -c <connection>` connects successfully |
 | Node.js / npx available | `npx --version` |
 | Role with CREATE SCHEMA on `SNOWFLAKE_LEARNING_DB` | Ask your admin or use ACCOUNTADMIN for the demo |
-| `IMPORTED PRIVILEGES` on the SNOWFLAKE database (for governance checks) | `/sql SHOW GRANTS ON DATABASE SNOWFLAKE` |
+| `IMPORTED PRIVILEGES` on the SNOWFLAKE database (for governance checks) | `snow sql -q "SHOW GRANTS ON DATABASE SNOWFLAKE"` |
 
 If `SNOWFLAKE_LEARNING_DB` does not exist, create it first:
 
@@ -23,7 +24,7 @@ CREATE DATABASE IF NOT EXISTS SNOWFLAKE_LEARNING_DB;
 
 ## Step 1: Install the Skill
 
-Install into Cortex Code CLI from this repo (local path or GitHub):
+Install into Cortex Code CLI from this repo:
 
 ```bash
 # From a local clone
@@ -33,7 +34,7 @@ npx add-skill ./path/to/ai-ready-data-agent -a cortex
 npx add-skill your-org/ai-ready-data -a cortex
 ```
 
-Verify it was installed:
+Verify:
 
 ```
 cortex
@@ -46,19 +47,13 @@ You should see `ai-ready-data` in the list.
 
 ## Step 2: Provision the Demo Environment
 
-Start Cortex Code with your Snowflake connection:
+Run the setup script **outside of Cortex Code**:
 
 ```bash
-cortex -c <your-connection> -w /path/to/ai-ready-data-agent
+./demos/run.sh setup rag
+# or, if using a specific connection:
+./demos/run.sh setup rag -c <your-connection>
 ```
-
-Then ask Cortex Code to run the setup script:
-
-```
-Run the SQL in demo/setup.sql
-```
-
-Alternatively, paste the contents of `demo/setup.sql` after the `/sql` command.
 
 The script creates `SNOWFLAKE_LEARNING_DB.AIRDF_DEMO` with 8 tables:
 
@@ -73,13 +68,21 @@ The script creates `SNOWFLAKE_LEARNING_DB.AIRDF_DEMO` with 8 tables:
 | INVENTORY_SNAPSHOTS | 15,000 | Large generated table — no clustering key |
 | MARKETING_EVENTS | 12 | Behavioral events with JSON payloads |
 
-The final query in the script prints row counts for all tables. Confirm all 8 appear.
+The final query prints row counts for all tables. Confirm all 8 appear.
+
+> **Do not read `setup.sql` during the demo.** The agent should encounter the data cold.
 
 ---
 
 ## Step 3: Run the Assessment
 
-Trigger the skill:
+Start Cortex Code with your Snowflake connection:
+
+```bash
+cortex -c <your-connection> -w /path/to/ai-ready-data-agent
+```
+
+Then trigger the skill:
 
 ```
 Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for RAG readiness
@@ -87,13 +90,13 @@ Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for RAG readiness
 
 The agent will:
 
-1. Load `assessments/rag.yaml` (6 stages, one per factor of AI-ready data)
+1. Load the RAG profile (6 stages, one per factor of AI-ready data)
 2. Discover the 8 tables in `AIRDF_DEMO`
 3. Ask you to confirm scope and offer override options (skip/set/add)
 4. Run check SQL for each requirement, stage by stage
 5. Present a scored report
 
-You can also try other assessments:
+You can also try other profiles:
 
 ```
 Assess SNOWFLAKE_LEARNING_DB.AIRDF_DEMO for feature serving readiness
@@ -130,7 +133,7 @@ Pick a failing requirement and ask for details:
 Tell me more about data_completeness
 ```
 
-The agent runs the diagnostic SQL and shows which columns have nulls, how many, and in which tables. This is useful for demonstrating the drill-down workflow before committing to fixes.
+The agent runs the diagnostic SQL and shows which columns have nulls, how many, and in which tables. This demonstrates the drill-down workflow before committing to fixes.
 
 ---
 
@@ -150,7 +153,7 @@ The agent will:
 4. Wait for your approval before executing
 5. Re-run the check SQL to show before/after scores
 
-Good requirements to remediate live in the demo (the agent will handle this automatically, but these make the best talking points):
+Good requirements to remediate live (the agent handles this automatically, but these make the best talking points):
 
 | Requirement | What the fix does |
 |---|---|
@@ -168,16 +171,10 @@ After each stage remediation, the agent shows the improvement and moves to the n
 
 ## Step 6: Tear Down
 
-When finished:
-
-```
-Run the SQL in demo/teardown.sql
-```
-
-Or manually:
-
-```
-/sql DROP SCHEMA IF EXISTS SNOWFLAKE_LEARNING_DB.AIRDF_DEMO CASCADE;
+```bash
+./demos/run.sh teardown rag
+# or with a connection:
+./demos/run.sh teardown rag -c <your-connection>
 ```
 
 This removes all tables, views, streams, tags, masking policies, and anything else created during the demo. Safe to run multiple times.
@@ -192,6 +189,7 @@ This removes all tables, views, streams, tags, masking policies, and anything el
 - **Consumable stage (RAG checks)** — skip `embedding_coverage` and `vector_index_coverage` unless you have Cortex embedding functions available. Those checks require `SNOWFLAKE.CORTEX` access. This is a good opportunity to demonstrate the `skip` override.
 - **Compliant stage** checks that use `snowflake.account_usage` views (tags, policies) have ~2 hour latency for newly created objects. If you create tags/policies during remediation, the checks may still show FAIL until the views catch up. Mention this as a known Snowflake behavior.
 - **Re-run the full assessment** after remediating a couple of stages to show the overall score improving.
+- **Time budget:** Full RAG assessment takes 5-10 minutes. Remediating one stage takes 3-5 minutes. Plan for a 20-30 minute demo.
 
 ---
 
@@ -199,6 +197,7 @@ This removes all tables, views, streams, tags, masking policies, and anything el
 
 | File | Purpose |
 |---|---|
-| `demo/setup.sql` | Creates the demo schema and loads data with intentional issues |
-| `demo/teardown.sql` | Drops the entire demo schema |
-| `demo/DEMO.md` | This guide |
+| `demos/rag/setup.sql` | Creates the demo schema and loads data with intentional issues |
+| `demos/rag/teardown.sql` | Drops the entire demo schema |
+| `demos/rag/DEMO.md` | This guide |
+| `demos/run.sh` | Provisions and tears down demo environments |
