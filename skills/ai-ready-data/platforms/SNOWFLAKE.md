@@ -29,7 +29,7 @@ Before non-idempotent fix operations, run the guard query. Skip if the desired s
 
 | Requirement | Delegate To | When |
 |---|---|---|
-| `semantic_documentation` | Semantic View Builder (`requirements/semantic_documentation/snowflake/semantic-view-builder.md`) | Tables lack semantic views |
+| `semantic_documentation` | Semantic View Builder (`requirements/semantic_documentation/snowflake/fix.md`) | Tables lack semantic views |
 | `column_masking` | `data-policy` skill | Before creating masking policies |
 | `classification` | `sensitive-data-classification` skill | Before creating tags via SYSTEM$CLASSIFY |
 
