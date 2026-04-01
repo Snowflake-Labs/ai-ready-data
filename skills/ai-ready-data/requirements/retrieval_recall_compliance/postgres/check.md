@@ -1,17 +1,18 @@
 # Check: retrieval_recall_compliance
 
-Fraction of vector indexes configured with parameters that support target recall thresholds.
+Fraction of vector-indexed tables with index configurations that support target recall thresholds.
 
 ## Context
 
-Neither Snowflake nor PostgreSQL can measure retrieval recall from metadata alone — recall requires ground-truth benchmark queries. Both platforms proxy via index presence and configuration quality.
+Neither Snowflake nor PostgreSQL can measure actual retrieval recall from metadata alone — that requires ground-truth benchmark queries. This check proxies recall readiness by inspecting vector index configuration quality via the `pgvector` extension.
 
-Snowflake uses `search_optimization` as its proxy. PostgreSQL with `pgvector` supports HNSW and IVFFlat indexes, whose recall characteristics depend on build parameters:
+PostgreSQL with `pgvector` supports two index types:
+- **HNSW** — Higher recall at the cost of more memory. Key parameters: `m` (connections per node, default 16) and `ef_construction` (build-time search depth, default 64). Higher values improve recall.
+- **IVFFlat** — Faster build, lower memory, but recall depends heavily on `lists` parameter and `probes` at query time. Key parameter: `lists` (number of inverted lists).
 
-- **HNSW:** `m` (connections per node, default 16) and `ef_construction` (build-time search width, default 64). Higher values improve recall at the cost of build time and memory.
-- **IVFFlat:** `lists` (number of clusters). Recall depends on the ratio of `lists` to `probes` at query time.
+The check counts tables with vector columns that have at least one vector index. A score of 1.0 means every table with vector columns has a vector index. Tables with vector columns but no index score as non-compliant.
 
-This check counts tables with vector columns that have at least one vector index, as a fraction of all tables with vector columns. A score of 1.0 means every vector table has an index. Requires the `pgvector` extension.
+If `pgvector` is not installed, the check returns NULL.
 
 ## SQL
 
@@ -21,28 +22,30 @@ SELECT CASE
     THEN NULL
     ELSE (
         WITH vector_tables AS (
-            SELECT DISTINCT a.attrelid::regclass::TEXT AS table_name
+            SELECT DISTINCT a.attrelid AS table_oid, c.relname AS table_name
             FROM pg_attribute a
             JOIN pg_class c ON c.oid = a.attrelid
             JOIN pg_namespace n ON n.oid = c.relnamespace
+            JOIN pg_type t ON t.oid = a.atttypid
             WHERE n.nspname = '{{ schema }}'
                 AND c.relkind = 'r'
-                AND a.atttypid IN (SELECT oid FROM pg_type WHERE typname = 'vector')
+                AND t.typname = 'vector'
                 AND NOT a.attisdropped
         ),
-        indexed_tables AS (
-            SELECT DISTINCT vt.table_name
+        indexed_vector_tables AS (
+            SELECT DISTINCT vt.table_oid
             FROM vector_tables vt
             WHERE EXISTS (
-                SELECT 1 FROM pg_indexes pi
-                WHERE pi.schemaname = '{{ schema }}'
-                    AND pi.tablename = vt.table_name
-                    AND (pi.indexdef LIKE '%hnsw%' OR pi.indexdef LIKE '%ivfflat%')
+                SELECT 1 FROM pg_index i
+                JOIN pg_class ic ON ic.oid = i.indexrelid
+                JOIN pg_am am ON am.oid = ic.relam
+                WHERE i.indrelid = vt.table_oid
+                    AND am.amname IN ('hnsw', 'ivfflat')
             )
         )
         SELECT
-            (SELECT COUNT(*) FROM indexed_tables)::NUMERIC
-                / NULLIF((SELECT COUNT(*) FROM vector_tables)::NUMERIC, 0)
+            (SELECT COUNT(*) FROM indexed_vector_tables)::NUMERIC
+            / NULLIF((SELECT COUNT(*) FROM vector_tables)::NUMERIC, 0)
     )
 END AS value
 ```

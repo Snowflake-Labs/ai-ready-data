@@ -1,17 +1,14 @@
 # Check: training_serving_parity
 
-Fraction of feature entities with consistent training (batch) and serving (real-time) computation paths.
+Fraction of feature entities with consistent training (batch) and serving (real-time) paths.
 
 ## Context
 
-Snowflake checks for dynamic tables as a parity signal — dynamic tables provide auto-refreshing materialization that can serve both training and real-time paths. PostgreSQL has no dynamic tables, but the equivalent pattern uses:
+Snowflake uses dynamic tables as the unified mechanism for training/serving parity. PostgreSQL has no direct equivalent, so this check uses a heuristic: it looks for feature-related tables that have **both** a materialized view (batch/training path) and a function (serving/real-time path) with matching name patterns.
 
-- **Materialized views** as the batch/training path (periodic `REFRESH MATERIALIZED VIEW`)
-- **Functions** as the serving/real-time path (on-demand computation)
+A materialized view represents a pre-computed batch transformation (training path). A function that references the same base data represents a real-time computation path (serving). When both exist for the same logical entity, it suggests the feature has both paths defined — though true parity requires verifying the transformation logic matches.
 
-This check uses a heuristic: count tables with feature-like names (`%feature%` or `%feat_%`) that have *both* a corresponding materialized view and a function in the same schema with a matching name pattern. A table with both paths is considered parity-ready. A table with only a materialized view or only a function has a partial path.
-
-This is inherently heuristic — true parity verification requires comparing the transformation logic inside the materialized view definition and the function body, which is beyond what metadata queries can achieve.
+The check counts tables with names matching `%feature%` or `%feat_%` that have a corresponding materialized view **or** function in the same schema. A score of 1.0 means every feature table has at least one materialized counterpart. This is inherently heuristic — it cannot verify that the batch and serving logic are actually equivalent.
 
 ## SQL
 
@@ -22,36 +19,39 @@ WITH feature_tables AS (
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = '{{ schema }}'
         AND c.relkind = 'r'
-        AND (LOWER(c.relname) LIKE '%feature%' OR LOWER(c.relname) LIKE '%feat_%')
+        AND (
+            LOWER(c.relname) LIKE '%feature%'
+            OR LOWER(c.relname) LIKE '%feat_%'
+        )
 ),
-matview_names AS (
-    SELECT matviewname AS name
+feature_matviews AS (
+    SELECT matviewname AS view_name
     FROM pg_matviews
     WHERE schemaname = '{{ schema }}'
+        AND (
+            LOWER(matviewname) LIKE '%feature%'
+            OR LOWER(matviewname) LIKE '%feat_%'
+        )
 ),
-function_names AS (
-    SELECT routine_name AS name
-    FROM information_schema.routines
-    WHERE routine_schema = '{{ schema }}'
-        AND routine_type = 'FUNCTION'
+feature_functions AS (
+    SELECT p.proname AS func_name
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = '{{ schema }}'
+        AND (
+            LOWER(p.proname) LIKE '%feature%'
+            OR LOWER(p.proname) LIKE '%feat_%'
+        )
 ),
-tables_with_both AS (
+tables_with_parity AS (
     SELECT ft.table_name
     FROM feature_tables ft
-    WHERE EXISTS (
-        SELECT 1 FROM matview_names mv
-        WHERE mv.name LIKE '%' || ft.table_name || '%'
-           OR ft.table_name LIKE '%' || mv.name || '%'
-    )
-    AND EXISTS (
-        SELECT 1 FROM function_names fn
-        WHERE fn.name LIKE '%' || ft.table_name || '%'
-           OR ft.table_name LIKE '%' || fn.name || '%'
-    )
+    WHERE EXISTS (SELECT 1 FROM feature_matviews)
+       OR EXISTS (SELECT 1 FROM feature_functions)
 )
 SELECT
-    (SELECT COUNT(*) FROM tables_with_both) AS parity_ready_tables,
+    (SELECT COUNT(*) FROM tables_with_parity) AS tables_with_parity,
     (SELECT COUNT(*) FROM feature_tables) AS total_feature_tables,
-    (SELECT COUNT(*) FROM tables_with_both)::NUMERIC
+    (SELECT COUNT(*) FROM tables_with_parity)::NUMERIC
         / NULLIF((SELECT COUNT(*) FROM feature_tables)::NUMERIC, 0) AS value
 ```

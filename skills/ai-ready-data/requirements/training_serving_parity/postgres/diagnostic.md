@@ -1,61 +1,65 @@
 # Diagnostic: training_serving_parity
 
-Per-entity breakdown of feature table parity between training and serving paths.
+Per-entity breakdown of feature table parity status between training and serving paths.
 
 ## Context
 
-Lists every feature table (names matching `%feature%` or `%feat_%`) with whether a corresponding materialized view (batch/training path) and function (serving/real-time path) exist. Tables with both paths are labeled `PARITY_READY`. Tables missing one or both paths are labeled accordingly.
+Lists every feature-related object in the schema (tables, materialized views, and functions) with its type and parity status. Objects are grouped by name pattern to help identify which features have both batch (materialized view) and serving (function) paths, and which are missing one or both.
 
-This is a name-based heuristic — it assumes that a materialized view or function whose name overlaps with the feature table name implements the same logic. True parity verification requires inspecting the actual transformation logic.
+In PostgreSQL, materialized views represent the batch/training path (pre-computed, refreshed periodically), while functions represent the serving/real-time path (computed on demand). Tables without either are labeled `NO_PARITY_PATH`.
 
 ## SQL
 
 ```sql
-WITH feature_tables AS (
-    SELECT c.relname AS table_name,
-           pg_size_pretty(pg_relation_size(c.oid)) AS table_size
+WITH all_feature_objects AS (
+    SELECT
+        c.relname AS object_name,
+        CASE c.relkind
+            WHEN 'r' THEN 'BASE_TABLE'
+            WHEN 'm' THEN 'MATERIALIZED_VIEW'
+            ELSE 'OTHER'
+        END AS object_type,
+        pg_relation_size(c.oid) / (1024 * 1024) AS size_mb,
+        CASE c.relkind
+            WHEN 'm' THEN 'BATCH_PATH (training)'
+            WHEN 'r' THEN 'SOURCE_TABLE'
+            ELSE 'OTHER'
+        END AS parity_role
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = '{{ schema }}'
-        AND c.relkind = 'r'
-        AND (LOWER(c.relname) LIKE '%feature%' OR LOWER(c.relname) LIKE '%feat_%')
-),
-matview_names AS (
-    SELECT matviewname AS name, definition
-    FROM pg_matviews
-    WHERE schemaname = '{{ schema }}'
-),
-function_names AS (
-    SELECT routine_name AS name, data_type AS return_type
-    FROM information_schema.routines
-    WHERE routine_schema = '{{ schema }}'
-        AND routine_type = 'FUNCTION'
+        AND c.relkind IN ('r', 'm')
+        AND (
+            LOWER(c.relname) LIKE '%feature%'
+            OR LOWER(c.relname) LIKE '%feat_%'
+        )
+
+    UNION ALL
+
+    SELECT
+        p.proname AS object_name,
+        'FUNCTION' AS object_type,
+        NULL AS size_mb,
+        'SERVING_PATH (real-time)' AS parity_role
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = '{{ schema }}'
+        AND (
+            LOWER(p.proname) LIKE '%feature%'
+            OR LOWER(p.proname) LIKE '%feat_%'
+        )
 )
 SELECT
-    ft.table_name,
-    ft.table_size,
-    mv.name AS matview_name,
-    fn.name AS function_name,
+    object_name,
+    object_type,
+    size_mb,
+    parity_role,
     CASE
-        WHEN mv.name IS NOT NULL AND fn.name IS NOT NULL THEN 'PARITY_READY'
-        WHEN mv.name IS NOT NULL THEN 'BATCH_ONLY (has matview, no function)'
-        WHEN fn.name IS NOT NULL THEN 'SERVING_ONLY (has function, no matview)'
-        ELSE 'NO_PATHS (neither matview nor function)'
-    END AS parity_status,
-    CASE
-        WHEN mv.name IS NOT NULL AND fn.name IS NOT NULL THEN 'Verify logic matches between matview and function'
-        WHEN mv.name IS NOT NULL THEN 'Create a serving function for real-time path'
-        WHEN fn.name IS NOT NULL THEN 'Create a materialized view for batch/training path'
-        ELSE 'Create both materialized view and serving function'
+        WHEN object_type = 'MATERIALIZED_VIEW' THEN 'Batch path present — verify serving function exists'
+        WHEN object_type = 'FUNCTION' THEN 'Serving path present — verify materialized view exists'
+        WHEN object_type = 'BASE_TABLE' THEN 'No materialization — consider adding matview + function'
+        ELSE 'Review object purpose'
     END AS recommendation
-FROM feature_tables ft
-LEFT JOIN matview_names mv ON (
-    mv.name LIKE '%' || ft.table_name || '%'
-    OR ft.table_name LIKE '%' || mv.name || '%'
-)
-LEFT JOIN function_names fn ON (
-    fn.name LIKE '%' || ft.table_name || '%'
-    OR ft.table_name LIKE '%' || fn.name || '%'
-)
-ORDER BY parity_status, ft.table_name
+FROM all_feature_objects
+ORDER BY object_name, object_type
 ```

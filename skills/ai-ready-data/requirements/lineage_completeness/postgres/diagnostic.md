@@ -1,12 +1,12 @@
 # Diagnostic: lineage_completeness
 
-Per-table breakdown of downstream dependency relationships indicating documented lineage.
+Per-table breakdown of lineage documentation via downstream dependencies.
 
 ## Context
 
-Lists every base table in the schema alongside its downstream dependents (views and materialized views) as tracked by `pg_depend`. Tables with `HAS_LINEAGE` have at least one view or materialized view that references them; `NO_LINEAGE` indicates no downstream SQL objects depend on the table.
+Shows each base table alongside its downstream dependents (views and materialized views) as tracked in `pg_depend`. Tables with `HAS_LINEAGE` are referenced by at least one view or materialized view, establishing a structural lineage chain. Tables with `NO_LINEAGE` have no tracked downstream SQL objects.
 
-Unlike Snowflake's `ACCESS_HISTORY`, which captures query-level lineage automatically, PostgreSQL only tracks structural dependencies — relationships defined in view/matview SQL definitions. External ETL pipelines that read from tables without creating views will not appear here.
+Snowflake's `ACCESS_HISTORY` captures query-level lineage automatically; PostgreSQL only tracks structural dependencies via `pg_depend`. Tables consumed by external tools (BI dashboards, application queries, ETL pipelines) will show as `NO_LINEAGE` even if they are actively used.
 
 ## SQL
 
@@ -20,7 +20,7 @@ WITH all_tables AS (
 ),
 dependents AS (
     SELECT
-        t.table_name AS source_table,
+        t.table_name,
         dc.relname AS dependent_name,
         CASE dc.relkind
             WHEN 'v' THEN 'VIEW'
@@ -31,25 +31,27 @@ dependents AS (
     JOIN pg_class dc ON dc.oid = d.objid
     WHERE dc.relkind IN ('v', 'm')
         AND d.deptype = 'n'
+        AND d.objid <> t.oid
 ),
 dep_summary AS (
     SELECT
-        source_table,
+        table_name,
         COUNT(DISTINCT dependent_name) AS dependent_count,
         STRING_AGG(DISTINCT dependent_type || ':' || dependent_name, ', '
                    ORDER BY dependent_type || ':' || dependent_name) AS dependent_objects
     FROM dependents
-    GROUP BY source_table
+    GROUP BY table_name
 )
 SELECT
     t.table_name,
+    pg_relation_size(t.oid) / (1024 * 1024) AS size_mb,
     COALESCE(ds.dependent_count, 0) AS downstream_dependents,
     COALESCE(ds.dependent_objects, 'none') AS dependent_objects,
     CASE
-        WHEN ds.source_table IS NOT NULL THEN 'HAS_LINEAGE'
+        WHEN ds.table_name IS NOT NULL THEN 'HAS_LINEAGE'
         ELSE 'NO_LINEAGE'
-    END AS status
+    END AS lineage_status
 FROM all_tables t
-LEFT JOIN dep_summary ds ON t.table_name = ds.source_table
-ORDER BY status DESC, t.table_name
+LEFT JOIN dep_summary ds ON t.table_name = ds.table_name
+ORDER BY downstream_dependents DESC, t.table_name
 ```

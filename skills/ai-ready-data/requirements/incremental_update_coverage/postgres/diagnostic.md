@@ -1,29 +1,27 @@
 # Diagnostic: incremental_update_coverage
 
-Per-object breakdown of incremental processing capability across the schema.
+Per-object breakdown of incremental processing capability.
 
 ## Context
 
-Lists all base tables and materialized views in the schema with their incremental update status. Tables in a logical replication publication are marked as having CDC capability. Materialized views are inherently incremental (refreshable). Tables without either mechanism are flagged for action.
+Shows each table and materialized view with its incremental update status. Objects are classified by their incremental capability:
+
+- **CDC_PUBLISHED** — table is in a logical replication publication and emits change events for incremental consumers.
+- **MATERIALIZED_VIEW** — materialized view that supports refresh-based incremental patterns.
+- **NO_INCREMENTAL** — base table with no publication membership or incremental mechanism.
 
 ## SQL
 
 ```sql
 WITH base_tables AS (
-    SELECT
-        c.relname AS table_name,
-        'BASE TABLE' AS object_type,
-        pg_relation_size(c.oid) / (1024 * 1024) AS size_mb
+    SELECT c.oid, c.relname AS table_name, 'BASE TABLE' AS object_type
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = '{{ schema }}'
         AND c.relkind = 'r'
 ),
-mat_views AS (
-    SELECT
-        c.relname AS table_name,
-        'MATERIALIZED VIEW' AS object_type,
-        pg_relation_size(c.oid) / (1024 * 1024) AS size_mb
+matviews AS (
+    SELECT c.oid, c.relname AS table_name, 'MATERIALIZED VIEW' AS object_type
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = '{{ schema }}'
@@ -32,7 +30,7 @@ mat_views AS (
 all_objects AS (
     SELECT * FROM base_tables
     UNION ALL
-    SELECT * FROM mat_views
+    SELECT * FROM matviews
 ),
 published AS (
     SELECT DISTINCT tablename
@@ -42,16 +40,16 @@ published AS (
 SELECT
     o.table_name,
     o.object_type,
-    o.size_mb,
+    pg_relation_size(o.oid) / (1024 * 1024) AS size_mb,
     CASE
         WHEN o.object_type = 'MATERIALIZED VIEW' THEN 'MATERIALIZED_VIEW'
-        WHEN p.tablename IS NOT NULL THEN 'IN_PUBLICATION'
+        WHEN p.tablename IS NOT NULL THEN 'CDC_PUBLISHED'
         ELSE 'NO_INCREMENTAL'
     END AS incremental_capability,
     CASE
-        WHEN o.object_type = 'MATERIALIZED VIEW' THEN 'Refreshable via REFRESH MATERIALIZED VIEW'
-        WHEN p.tablename IS NOT NULL THEN 'CDC via logical replication publication'
-        ELSE 'Consider adding to a publication or creating a materialized view'
+        WHEN o.object_type = 'MATERIALIZED VIEW' THEN 'Supports REFRESH MATERIALIZED VIEW'
+        WHEN p.tablename IS NOT NULL THEN 'In publication — change events available'
+        ELSE 'Consider adding to publication or creating materialized view'
     END AS recommendation
 FROM all_objects o
 LEFT JOIN published p ON o.table_name = p.tablename

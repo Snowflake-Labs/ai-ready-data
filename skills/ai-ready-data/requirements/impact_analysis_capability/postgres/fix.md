@@ -1,26 +1,28 @@
 # Fix: impact_analysis_capability
 
-Remediation guidance for enabling downstream impact analysis.
+Remediation guidance for tables without tracked downstream dependents.
 
 ## Context
 
-Impact analysis capability depends on downstream objects (views, materialized views, functions) referencing the base tables. PostgreSQL's `pg_depend` catalog tracks these relationships automatically when DDL is executed. There is no way to manually register an impact relationship.
+Impact analysis capability depends on downstream objects (views, materialized views, etc.) referencing base tables. PostgreSQL tracks these dependencies automatically in `pg_depend`. There is no DDL to manually register an impact relationship.
 
 To improve this score:
 
-1. **Create views or materialized views** — defining a view over a table establishes a tracked dependency. This is the most direct way to ensure that `pg_depend` can enumerate downstream impact.
-2. **Use `pg_depend` queries** — once dependencies exist, tools and scripts can query `pg_depend` to build impact analysis reports before applying schema changes.
-3. **Document external consumers** — for tables consumed by application code or external tools, use `COMMENT ON` to record downstream consumers that cannot be tracked via DDL.
+1. **Create views to formalize dependencies** — if a table is consumed by dashboards, reports, or pipelines, create a view that encodes the access pattern. This registers the dependency and enables automatic impact analysis.
+2. **Create materialized views for aggregation layers** — materialized views both improve performance and establish tracked dependency relationships.
+3. **Add comments to document external consumers** — for tables consumed by external systems, use `COMMENT ON TABLE` to document the downstream impact chain so it can be reviewed manually before schema changes.
 
 ## Remediation: Create a view to establish a tracked dependency
 
 ```sql
-CREATE VIEW {{ schema }}.{{ asset }}_v AS
-SELECT * FROM {{ schema }}.{{ asset }};
+CREATE VIEW {{ schema }}.{{ view_name }} AS
+SELECT *
+FROM {{ schema }}.{{ asset }}
 ```
 
-## Remediation: Document external downstream consumers
+## Remediation: Document external consumers via comment
 
 ```sql
-COMMENT ON TABLE {{ schema }}.{{ asset }} IS 'Downstream consumers: <app_name>, <dashboard_name>, <pipeline_name>';
+COMMENT ON TABLE {{ schema }}.{{ asset }} IS
+'Downstream consumers: {{ consumer_list }}'
 ```

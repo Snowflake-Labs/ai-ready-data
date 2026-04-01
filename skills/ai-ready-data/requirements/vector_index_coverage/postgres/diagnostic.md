@@ -4,18 +4,15 @@ Per-table breakdown of vector tables and their index status.
 
 ## Context
 
-Lists every table in the schema that has a `vector` column, along with any HNSW or IVFFlat indexes found on that table. Tables without a vector index will show `NOT_INDEXED` and receive a recommendation to create one.
+Lists all tables with `vector` columns and checks whether each has an HNSW or IVFFlat index. HNSW is generally preferred over IVFFlat for better recall accuracy and query performance without needing periodic re-training.
 
-HNSW indexes are generally preferred over IVFFlat for better recall at comparable latency. IVFFlat indexes require periodic retraining (via `REINDEX`) after significant data changes to maintain quality.
+Requires the `pgvector` extension.
 
 ## SQL
 
 ```sql
 WITH vector_tables AS (
-    SELECT DISTINCT
-        n.nspname AS schema_name,
-        c.relname AS table_name,
-        c.oid AS table_oid
+    SELECT DISTINCT c.oid AS table_oid, c.relname AS table_name
     FROM pg_attribute a
     JOIN pg_class c ON c.oid = a.attrelid
     JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -28,11 +25,9 @@ WITH vector_tables AS (
 ),
 vector_indexes AS (
     SELECT
-        vt.schema_name,
         vt.table_name,
         ic.relname AS index_name,
-        am.amname AS index_type,
-        pg_get_indexdef(i.indexrelid) AS index_definition
+        am.amname AS index_method
     FROM vector_tables vt
     JOIN pg_index i ON i.indrelid = vt.table_oid
     JOIN pg_class ic ON ic.oid = i.indexrelid
@@ -40,22 +35,20 @@ vector_indexes AS (
     WHERE am.amname IN ('hnsw', 'ivfflat')
 )
 SELECT
-    vt.schema_name,
+    '{{ schema }}' AS schema_name,
     vt.table_name,
     COALESCE(vi.index_name, 'NONE') AS index_name,
-    COALESCE(vi.index_type, 'NONE') AS index_type,
-    COALESCE(vi.index_definition, '') AS index_definition,
+    COALESCE(vi.index_method, 'NONE') AS index_method,
     CASE
         WHEN vi.index_name IS NOT NULL THEN 'INDEXED'
         ELSE 'NOT_INDEXED'
     END AS index_status,
     CASE
-        WHEN vi.index_name IS NOT NULL THEN 'Vector index present'
-        ELSE 'Create an HNSW index: CREATE INDEX ON table USING hnsw (column vector_cosine_ops)'
+        WHEN vi.index_method = 'hnsw' THEN 'HNSW index present — good recall and performance'
+        WHEN vi.index_method = 'ivfflat' THEN 'IVFFlat index present — consider HNSW for better recall'
+        ELSE 'No vector index — run CREATE INDEX ... USING hnsw'
     END AS recommendation
 FROM vector_tables vt
-LEFT JOIN vector_indexes vi
-    ON vt.schema_name = vi.schema_name
-    AND vt.table_name = vi.table_name
+LEFT JOIN vector_indexes vi ON vt.table_name = vi.table_name
 ORDER BY index_status DESC, vt.table_name
 ```

@@ -1,12 +1,12 @@
 # Diagnostic: search_optimization
 
-Per-table breakdown of search index status across the schema.
+Per-table breakdown of search index status and searchable column inventory.
 
 ## Context
 
-Lists every base table in the schema with its estimated row count, total size, existing GIN/GiST indexes (if any), and a status label: `HAS SEARCH INDEX` for tables with at least one GIN or GiST index, and `NO SEARCH INDEX` for those without.
+Lists every base table with its estimated row count, whether it has GIN or GiST indexes, and the count of columns with searchable data types (text, JSONB, arrays, tsvector). Tables with searchable columns but no GIN/GiST indexes are the primary candidates for remediation.
 
-Tables marked `NO SEARCH INDEX` are not necessarily problems — only tables with text, JSONB, array, or geometric columns that are queried with search operators benefit from these indexes. The second query identifies columns that are candidates for search optimization.
+Tables without any searchable column types are shown for completeness but typically do not need search indexes.
 
 ## SQL
 
@@ -17,52 +17,51 @@ SELECT
     c.relname AS table_name,
     c.reltuples::BIGINT AS estimated_rows,
     pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
+    COUNT(DISTINCT CASE
+        WHEN pi.indexdef ILIKE '%USING gin%' OR pi.indexdef ILIKE '%USING gist%'
+        THEN pi.indexname
+    END) AS search_index_count,
     (
-        SELECT string_agg(indexname, ', ')
-        FROM pg_indexes pi
-        WHERE pi.schemaname = '{{ schema }}'
-          AND pi.tablename = c.relname
-          AND (pi.indexdef ILIKE '%USING gin%' OR pi.indexdef ILIKE '%USING gist%')
-    ) AS search_indexes,
+        SELECT COUNT(*)
+        FROM information_schema.columns col
+        WHERE col.table_schema = '{{ schema }}'
+          AND col.table_name = c.relname
+          AND col.data_type IN ('text', 'character varying', 'jsonb', 'json', 'ARRAY', 'tsvector', 'USER-DEFINED')
+    ) AS searchable_columns,
     CASE
-        WHEN EXISTS (
-            SELECT 1 FROM pg_indexes pi
-            WHERE pi.schemaname = '{{ schema }}'
-              AND pi.tablename = c.relname
-              AND (pi.indexdef ILIKE '%USING gin%' OR pi.indexdef ILIKE '%USING gist%')
-        ) THEN 'HAS SEARCH INDEX'
+        WHEN COUNT(CASE
+            WHEN pi.indexdef ILIKE '%USING gin%' OR pi.indexdef ILIKE '%USING gist%'
+            THEN 1
+        END) > 0 THEN 'HAS SEARCH INDEX'
         ELSE 'NO SEARCH INDEX'
     END AS status
 FROM pg_class c
 JOIN pg_namespace n ON n.oid = c.relnamespace
+LEFT JOIN pg_indexes pi
+    ON pi.schemaname = n.nspname AND pi.tablename = c.relname
 WHERE n.nspname = '{{ schema }}'
   AND c.relkind = 'r'
-ORDER BY status, c.reltuples DESC
+GROUP BY c.oid, c.relname, c.reltuples
+ORDER BY status ASC, c.reltuples DESC
 ```
 
-### Candidate columns for search indexes
+### Searchable columns without indexes (single table)
 
 ```sql
 SELECT
-    c.table_name,
-    c.column_name,
-    c.data_type,
-    CASE
-        WHEN c.data_type IN ('text', 'character varying', 'char') THEN 'GIN (tsvector)'
-        WHEN c.data_type = 'jsonb' THEN 'GIN (jsonb_ops)'
-        WHEN c.data_type = 'ARRAY' THEN 'GIN (array_ops)'
-        WHEN c.udt_name IN ('tsvector') THEN 'GIN (tsvector_ops)'
-        WHEN c.data_type = 'json' THEN 'Cast to JSONB first, then GIN'
-        ELSE 'GiST (if range/geometric)'
-    END AS recommended_index
-FROM information_schema.columns c
-JOIN information_schema.tables t
-    ON c.table_name = t.table_name AND c.table_schema = t.table_schema
-WHERE c.table_schema = '{{ schema }}'
-  AND t.table_type = 'BASE TABLE'
-  AND (
-      c.data_type IN ('text', 'character varying', 'jsonb', 'json', 'ARRAY')
-      OR c.udt_name IN ('tsvector', 'tsquery')
-  )
-ORDER BY c.table_name, c.ordinal_position
+    col.column_name,
+    col.data_type,
+    col.is_nullable,
+    EXISTS (
+        SELECT 1 FROM pg_indexes pi
+        WHERE pi.schemaname = '{{ schema }}'
+          AND pi.tablename = '{{ asset }}'
+          AND (pi.indexdef ILIKE '%USING gin%' OR pi.indexdef ILIKE '%USING gist%')
+          AND pi.indexdef ILIKE '%' || col.column_name || '%'
+    ) AS has_search_index
+FROM information_schema.columns col
+WHERE col.table_schema = '{{ schema }}'
+  AND col.table_name = '{{ asset }}'
+  AND col.data_type IN ('text', 'character varying', 'jsonb', 'json', 'ARRAY', 'tsvector', 'USER-DEFINED')
+ORDER BY col.ordinal_position
 ```

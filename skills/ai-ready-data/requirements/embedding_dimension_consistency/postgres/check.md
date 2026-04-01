@@ -4,14 +4,14 @@ Fraction of embedding collections with uniform dimensionality matching their con
 
 ## Context
 
-Extracts all pgvector `vector` columns from `pg_attribute` in the target schema. In pgvector, the dimension is encoded in `atttypmod` — when `atttypmod > 0`, the dimension equals `atttypmod`. Groups by dimension, then measures how many columns share the most common dimension versus the total. A score of 1.0 means every vector column uses the same dimension.
+Extracts all `vector` columns from `pg_attribute` in the target schema. In pgvector, the dimension is encoded in `atttypmod` — when `atttypmod > 0`, the dimension equals `atttypmod`. Groups by dimension, then measures how many columns share the most common dimension versus the total. A score of 1.0 means every vector column uses the same dimension.
 
-Requires the `pgvector` extension. If not installed, no vector columns will be found.
+Requires the `pgvector` extension.
 
 ## SQL
 
 ```sql
-WITH vector_columns AS (
+WITH vector_dims AS (
     SELECT
         c.relname AS table_name,
         a.attname AS column_name,
@@ -26,24 +26,22 @@ WITH vector_columns AS (
         AND NOT a.attisdropped
         AND t.typname = 'vector'
 ),
-dimension_counts AS (
-    SELECT dimension, COUNT(*) AS column_count
-    FROM vector_columns
+mode_dim AS (
+    SELECT dimension, COUNT(*) AS cnt
+    FROM vector_dims
     WHERE dimension IS NOT NULL
     GROUP BY dimension
-),
-most_common_dimension AS (
-    SELECT dimension, column_count
-    FROM dimension_counts
-    ORDER BY column_count DESC
+    ORDER BY cnt DESC
     LIMIT 1
 ),
 total_vectors AS (
-    SELECT COUNT(*) AS cnt FROM vector_columns
+    SELECT COUNT(*) AS cnt FROM vector_dims
 )
 SELECT
     (SELECT cnt FROM total_vectors) AS total_vector_columns,
-    (SELECT column_count FROM most_common_dimension) AS columns_with_common_dimension,
-    (SELECT column_count FROM most_common_dimension)::NUMERIC
+    (SELECT COUNT(*) FROM vector_dims vd, mode_dim md
+     WHERE vd.dimension = md.dimension) AS columns_with_common_dimension,
+    (SELECT COUNT(*) FROM vector_dims vd, mode_dim md
+     WHERE vd.dimension = md.dimension)::NUMERIC
         / NULLIF((SELECT cnt FROM total_vectors)::NUMERIC, 0) AS value
 ```

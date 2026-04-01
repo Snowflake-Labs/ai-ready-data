@@ -1,12 +1,12 @@
 # Diagnostic: batch_throughput_sufficiency
 
-Per-table breakdown of insert activity and tuple health.
+Per-table breakdown of load activity and table health indicators.
 
 ## Context
 
-Shows each table in the schema with its cumulative insert, update, and delete counts, live/dead tuple ratios, and a health assessment. Tables with a high dead tuple ratio may need `VACUUM` to reclaim space and maintain performance. Tables with zero inserts are flagged as having no load activity.
+Shows each table's cumulative insert, update, and delete counts from `pg_stat_user_tables`, along with live/dead tuple ratios. High dead tuple counts relative to live tuples indicate tables that need vacuuming — a common cause of degraded load throughput in PostgreSQL.
 
-Unlike Snowflake's per-load `load_history`, these are cumulative counters since the last `pg_stat_reset()`. The `dead_tuple_ratio` column indicates how much bloat exists — a ratio above 0.2 (20%) suggests `VACUUM` is overdue.
+The `load_health` label flags tables with zero inserts (`NO_LOAD_ACTIVITY`), high dead tuple ratios (`NEEDS_VACUUM`), or healthy state (`HEALTHY`). Counters are cumulative since the last `pg_stat_reset()`.
 
 ## SQL
 
@@ -18,23 +18,27 @@ SELECT
     n_tup_del AS total_deletes,
     n_live_tup AS live_tuples,
     n_dead_tup AS dead_tuples,
-    ROUND(n_dead_tup::NUMERIC / NULLIF((n_live_tup + n_dead_tup)::NUMERIC, 0), 4) AS dead_tuple_ratio,
+    CASE
+        WHEN n_live_tup > 0
+        THEN ROUND(n_dead_tup::NUMERIC / n_live_tup::NUMERIC, 4)
+        ELSE 0
+    END AS dead_to_live_ratio,
     last_vacuum,
     last_autovacuum,
     last_analyze,
     CASE
         WHEN n_tup_ins = 0 THEN 'NO_LOAD_ACTIVITY'
-        WHEN n_dead_tup::NUMERIC / NULLIF((n_live_tup + n_dead_tup)::NUMERIC, 0) > 0.2
-            THEN 'NEEDS_VACUUM'
+        WHEN n_dead_tup > n_live_tup * 0.2 THEN 'NEEDS_VACUUM'
         ELSE 'HEALTHY'
     END AS load_health,
     CASE
-        WHEN n_tup_ins = 0 THEN 'No inserts detected — verify load pipeline'
-        WHEN n_dead_tup::NUMERIC / NULLIF((n_live_tup + n_dead_tup)::NUMERIC, 0) > 0.2
-            THEN 'High dead tuple ratio — run VACUUM'
-        ELSE 'Load activity detected, tuple health OK'
+        WHEN n_tup_ins = 0 THEN 'No inserts recorded — verify load pipeline'
+        WHEN n_dead_tup > n_live_tup * 0.2 THEN 'High dead tuple ratio — run VACUUM'
+        ELSE 'Load activity looks healthy'
     END AS recommendation
 FROM pg_stat_user_tables
 WHERE schemaname = '{{ schema }}'
-ORDER BY load_health, n_tup_ins DESC
+ORDER BY
+    CASE WHEN n_tup_ins = 0 THEN 0 ELSE 1 END,
+    n_dead_tup DESC
 ```

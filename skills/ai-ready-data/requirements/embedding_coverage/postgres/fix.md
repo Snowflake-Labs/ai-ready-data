@@ -2,13 +2,9 @@
 
 No automated fix SQL is provided for this requirement. Remediation depends on the embedding model, dimensionality, and downstream retrieval pattern.
 
-## Context
-
-PostgreSQL requires the `pgvector` extension for native vector storage and similarity search. Embeddings must be generated externally (e.g., via OpenAI, Sentence Transformers, or another embedding model) and inserted into vector columns.
-
 ## Remediation Guidance
 
-1. **Install pgvector** (if not already installed):
+1. **Ensure pgvector is installed**:
 
    ```sql
    CREATE EXTENSION IF NOT EXISTS vector;
@@ -21,16 +17,12 @@ PostgreSQL requires the `pgvector` extension for native vector storage and simil
        ADD COLUMN {{ vector_column_name }} vector(768);
    ```
 
-   Replace `768` with the dimension of your embedding model's output.
+3. **Populate embeddings** using your embedding model of choice (e.g., OpenAI, Sentence Transformers, or a PG-native solution). This is typically done application-side:
 
-3. **Populate embeddings** from your application layer. For example, using Python with `psycopg2`:
-
-   ```python
-   # Generate embedding with your model, then:
-   cursor.execute(
-       "UPDATE schema.table SET embedding = %s WHERE id = %s",
-       (embedding_vector, row_id)
-   )
+   ```sql
+   UPDATE {{ schema }}.{{ table_name }}
+       SET {{ vector_column_name }} = {{ embedding_expression }}
+       WHERE {{ vector_column_name }} IS NULL;
    ```
 
-4. **Keep embeddings current** by updating them in your data pipeline whenever the source text column changes. Consider a trigger-based or CDC-based approach to maintain freshness.
+4. **Keep embeddings current** by adding a trigger or scheduled job to embed new/updated rows incrementally.

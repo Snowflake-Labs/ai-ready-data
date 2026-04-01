@@ -1,12 +1,10 @@
 # Diagnostic: pipeline_execution_audit
 
-Shows audit infrastructure status and query activity for the schema.
+Shows audit infrastructure status and recent query execution statistics.
 
 ## Context
 
-Reports on the presence of audit extensions and, if `pg_stat_statements` is available, shows the most active query patterns targeting the schema. This helps identify which pipelines are running and whether their execution is being tracked.
-
-Unlike Snowflake's `task_history` which provides per-run records with timing and status, `pg_stat_statements` only provides aggregated statistics per normalized query. Individual run records require `pgaudit` log analysis or an application-level audit table.
+Enumerates installed audit-related extensions and their configuration, then shows the most active query patterns from `pg_stat_statements` (if available) to illustrate current audit coverage. This helps identify whether pipeline queries are being captured and what audit gaps exist.
 
 ## SQL
 
@@ -14,43 +12,48 @@ Unlike Snowflake's `task_history` which provides per-run records with timing and
 
 ```sql
 SELECT
-    extname AS extension_name,
-    extversion AS version,
-    CASE extname
-        WHEN 'pg_stat_statements' THEN 'Query statistics tracking'
-        WHEN 'pgaudit' THEN 'Immutable audit logging'
+    e.extname AS extension_name,
+    e.extversion AS version,
+    CASE
+        WHEN e.extname = 'pgaudit' THEN 'Immutable audit logging'
+        WHEN e.extname = 'pg_stat_statements' THEN 'Query statistics tracking'
         ELSE 'Other'
     END AS purpose
-FROM pg_extension
-WHERE extname IN ('pg_stat_statements', 'pgaudit')
+FROM pg_extension e
+WHERE e.extname IN ('pgaudit', 'pg_stat_statements')
 
 UNION ALL
 
 SELECT
-    missing.extname,
-    NULL AS version,
-    'NOT INSTALLED — ' || missing.purpose AS purpose
-FROM (VALUES
-    ('pg_stat_statements', 'Query statistics tracking'),
-    ('pgaudit', 'Immutable audit logging')
-) AS missing(extname, purpose)
-WHERE missing.extname NOT IN (SELECT extname FROM pg_extension)
+    'log_statement' AS extension_name,
+    current_setting('log_statement', true) AS version,
+    CASE current_setting('log_statement', true)
+        WHEN 'all' THEN 'All statements logged'
+        WHEN 'mod' THEN 'Data-modifying statements logged'
+        WHEN 'ddl' THEN 'DDL statements only'
+        ELSE 'No statement logging'
+    END AS purpose
 ```
 
-### Query activity for the schema (requires pg_stat_statements)
+### Recent query patterns (requires pg_stat_statements)
 
 ```sql
 SELECT
     queryid,
-    LEFT(query, 300) AS query_preview,
-    calls,
-    total_exec_time::NUMERIC / 1000 AS total_exec_seconds,
-    mean_exec_time::NUMERIC / 1000 AS mean_exec_seconds,
-    rows,
+    LEFT(query, 200) AS query_pattern,
+    calls AS execution_count,
+    total_exec_time / 1000 AS total_exec_seconds,
+    rows AS total_rows_affected,
     CASE
-        WHEN calls > 0 AND rows > 0 THEN 'ACTIVE'
-        ELSE 'INACTIVE'
-    END AS activity_status
+        WHEN query ~* '^(INSERT|UPDATE|DELETE|MERGE)' THEN 'WRITE'
+        WHEN query ~* '^(SELECT|WITH)' THEN 'READ'
+        WHEN query ~* '^(CREATE|ALTER|DROP)' THEN 'DDL'
+        ELSE 'OTHER'
+    END AS query_type,
+    CASE
+        WHEN query ~* '{{ schema }}\.' THEN 'IN_SCOPE'
+        ELSE 'OUT_OF_SCOPE'
+    END AS schema_relevance
 FROM pg_stat_statements
 WHERE query ~* '{{ schema }}\.'
 ORDER BY calls DESC

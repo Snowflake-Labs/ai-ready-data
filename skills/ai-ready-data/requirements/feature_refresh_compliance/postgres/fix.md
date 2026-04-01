@@ -1,48 +1,54 @@
 # Fix: feature_refresh_compliance
 
-Remediation guidance for stale materialized views.
+Remediation guidance for stale materialized views and tables.
 
 ## Context
 
-Unlike Snowflake dynamic tables which auto-refresh based on `target_lag`, PostgreSQL materialized views require explicit refresh operations. Staleness is entirely the responsibility of the operator — there is no built-in scheduler or lag-based trigger.
+PostgreSQL materialized views require explicit refresh — they do not auto-update like Snowflake dynamic tables. Staleness is the default state unless refresh schedules are configured. The primary remediation is to establish automated refresh schedules using `pg_cron` or an external scheduler.
 
-## Remediation: Refresh a stale materialized view
+## Remediation: Refresh a materialized view
 
-Immediately refresh a stale materialized view and update statistics:
+Manually trigger a refresh for a stale materialized view:
 
 ```sql
 REFRESH MATERIALIZED VIEW {{ schema }}.{{ asset }};
-ANALYZE {{ schema }}.{{ asset }};
 ```
 
-For zero-downtime refreshes (requires a unique index on the view):
+Use `CONCURRENTLY` to allow reads during refresh (requires a unique index on the view):
 
 ```sql
 REFRESH MATERIALIZED VIEW CONCURRENTLY {{ schema }}.{{ asset }};
-ANALYZE {{ schema }}.{{ asset }};
 ```
 
 ## Remediation: Schedule automated refresh with pg_cron
 
-Install `pg_cron` and create a recurring refresh job:
+Install `pg_cron` and schedule periodic refreshes to prevent staleness:
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS pg_cron;
-
 SELECT cron.schedule(
-    'refresh_{{ asset }}',
-    '0 */1 * * *',
-    'REFRESH MATERIALIZED VIEW CONCURRENTLY {{ schema }}.{{ asset }}; ANALYZE {{ schema }}.{{ asset }};'
+    '{{ asset }}_refresh',
+    '0 * * * *',
+    $$REFRESH MATERIALIZED VIEW CONCURRENTLY {{ schema }}.{{ asset }}$$
 );
 ```
 
-Adjust the cron expression to match the required staleness tolerance (e.g., `*/15 * * * *` for every 15 minutes).
+Adjust the cron expression to match your staleness tolerance (e.g., `'*/15 * * * *'` for every 15 minutes).
 
-## Remediation: Add a unique index for concurrent refresh
+## Remediation: Run ANALYZE on stale tables
 
-`CONCURRENTLY` requires a unique index. Create one on the materialized view's primary key or a suitable unique column set:
+For base tables showing as stale, run ANALYZE to update statistics and confirm activity:
 
 ```sql
-CREATE UNIQUE INDEX {{ asset }}_refresh_idx
-    ON {{ schema }}.{{ asset }} ({{ unique_key }});
+ANALYZE {{ schema }}.{{ asset }};
+```
+
+## Remediation: Configure autovacuum for freshness
+
+Ensure autovacuum runs frequently enough to keep statistics current:
+
+```sql
+ALTER TABLE {{ schema }}.{{ asset }} SET (
+    autovacuum_analyze_scale_factor = 0.005,
+    autovacuum_analyze_threshold = 100
+);
 ```

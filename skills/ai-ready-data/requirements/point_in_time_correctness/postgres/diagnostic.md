@@ -1,12 +1,12 @@
 # Diagnostic: point_in_time_correctness
 
-Per-table breakdown of temporal columns for point-in-time join capability.
+Per-table breakdown of temporal column availability for point-in-time join support.
 
 ## Context
 
-Lists every base table in the schema with its temporal columns (if any), a count of timestamp columns, and a capability assessment. Tables without timestamp columns are flagged as `NO_TIMESTAMPS` — these cannot support point-in-time joins and risk future data leakage in training pipelines.
+Lists every base table in the schema with its timestamp columns (if any), a count of temporal columns, and a point-in-time capability label. Tables without recognizable timestamp columns are flagged as `NO_TIMESTAMPS` with a recommendation to add temporal columns.
 
-PostgreSQL uses `STRING_AGG` instead of Snowflake's `LISTAGG` for column name aggregation.
+PostgreSQL's `STRING_AGG` replaces Snowflake's `LISTAGG` for aggregating column names.
 
 ## SQL
 
@@ -20,7 +20,8 @@ WITH timestamp_columns AS (
         c.is_nullable
     FROM information_schema.columns c
     JOIN information_schema.tables t
-        ON c.table_schema = t.table_schema AND c.table_name = t.table_name
+        ON c.table_name = t.table_name
+        AND c.table_schema = t.table_schema
     WHERE c.table_schema = '{{ schema }}'
         AND t.table_type = 'BASE TABLE'
         AND c.data_type IN (
@@ -38,6 +39,7 @@ tables_summary AS (
     GROUP BY table_name
 )
 SELECT
+    t.table_schema AS schema_name,
     t.table_name,
     COALESCE(ts.timestamp_column_count, 0) AS timestamp_column_count,
     COALESCE(ts.timestamp_columns, 'NONE') AS timestamp_columns,

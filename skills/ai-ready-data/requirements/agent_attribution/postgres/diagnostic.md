@@ -1,55 +1,56 @@
 # Diagnostic: agent_attribution
 
-Recent data modification query patterns with attribution details.
+Recent data modification query patterns with their attribution details.
 
 ## Context
 
-Shows distinct write query patterns from `pg_stat_statements` targeting the schema, along with call counts and total rows affected. Unlike Snowflake's `query_history` which logs individual executions with `QUERY_TAG`, `pg_stat_statements` aggregates by normalized query text — so this diagnostic shows query patterns, not individual runs.
+Shows the most common write query patterns against the schema from `pg_stat_statements`, along with total call counts and whether the queries carry attribution markers (SQL comments with agent/pipeline identifiers).
 
-To see currently running sessions and their `application_name`, the second query checks `pg_stat_activity`. Sessions with a default or empty `application_name` are flagged as `UNATTRIBUTED`.
+PostgreSQL's `pg_stat_statements` normalizes queries (replacing literal values with `$1`, `$2`, etc.), so this shows query _patterns_ rather than individual executions. The `calls` column indicates how many times each pattern was executed.
 
-Requires `pg_stat_statements` extension and `pg_read_all_stats` role.
+If `pg_stat_statements` is not available, falls back to `pg_stat_activity` for currently running sessions, which is a much narrower view.
 
 ## SQL
 
-### Query patterns targeting the schema
+### With pg_stat_statements
 
 ```sql
 SELECT
     queryid,
-    LEFT(query, 200) AS query_preview,
-    calls,
-    rows,
+    LEFT(query, 200) AS query_pattern,
+    calls AS execution_count,
     CASE
-        WHEN queryid IS NOT NULL THEN 'TRACKED'
-        ELSE 'UNTRACKED'
-    END AS tracking_status
+        WHEN query ~* '/\*.*agent=|pipeline=|app=.*\*/' THEN 'ATTRIBUTED'
+        ELSE 'UNATTRIBUTED'
+    END AS attribution_status,
+    total_exec_time / 1000 AS total_exec_seconds,
+    rows AS total_rows_affected
 FROM pg_stat_statements
-WHERE query ~* '(INSERT|UPDATE|DELETE|MERGE)\s+.*{{ schema }}\.'
+WHERE query ~* '(INSERT|UPDATE|DELETE|MERGE)\s+INTO\s+{{ schema }}\.'
+   OR query ~* '(UPDATE|DELETE\s+FROM)\s+{{ schema }}\.'
 ORDER BY calls DESC
-LIMIT 100
+LIMIT 50
 ```
 
-### Active sessions with attribution status
+### Fallback: current sessions only
 
 ```sql
 SELECT
     pid,
     usename,
     application_name,
-    client_addr,
-    backend_start,
-    state,
     LEFT(query, 200) AS current_query,
+    state,
     CASE
         WHEN application_name IS NOT NULL
-            AND application_name != ''
-            AND application_name NOT IN ('psql', 'PostgreSQL JDBC Driver', 'pgAdmin 4 - DB:*')
+            AND application_name NOT IN ('', 'psql', 'pgAdmin')
         THEN 'ATTRIBUTED'
         ELSE 'UNATTRIBUTED'
-    END AS attribution_status
+    END AS attribution_status,
+    backend_start,
+    query_start
 FROM pg_stat_activity
 WHERE datname = current_database()
-    AND pid != pg_backend_pid()
-ORDER BY attribution_status, backend_start DESC
+    AND query ~* '(INSERT|UPDATE|DELETE|MERGE).*{{ schema }}\.'
+ORDER BY query_start DESC NULLS LAST
 ```

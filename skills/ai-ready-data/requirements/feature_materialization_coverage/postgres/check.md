@@ -1,14 +1,14 @@
 # Check: feature_materialization_coverage
 
-Fraction of schema objects that are pre-materialized via materialized views.
+Fraction of tables in the schema that have a pre-materialized counterpart.
 
 ## Context
 
-Snowflake counts dynamic tables and materialized views relative to base tables. PostgreSQL has no dynamic tables — materialized views are the sole pre-materialization mechanism. This check counts materialized views in the schema as a fraction of all table-like objects (base tables + materialized views).
+Snowflake uses dynamic tables and materialized views for feature materialization. PostgreSQL's equivalent is materialized views (`pg_matviews`). This check counts materialized views in the schema relative to the total number of base tables plus materialized views.
 
-A score of 1.0 means every table-like object in the schema is a materialized view. Base tables with no materialized counterpart pull the score down. A score of 0.0 means no materialized views exist.
+A score of 1.0 means every table-like object in the schema is a materialized view. Base tables with no materialized counterpart pull the score down. A high score indicates features are pre-computed and ready for serving without on-the-fly computation.
 
-Materialized views in PostgreSQL must be explicitly refreshed (`REFRESH MATERIALIZED VIEW`). Unlike Snowflake dynamic tables, they do not auto-refresh. Use `pg_cron` or an application scheduler for periodic refreshes.
+PostgreSQL materialized views require explicit `REFRESH MATERIALIZED VIEW` calls — they do not auto-refresh like Snowflake dynamic tables. The materialization score here reflects structural coverage, not freshness.
 
 ## SQL
 

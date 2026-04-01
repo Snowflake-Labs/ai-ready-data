@@ -4,11 +4,13 @@ Fraction of data modification queries tagged with a responsible agent or pipelin
 
 ## Context
 
-Measures whether write operations targeting the schema are attributed to a specific agent, pipeline, or process. PostgreSQL has no per-query `QUERY_TAG` equivalent — the closest analog is `application_name`, a session-level parameter visible in `pg_stat_activity` and tracked by `pg_stat_statements`.
+Measures whether write operations against the schema carry meaningful attribution via `application_name` or query comment conventions. Uses `pg_stat_statements` (if installed) to inspect recent query patterns targeting the schema.
 
-This check requires the `pg_stat_statements` extension. It counts queries targeting the schema that have a non-default `application_name` pattern (i.e., not empty and not the generic `psql` or `PostgreSQL JDBC Driver` defaults). This is a weaker signal than Snowflake's per-query `QUERY_TAG` — PG attribution is session-level, so all queries in a session share the same `application_name`.
+PostgreSQL does not have a per-query `QUERY_TAG` equivalent. The closest analog is the session-level `application_name` parameter, which is set on the connection and appears in `pg_stat_activity` and `pg_stat_statements`. Attribution is therefore coarser than Snowflake — it identifies the application or pipeline process, not individual query runs.
 
-If `pg_stat_statements` is not installed, the check returns NULL (not applicable). If no write queries are found, the result is also NULL.
+If `pg_stat_statements` is not installed, the check returns NULL (not applicable). When available, it counts the fraction of write queries (INSERT, UPDATE, DELETE, MERGE) targeting the schema that originated from sessions with a non-default `application_name`.
+
+A score of 1.0 means every captured write query came from a session with a meaningful `application_name`. A score of 0.0 means all writes used the default `application_name` (typically empty or `psql`).
 
 ## SQL
 
@@ -20,15 +22,25 @@ SELECT CASE
         WITH write_queries AS (
             SELECT
                 queryid,
-                query
+                query,
+                calls
             FROM pg_stat_statements
-            WHERE query ~* '(INSERT|UPDATE|DELETE|MERGE)\s+.*{{ schema }}\.'
+            WHERE query ~* '(INSERT|UPDATE|DELETE|MERGE)\s+INTO\s+{{ schema }}\.'
+               OR query ~* '(UPDATE|DELETE\s+FROM)\s+{{ schema }}\.'
+        ),
+        attributed AS (
+            SELECT SUM(calls) AS cnt
+            FROM write_queries
+            WHERE queryid IN (
+                SELECT queryid FROM pg_stat_statements
+                WHERE query ~* '/\*.*agent=|pipeline=|app=.*\*/'
+            )
+        ),
+        total AS (
+            SELECT SUM(calls) AS cnt FROM write_queries
         )
-        SELECT
-            COUNT(*) FILTER (
-                WHERE queryid IS NOT NULL
-            )::NUMERIC / NULLIF(COUNT(*)::NUMERIC, 0)
-        FROM write_queries
+        SELECT attributed.cnt::NUMERIC / NULLIF(total.cnt::NUMERIC, 0)
+        FROM attributed, total
     )
 END AS value
 ```

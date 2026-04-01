@@ -1,39 +1,43 @@
 # Fix: access_optimization
 
-Add indexes to large tables that lack them.
+Add indexes to tables that lack them.
 
 ## Context
 
-Indexes enable the PostgreSQL query planner to avoid sequential scans on large tables, dramatically improving query performance for filtered scans and joins. This is the single most impactful optimization for tables frequently queried by AI workloads.
+PostgreSQL indexes are the primary mechanism for access optimization. Unlike Snowflake's clustering keys, indexes are separate data structures that must be explicitly created and are immediately effective once built.
 
-Choose index columns based on the most common filter and join predicates. Good candidates are:
+Choose index type and columns based on query patterns:
+
+- **B-tree** (default) — Best for equality and range predicates (`=`, `<`, `>`, `BETWEEN`, `ORDER BY`). Suitable for most columns.
+- **BRIN** — Best for large, physically ordered tables (e.g., append-only time-series with a timestamp column). Much smaller than B-tree but only effective when physical row order correlates with column values.
+
+Good candidates for indexing:
 - Foreign key columns used in joins
+- Columns used in `WHERE` clauses
 - Date/timestamp columns used in range filters
-- Low-to-medium cardinality columns used in WHERE clauses
+- Columns used in `ORDER BY`
 
-For time-series or append-only data, consider a BRIN index instead of B-tree — BRIN indexes are much smaller and work well when the physical row order correlates with the indexed column.
-
-Use `CREATE INDEX CONCURRENTLY` in production to avoid locking the table during index creation. Note that `CONCURRENTLY` cannot run inside a transaction block.
+Use `CREATE INDEX CONCURRENTLY` in production to avoid locking the table during index creation. This takes longer but does not block reads or writes.
 
 ## SQL
 
-### B-tree index (general purpose)
+### B-tree index (default, most common)
 
 ```sql
 CREATE INDEX CONCURRENTLY idx_{{ asset }}_{{ column }}
 ON {{ schema }}.{{ asset }} ({{ column }})
 ```
 
-### BRIN index (time-series / append-only data)
+### BRIN index (for large, naturally ordered tables)
 
 ```sql
 CREATE INDEX CONCURRENTLY idx_{{ asset }}_{{ column }}_brin
 ON {{ schema }}.{{ asset }} USING brin ({{ column }})
 ```
 
-### Composite index (multi-column filters)
+### Composite index (multiple columns)
 
 ```sql
-CREATE INDEX CONCURRENTLY idx_{{ asset }}_composite
-ON {{ schema }}.{{ asset }} ({{ column_1 }}, {{ column_2 }})
+CREATE INDEX CONCURRENTLY idx_{{ asset }}_{{ columns_slug }}
+ON {{ schema }}.{{ asset }} ({{ columns }})
 ```

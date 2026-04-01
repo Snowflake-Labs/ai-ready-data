@@ -1,16 +1,16 @@
 # Diagnostic: point_lookup_availability
 
-Per-table breakdown of point-lookup readiness across the schema.
+Per-table breakdown of primary key and unique index status.
 
 ## Context
 
-Lists every base table with its estimated row count, primary key (if any), unique indexes, and a lookup capability classification:
+Lists every base table with its estimated row count, primary key columns (if any), unique index count, and a lookup capability classification. Tables are classified as:
 
-- `HAS PK` — Table has a primary key (best for point lookups).
-- `UNIQUE INDEX ONLY` — Table has a unique index but no declared primary key. Functionally equivalent for lookups, but a PK is preferred for semantic clarity.
-- `NO UNIQUE KEY` — Table has no primary key or unique index. Point lookups require sequential scans.
+- `HAS PK` — Has a primary key (best for point lookups)
+- `UNIQUE ONLY` — Has a unique index but no primary key (still enables efficient point lookups, but PK is preferred for semantic clarity)
+- `NO KEY` — No primary key or unique index (point lookups require sequential scans)
 
-Tables marked `NO UNIQUE KEY` are candidates for the fix. The second query shows column details for a specific table to help identify natural key candidates.
+Tables marked `NO KEY` are the primary candidates for remediation.
 
 ## SQL
 
@@ -22,11 +22,11 @@ SELECT
     c.reltuples::BIGINT AS estimated_rows,
     pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
     (
-        SELECT string_agg(a.attname, ', ' ORDER BY array_position(ix.indkey, a.attnum))
+        SELECT STRING_AGG(a.attname, ', ' ORDER BY array_position(ix.indkey, a.attnum))
         FROM pg_index ix
         JOIN pg_attribute a ON a.attrelid = ix.indrelid AND a.attnum = ANY(ix.indkey)
         WHERE ix.indrelid = c.oid AND ix.indisprimary
-    ) AS primary_key_columns,
+    ) AS pk_columns,
     (
         SELECT COUNT(*)
         FROM pg_index ix
@@ -36,15 +36,15 @@ SELECT
         WHEN EXISTS (SELECT 1 FROM pg_index ix WHERE ix.indrelid = c.oid AND ix.indisprimary)
             THEN 'HAS PK'
         WHEN EXISTS (SELECT 1 FROM pg_index ix WHERE ix.indrelid = c.oid AND ix.indisunique)
-            THEN 'UNIQUE INDEX ONLY'
-        ELSE 'NO UNIQUE KEY'
+            THEN 'UNIQUE ONLY'
+        ELSE 'NO KEY'
     END AS lookup_capability,
     CASE
         WHEN EXISTS (SELECT 1 FROM pg_index ix WHERE ix.indrelid = c.oid AND ix.indisprimary)
             THEN 'Ready for point lookups'
         WHEN EXISTS (SELECT 1 FROM pg_index ix WHERE ix.indrelid = c.oid AND ix.indisunique)
-            THEN 'Consider adding a primary key for semantic clarity'
-        ELSE 'Add primary key or unique index on lookup columns'
+            THEN 'Add primary key for semantic clarity'
+        ELSE 'Add primary key on lookup columns'
     END AS recommendation
 FROM pg_class c
 JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -53,7 +53,7 @@ WHERE n.nspname = '{{ schema }}'
 ORDER BY lookup_capability DESC, c.reltuples DESC
 ```
 
-### Column details (single table, for identifying key candidates)
+### Column candidates for primary key (single table without PK)
 
 ```sql
 SELECT
@@ -62,7 +62,7 @@ SELECT
     NOT a.attnotnull AS is_nullable,
     (
         SELECT COUNT(DISTINCT t.val)::NUMERIC / NULLIF(COUNT(*)::NUMERIC, 0)
-        FROM (SELECT ({{ column_expr }})::TEXT AS val FROM {{ schema }}.{{ asset }} TABLESAMPLE BERNOULLI(1)) t
+        FROM (SELECT {{ column }} AS val FROM {{ schema }}.{{ asset }} TABLESAMPLE BERNOULLI(1)) t
     ) AS estimated_uniqueness
 FROM pg_attribute a
 WHERE a.attrelid = '{{ schema }}.{{ asset }}'::regclass

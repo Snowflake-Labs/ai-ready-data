@@ -1,15 +1,15 @@
 # Check: incremental_update_coverage
 
-Fraction of data objects that use incremental processing rather than full-reload extraction.
+Fraction of data pipelines using incremental processing rather than full-reload extraction.
 
 ## Context
 
-Measures the fraction of data objects in the schema that support incremental updates. In Snowflake this maps to dynamic tables and streams; in PostgreSQL the equivalent mechanisms are:
+Measures the fraction of objects that support incremental updates. PostgreSQL has no direct equivalent of Snowflake's dynamic tables, but incremental processing is indicated by:
 
-- **Logical replication publications** — tables enrolled in a publication emit row-level CDC events, enabling incremental downstream consumption.
-- **Materialized views** — while not truly incremental (they require `REFRESH MATERIALIZED VIEW`), they represent a transformation layer that can be refreshed without full pipeline reruns.
+- **Publication membership** — tables in logical replication publications emit change events for incremental CDC pipelines.
+- **Materialized views** — can be incrementally refreshed (though standard PostgreSQL `REFRESH MATERIALIZED VIEW` is a full rebuild, the existence of a matview indicates an incremental-friendly pattern).
 
-The check counts tables in publications plus materialized views, divided by total objects (base tables + materialized views). A score of 1.0 means every object has an incremental processing mechanism.
+The check counts tables in publications plus materialized views as objects with incremental capability, divided by total objects (base tables + materialized views) in the schema.
 
 ## SQL
 
@@ -21,7 +21,7 @@ WITH base_tables AS (
     WHERE n.nspname = '{{ schema }}'
         AND c.relkind = 'r'
 ),
-mat_views AS (
+matviews AS (
     SELECT c.relname AS table_name
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -36,11 +36,16 @@ published_tables AS (
 tables_with_incremental AS (
     SELECT table_name FROM published_tables
     UNION
-    SELECT table_name FROM mat_views
+    SELECT table_name FROM matviews
+),
+all_objects AS (
+    SELECT table_name FROM base_tables
+    UNION ALL
+    SELECT table_name FROM matviews
 )
 SELECT
     (SELECT COUNT(*) FROM tables_with_incremental) AS tables_with_incremental,
-    (SELECT COUNT(*) FROM base_tables) + (SELECT COUNT(*) FROM mat_views) AS total_objects,
+    (SELECT COUNT(*) FROM all_objects) AS total_objects,
     (SELECT COUNT(*) FROM tables_with_incremental)::NUMERIC /
-        NULLIF(((SELECT COUNT(*) FROM base_tables) + (SELECT COUNT(*) FROM mat_views))::NUMERIC, 0) AS value
+        NULLIF((SELECT COUNT(*) FROM all_objects)::NUMERIC, 0) AS value
 ```

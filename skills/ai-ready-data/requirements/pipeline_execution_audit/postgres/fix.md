@@ -1,15 +1,29 @@
 # Fix: pipeline_execution_audit
 
-Install audit extensions and configure logging for pipeline execution tracking.
+Install and configure audit infrastructure for capturing pipeline execution records.
 
 ## Context
 
-PostgreSQL does not have built-in pipeline execution history. Achieving audit coverage requires installing extensions and configuring logging. There are two complementary approaches:
+PostgreSQL requires explicit extension installation and configuration for audit logging. Unlike Snowflake's built-in `task_history`, PostgreSQL audit coverage is opt-in. The recommended approach is to install both `pgaudit` (for immutable audit logs) and `pg_stat_statements` (for query statistics).
 
-1. **`pg_stat_statements`** — Lightweight query statistics. Tracks call counts, timing, and rows per normalized query. No individual run records, but sufficient for activity monitoring.
-2. **`pgaudit`** — Full audit logging. Writes individual statement execution records to the PostgreSQL log. Provides immutable records but requires log management infrastructure.
+## Remediation: Install pgaudit
 
-Both extensions require entries in `shared_preload_libraries` in `postgresql.conf`, which necessitates a server restart.
+`pgaudit` provides session and object-level audit logging to the PostgreSQL log files, creating immutable execution records.
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pgaudit;
+```
+
+Add to `postgresql.conf`:
+
+```
+shared_preload_libraries = 'pgaudit'
+pgaudit.log = 'write, ddl'
+pgaudit.log_relation = on
+pgaudit.log_statement_once = on
+```
+
+Restart PostgreSQL after changing `shared_preload_libraries`.
 
 ## Remediation: Install pg_stat_statements
 
@@ -18,39 +32,21 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 ```
 
 Add to `postgresql.conf`:
+
 ```
 shared_preload_libraries = 'pg_stat_statements'
 pg_stat_statements.track = all
+pg_stat_statements.max = 10000
 ```
 
-## Remediation: Install pgaudit
+## Remediation: Configure statement logging
 
-```sql
-CREATE EXTENSION IF NOT EXISTS pgaudit;
+For environments where extensions cannot be installed, enable native statement logging:
+
+```
+log_statement = 'mod'
+log_min_duration_statement = 0
+log_line_prefix = '%t [%p] %u@%d app=%a '
 ```
 
-Add to `postgresql.conf`:
-```
-shared_preload_libraries = 'pgaudit'
-pgaudit.log = 'write, ddl'
-pgaudit.log_catalog = off
-```
-
-The `pgaudit.log = 'write, ddl'` setting logs all data modification and DDL statements — the operations most relevant to pipeline execution auditing.
-
-## Remediation: Create an application-level audit table
-
-For pipelines that need structured run records (comparable to Snowflake's `task_history`), create an explicit audit table:
-
-```sql
-CREATE TABLE IF NOT EXISTS {{ schema }}.pipeline_execution_log (
-    execution_id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    pipeline_name   TEXT NOT NULL,
-    run_id          TEXT,
-    started_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    completed_at    TIMESTAMPTZ,
-    status          TEXT CHECK (status IN ('RUNNING', 'SUCCEEDED', 'FAILED')),
-    rows_affected   BIGINT,
-    error_message   TEXT
-);
-```
+This logs all data-modifying statements with timestamps, user, database, and application name — providing a basic audit trail in server logs.

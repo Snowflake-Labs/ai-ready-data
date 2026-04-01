@@ -1,36 +1,31 @@
 # Check: access_optimization
 
-Fraction of large tables in the schema that have at least one B-tree or BRIN index.
+Fraction of tables in the schema that have at least one B-tree or BRIN index.
 
 ## Context
 
-Only tables with more than 10,000 estimated rows are evaluated — small tables don't benefit from indexing and would inflate the score. Row estimates come from `pg_class.reltuples`, which is updated by `ANALYZE`. If the schema has no tables above this threshold, the check returns NULL (division by zero guard), which should be treated as not applicable.
+Queries `pg_class` and `pg_indexes` to compare the number of tables with at least one index against the total number of base tables in the schema. Returns a ratio between 0.0 (no tables indexed) and 1.0 (all tables indexed).
 
-An index being *present* does not mean it is *effective*. Use the diagnostic to assess index usage and bloat on individual tables.
+Unlike Snowflake's clustering keys, PostgreSQL indexes are explicit objects that must be created and maintained by the user. B-tree indexes are the most common and cover equality and range predicates; BRIN indexes are effective for large, naturally ordered tables (e.g., append-only time-series).
 
 ## SQL
 
 ```sql
-WITH large_tables AS (
+WITH table_count AS (
     SELECT COUNT(*) AS cnt
     FROM pg_class c
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = '{{ schema }}'
       AND c.relkind = 'r'
-      AND c.reltuples > 10000
 ),
-indexed AS (
-    SELECT COUNT(DISTINCT c.oid) AS cnt
-    FROM pg_class c
-    JOIN pg_namespace n ON n.oid = c.relnamespace
-    JOIN pg_index i ON i.indrelid = c.oid
-    WHERE n.nspname = '{{ schema }}'
-      AND c.relkind = 'r'
-      AND c.reltuples > 10000
+indexed_tables AS (
+    SELECT COUNT(DISTINCT tablename) AS cnt
+    FROM pg_indexes
+    WHERE schemaname = '{{ schema }}'
 )
 SELECT
-    indexed.cnt   AS tables_with_indexes,
-    large_tables.cnt AS large_tables,
-    indexed.cnt::NUMERIC / NULLIF(large_tables.cnt::NUMERIC, 0) AS value
-FROM large_tables, indexed
+    indexed_tables.cnt AS tables_with_indexes,
+    table_count.cnt AS total_tables,
+    indexed_tables.cnt::NUMERIC / NULLIF(table_count.cnt::NUMERIC, 0) AS value
+FROM table_count, indexed_tables
 ```

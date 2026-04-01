@@ -1,14 +1,14 @@
 # Check: lineage_completeness
 
-Fraction of tables with documented lineage via object dependency relationships.
+Fraction of tables with documented lineage via downstream object dependencies.
 
 ## Context
 
-Snowflake uses `ACCESS_HISTORY` to track query-level lineage (which queries read which tables). PostgreSQL has no equivalent query-level lineage tracking. Instead, this check uses `pg_depend` to identify tables that participate in documented transformation chains — i.e., tables that are referenced by views or materialized views.
+Snowflake uses `ACCESS_HISTORY` to track query-level lineage (which queries read which tables). PostgreSQL has no equivalent query-level lineage tracking. Instead, this check uses `pg_depend` to identify tables that appear as sources for views or materialized views — indicating they participate in a documented transformation chain.
 
-A table with at least one downstream view or materialized view depending on it has "documented lineage" in the sense that its role in the data pipeline is codified in SQL definitions that PostgreSQL tracks automatically.
+A table with at least one downstream dependent (view or materialized view) has structural lineage: its role as a source in a transformation is encoded in the SQL definition of the dependent object. Tables without dependents may still be consumed by external tools, but that lineage is not tracked by PostgreSQL.
 
-A score of 1.0 means every base table in the schema is referenced by at least one view or materialized view. Tables with no dependents may be standalone staging tables, or their lineage may exist outside PostgreSQL (in external ETL tools).
+A score of 1.0 means every base table is referenced by at least one view or materialized view.
 
 ## SQL
 
@@ -27,6 +27,7 @@ tables_with_dependents AS (
     JOIN pg_class dc ON dc.oid = d.objid
     WHERE dc.relkind IN ('v', 'm')
         AND d.deptype = 'n'
+        AND d.objid <> t.oid
 )
 SELECT
     (SELECT COUNT(*) FROM tables_with_dependents) AS tables_with_lineage,

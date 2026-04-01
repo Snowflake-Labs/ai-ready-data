@@ -1,51 +1,59 @@
 # Fix: batch_throughput_sufficiency
 
-Remediation guidance for improving batch load health and throughput in PostgreSQL.
+Remediation guidance for improving batch load throughput and table health in PostgreSQL.
 
 ## Context
 
-PostgreSQL bulk loading differs fundamentally from Snowflake's `COPY INTO`. The primary bulk load mechanism is `COPY FROM`, which reads from files or stdin. Load failures in PG abort the entire transaction by default — there is no `ON_ERROR = 'CONTINUE'` equivalent. Throughput issues are typically caused by missing indexes during load, excessive WAL generation, or autovacuum contention.
+PostgreSQL batch loading performance depends on table maintenance (vacuuming, index management), load method (COPY vs INSERT), and configuration tuning. There is no single DDL fix — remediation depends on the root cause identified in the diagnostic.
 
-## Remediation: Run VACUUM on bloated tables
+## Remediation: VACUUM tables with high dead tuple ratios
 
-Tables with high dead tuple ratios (identified in the diagnostic) need vacuuming to reclaim space and update visibility maps:
+Dead tuples from updates and deletes accumulate and degrade insert performance. Run VACUUM on affected tables:
 
 ```sql
-VACUUM ANALYZE {{ schema }}.{{ asset }};
+VACUUM (VERBOSE, ANALYZE) {{ schema }}.{{ asset }};
 ```
 
-For heavily bloated tables, use `VACUUM FULL` (requires exclusive lock):
+For severely bloated tables, use VACUUM FULL (requires exclusive lock):
 
 ```sql
 VACUUM FULL {{ schema }}.{{ asset }};
 ```
 
-## Remediation: Optimize bulk loading with COPY
+## Remediation: Use COPY for bulk loading
 
-Use `COPY` instead of individual `INSERT` statements for bulk loads:
+`COPY` is significantly faster than row-by-row INSERT for bulk loads. Use it for batch ingestion:
 
 ```sql
 COPY {{ schema }}.{{ asset }} FROM '/path/to/data.csv'
     WITH (FORMAT csv, HEADER true, DELIMITER ',');
 ```
 
-## Remediation: Tune for bulk load throughput
+Or from stdin in a pipeline:
 
-For large batch loads, temporarily adjust session parameters:
+```sql
+COPY {{ schema }}.{{ asset }} FROM STDIN WITH (FORMAT csv, HEADER true);
+```
+
+## Remediation: Optimize for bulk load throughput
+
+For large batch loads, temporarily adjust session-level settings to reduce overhead:
 
 ```sql
 SET maintenance_work_mem = '1GB';
-SET max_wal_size = '4GB';
+SET synchronous_commit = OFF;
+SET wal_level = minimal;
 ```
 
-Consider dropping indexes before a large load and recreating them after, to avoid per-row index maintenance overhead.
+Consider dropping indexes before bulk loads and recreating them afterward — index maintenance during inserts is a common throughput bottleneck.
 
-## Remediation: Configure autovacuum
+## Remediation: Configure autovacuum for high-churn tables
 
-Ensure autovacuum is running frequently enough to keep dead tuple ratios low:
+Tables that receive frequent bulk loads benefit from more aggressive autovacuum settings:
 
 ```sql
-ALTER TABLE {{ schema }}.{{ asset }}
-    SET (autovacuum_vacuum_threshold = 50,
-         autovacuum_vacuum_scale_factor = 0.05);
+ALTER TABLE {{ schema }}.{{ asset }} SET (
+    autovacuum_vacuum_scale_factor = 0.01,
+    autovacuum_analyze_scale_factor = 0.005
+);
 ```

@@ -1,48 +1,45 @@
 # Check: feature_refresh_compliance
 
-Fraction of materialized features updated within their staleness tolerance.
+Fraction of materialized features updated within a staleness tolerance.
 
 ## Context
 
-Snowflake dynamic tables have a built-in `data_timestamp` and `target_lag` that enable direct staleness measurement. PostgreSQL materialized views have no native refresh timestamp — there is no system catalog column recording when a materialized view was last refreshed.
+Snowflake dynamic tables have a built-in `data_timestamp` and `target_lag` that make freshness measurement straightforward. PostgreSQL has no native materialized view refresh timestamp exposed via catalog views.
 
-This check uses a proxy: `pg_stat_user_tables` tracks `last_analyze` and `last_autoanalyze` timestamps for all relations including materialized views. If a materialized view has been recently analyzed (within the tolerance window), it is likely also recently refreshed — since `ANALYZE` is commonly run after `REFRESH`. This is an imperfect proxy.
+This check uses `pg_stat_user_tables.last_analyze` as a proxy for table activity recency. When `last_analyze` or `last_autoanalyze` is recent, it suggests the table (or its underlying data) has been actively maintained. For materialized views specifically, `last_analyze` updates after `ANALYZE` runs (which autovacuum triggers after a `REFRESH`).
 
-An alternative approach (shown in the second query) checks for `pg_cron` scheduled jobs that refresh materialized views, which indicates an active refresh pipeline exists.
+A default staleness tolerance of 24 hours is used. Tables analyzed within that window are considered compliant. This is a coarse proxy — it does not directly measure when the materialized view was last refreshed.
 
-A score of 1.0 means all materialized views show recent activity. NULL if no materialized views exist.
+A score of 1.0 means every table/matview in the schema was analyzed within the staleness window. A score of 0.0 means none were.
 
 ## SQL
 
-### Proxy via table statistics
-
 ```sql
-WITH matviews AS (
-    SELECT c.relname AS matview_name
-    FROM pg_class c
-    JOIN pg_namespace n ON n.oid = c.relnamespace
-    WHERE n.nspname = '{{ schema }}'
-        AND c.relkind = 'm'
-),
-matview_stats AS (
+WITH table_freshness AS (
     SELECT
-        s.relname,
-        GREATEST(s.last_analyze, s.last_autoanalyze) AS last_activity
-    FROM pg_stat_user_tables s
-    WHERE s.schemaname = '{{ schema }}'
-        AND s.relname IN (SELECT matview_name FROM matviews)
+        relname,
+        schemaname,
+        GREATEST(
+            COALESCE(last_analyze, '1970-01-01'::TIMESTAMP),
+            COALESCE(last_autoanalyze, '1970-01-01'::TIMESTAMP),
+            COALESCE(last_vacuum, '1970-01-01'::TIMESTAMP),
+            COALESCE(last_autovacuum, '1970-01-01'::TIMESTAMP)
+        ) AS last_activity,
+        CURRENT_TIMESTAMP - INTERVAL '24 hours' AS staleness_threshold
+    FROM pg_stat_user_tables
+    WHERE schemaname = '{{ schema }}'
 ),
 compliant AS (
     SELECT COUNT(*) AS cnt
-    FROM matview_stats
-    WHERE last_activity >= CURRENT_TIMESTAMP - INTERVAL '24 hours'
+    FROM table_freshness
+    WHERE last_activity >= staleness_threshold
 ),
 total AS (
-    SELECT COUNT(*) AS cnt FROM matviews
+    SELECT COUNT(*) AS cnt FROM table_freshness
 )
 SELECT
-    compliant.cnt AS compliant_matviews,
-    total.cnt AS total_matviews,
+    compliant.cnt AS compliant_tables,
+    total.cnt AS total_tables,
     compliant.cnt::NUMERIC / NULLIF(total.cnt::NUMERIC, 0) AS value
 FROM compliant, total
 ```

@@ -1,73 +1,39 @@
 # Fix: change_detection
 
-Add tables to a logical replication publication for CDC coverage.
+Add tables to logical replication publications for CDC.
 
 ## Context
 
-Two approaches to enabling change detection in PostgreSQL:
+Two levels of change detection, applied based on your CDC architecture:
 
-1. **Logical replication publications** — the native CDC mechanism. Create a publication and add tables to it. Downstream subscribers (logical replication slots, Debezium, etc.) consume row-level changes. Requires `wal_level = logical` in the server configuration.
-2. **Audit triggers** — create triggers that write change records to a history table. More portable but adds write overhead. Use when logical replication is not available or when you need custom change formats.
+1. **Publication membership** — add tables to a logical replication publication so downstream consumers (Debezium, pg_recvlogical, custom subscribers) can receive change events. This requires `wal_level = logical` in `postgresql.conf`.
+2. **Trigger-based audit** — create audit triggers that write changes to a history table. This works without logical replication and is the fallback for environments where `wal_level` cannot be changed.
 
-Before creating a publication, verify that `wal_level` is set to `logical`:
+Before creating a publication, check if one already exists:
 
 ```sql
-SHOW wal_level;
+SELECT pubname FROM pg_publication WHERE pubname = '{{ publication_name }}';
 ```
 
-If it returns `replica` or `minimal`, a server restart is required after changing the setting.
+If rows are returned, use `ALTER PUBLICATION` to add tables to the existing publication.
 
-## Remediation: Create a publication and add tables
+## Remediation: Create a publication
 
 ```sql
-CREATE PUBLICATION {{ publication_name }} FOR TABLE {{ schema }}.{{ asset }}
+CREATE PUBLICATION {{ publication_name }}
+FOR TABLE {{ schema }}.{{ asset }}
 ```
 
 ## Remediation: Add a table to an existing publication
 
 ```sql
-ALTER PUBLICATION {{ publication_name }} ADD TABLE {{ schema }}.{{ asset }}
+ALTER PUBLICATION {{ publication_name }}
+ADD TABLE {{ schema }}.{{ asset }}
 ```
 
-## Remediation: Create a publication for all tables in the schema
+## Remediation: Publish all tables in schema
 
 ```sql
-CREATE PUBLICATION {{ publication_name }} FOR TABLES IN SCHEMA {{ schema }}
-```
-
-## Remediation: Audit trigger pattern
-
-Create a history table and trigger for change tracking when logical replication is not available.
-
-```sql
-CREATE TABLE IF NOT EXISTS {{ schema }}.{{ asset }}_audit (
-    audit_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    operation CHAR(1) NOT NULL,
-    changed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    old_row JSONB,
-    new_row JSONB
-);
-
-CREATE OR REPLACE FUNCTION {{ schema }}.{{ asset }}_audit_fn()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF TG_OP = 'DELETE' THEN
-        INSERT INTO {{ schema }}.{{ asset }}_audit (operation, old_row)
-        VALUES ('D', to_jsonb(OLD));
-        RETURN OLD;
-    ELSIF TG_OP = 'UPDATE' THEN
-        INSERT INTO {{ schema }}.{{ asset }}_audit (operation, old_row, new_row)
-        VALUES ('U', to_jsonb(OLD), to_jsonb(NEW));
-        RETURN NEW;
-    ELSIF TG_OP = 'INSERT' THEN
-        INSERT INTO {{ schema }}.{{ asset }}_audit (operation, new_row)
-        VALUES ('I', to_jsonb(NEW));
-        RETURN NEW;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER {{ asset }}_audit_trigger
-AFTER INSERT OR UPDATE OR DELETE ON {{ schema }}.{{ asset }}
-FOR EACH ROW EXECUTE FUNCTION {{ schema }}.{{ asset }}_audit_fn();
+CREATE PUBLICATION {{ publication_name }}
+FOR TABLES IN SCHEMA {{ schema }}
 ```

@@ -1,47 +1,49 @@
 # Fix: feature_materialization_coverage
 
-Remediation guidance for creating materialized views to pre-compute features.
+Remediation guidance for creating materialized views to improve feature materialization coverage.
 
 ## Context
 
-Materialization strategy depends on query patterns, refresh cadence, and storage constraints. PostgreSQL materialized views are full snapshots — each `REFRESH` rewrites the entire view. For large datasets, `REFRESH MATERIALIZED VIEW CONCURRENTLY` allows reads during refresh but requires a unique index.
-
-There is no automated one-size-fits-all fix. The guidance below provides templates for common materialization patterns.
+Materialization strategy depends on query patterns, refresh cadence, and storage constraints. PostgreSQL materialized views store a snapshot of a query result and must be explicitly refreshed. Unlike Snowflake dynamic tables, they do not auto-refresh based on a target lag.
 
 ## Remediation: Create a materialized view
 
-Create a materialized view from the source table's transformation logic:
+Create a materialized view for a base table that needs pre-computation:
 
 ```sql
 CREATE MATERIALIZED VIEW {{ schema }}.{{ asset }}_mv AS
-    {{ source_query }};
+    SELECT * FROM {{ source_query }}
+WITH DATA;
 ```
 
-## Remediation: Add a unique index for concurrent refresh
-
-A unique index is required to use `REFRESH MATERIALIZED VIEW CONCURRENTLY`:
+Add a unique index to support `REFRESH MATERIALIZED VIEW CONCURRENTLY`:
 
 ```sql
-CREATE UNIQUE INDEX {{ asset }}_mv_unique_idx
-    ON {{ schema }}.{{ asset }}_mv ({{ unique_key }});
+CREATE UNIQUE INDEX ON {{ schema }}.{{ asset }}_mv ({{ primary_key }});
 ```
 
-## Remediation: Schedule periodic refresh with pg_cron
+## Remediation: Schedule periodic refresh
 
-Use `pg_cron` to refresh the materialized view on a schedule:
+Use `pg_cron` to automate materialized view refresh:
 
 ```sql
 SELECT cron.schedule(
-    'refresh_{{ asset }}_mv',
-    '0 */1 * * *',
-    'REFRESH MATERIALIZED VIEW CONCURRENTLY {{ schema }}.{{ asset }}_mv'
+    '{{ asset }}_mv_refresh',
+    '0 * * * *',
+    $$REFRESH MATERIALIZED VIEW CONCURRENTLY {{ schema }}.{{ asset }}_mv$$
 );
 ```
 
 ## Remediation: Manual refresh
 
-For ad-hoc or pipeline-triggered refreshes:
+For ad-hoc refresh or environments without `pg_cron`:
 
 ```sql
 REFRESH MATERIALIZED VIEW {{ schema }}.{{ asset }}_mv;
+```
+
+Use `CONCURRENTLY` to allow reads during refresh (requires a unique index):
+
+```sql
+REFRESH MATERIALIZED VIEW CONCURRENTLY {{ schema }}.{{ asset }}_mv;
 ```

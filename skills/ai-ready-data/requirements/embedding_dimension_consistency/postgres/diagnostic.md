@@ -4,16 +4,17 @@ Lists every vector column in the schema with its dimension, flags whether it mat
 
 ## Context
 
-Identifies the most common dimension across all pgvector `vector` columns and marks each column as `CONSISTENT` or `INCONSISTENT`. Columns with a different dimension than the majority may cause failures in vector similarity search or require re-embedding before use.
+Identifies the most common `vector` dimension across all vector columns and marks each column as `CONSISTENT` or `INCONSISTENT`. Columns with a different dimension than the majority may cause failures in vector similarity search or require re-embedding before use.
 
-In pgvector, the dimension is encoded in `atttypmod`. Columns declared without an explicit dimension (`atttypmod = -1`) are flagged as `UNDECLARED` — these accept vectors of any size, which can cause runtime errors during similarity operations.
+In pgvector, the dimension is encoded in `atttypmod` — when `atttypmod > 0`, the dimension equals `atttypmod`. Columns defined as bare `vector` (no dimension specified) will show a NULL dimension.
+
+Requires the `pgvector` extension.
 
 ## SQL
 
 ```sql
 WITH vector_columns AS (
     SELECT
-        n.nspname AS schema_name,
         c.relname AS table_name,
         a.attname AS column_name,
         format_type(a.atttypid, a.atttypmod) AS vector_type,
@@ -41,21 +42,20 @@ most_common AS (
     LIMIT 1
 )
 SELECT
-    vc.schema_name,
-    vc.table_name,
-    vc.column_name,
-    vc.vector_type,
-    vc.dimension,
+    '{{ schema }}' AS schema_name,
+    v.table_name,
+    v.column_name,
+    v.vector_type,
+    v.dimension,
     CASE
-        WHEN vc.dimension IS NULL THEN 'UNDECLARED'
-        WHEN vc.dimension = (SELECT dimension FROM most_common) THEN 'CONSISTENT'
+        WHEN v.dimension = (SELECT dimension FROM most_common) THEN 'CONSISTENT'
         ELSE 'INCONSISTENT'
     END AS dimension_status,
     CASE
-        WHEN vc.dimension IS NULL THEN 'No dimension constraint — add one with ALTER COLUMN TYPE vector(N)'
-        WHEN vc.dimension = (SELECT dimension FROM most_common) THEN 'Matches most common dimension'
+        WHEN v.dimension = (SELECT dimension FROM most_common) THEN 'Matches most common dimension'
+        WHEN v.dimension IS NULL THEN 'No dimension constraint — consider adding one'
         ELSE 'Different dimension — may cause issues with vector search'
     END AS recommendation
-FROM vector_columns vc
-ORDER BY dimension_status DESC, vc.table_name, vc.column_name
+FROM vector_columns v
+ORDER BY dimension_status DESC, v.table_name, v.column_name
 ```

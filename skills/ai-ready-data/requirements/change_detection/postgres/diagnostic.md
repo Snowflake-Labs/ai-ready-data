@@ -1,17 +1,17 @@
 # Diagnostic: change_detection
 
-Per-table breakdown of publication enrollment and audit trigger status.
+Per-table breakdown of publication membership and audit trigger status.
 
 ## Context
 
 Two diagnostic views are available:
 
-1. **Publication status** — shows whether each table in the schema is enrolled in a logical replication publication. Tables not in any publication lack CDC coverage and require full-table scans to detect changes.
-2. **Trigger inventory** — shows all non-internal triggers on tables in the schema, highlighting those with audit/tracking patterns. Useful for identifying trigger-based CDC mechanisms that operate outside the publication system.
+1. **Publication membership** — shows whether each table is included in a logical replication publication. Tables not in any publication cannot emit CDC events to downstream consumers.
+2. **Trigger inventory** — shows all triggers in the schema that suggest audit or change tracking behavior. Useful for teams using trigger-based CDC instead of logical replication.
 
 ## SQL
 
-### Publication status
+### Publication membership
 
 ```sql
 WITH all_tables AS (
@@ -28,17 +28,11 @@ published AS (
 )
 SELECT
     t.table_name,
-    COALESCE(
-        (SELECT STRING_AGG(DISTINCT pt.pubname, ', ')
-         FROM pg_publication_tables pt
-         WHERE pt.schemaname = '{{ schema }}'
-             AND pt.tablename = t.table_name),
-        'none'
-    ) AS publications,
     CASE
         WHEN p.tablename IS NOT NULL THEN 'IN_PUBLICATION'
         ELSE 'NOT_PUBLISHED'
-    END AS status
+    END AS status,
+    p.tablename IS NOT NULL AS in_publication
 FROM all_tables t
 LEFT JOIN published p ON t.table_name = p.tablename
 ORDER BY status DESC, t.table_name
@@ -54,14 +48,12 @@ SELECT
         WHEN 2 THEN 'BEFORE'
         WHEN 64 THEN 'INSTEAD OF'
         ELSE 'AFTER'
-    END AS trigger_timing,
+    END AS timing,
     CASE
-        WHEN LOWER(t.tgname) LIKE '%audit%'
-            OR LOWER(t.tgname) LIKE '%track%'
-            OR LOWER(t.tgname) LIKE '%cdc%'
-        THEN 'AUDIT/TRACKING'
-        ELSE 'OTHER'
-    END AS trigger_category
+        WHEN t.tgtype & 4 > 0 THEN 'INSERT'
+        WHEN t.tgtype & 8 > 0 THEN 'DELETE'
+        WHEN t.tgtype & 16 > 0 THEN 'UPDATE'
+    END AS event
 FROM pg_trigger t
 JOIN pg_class c ON c.oid = t.tgrelid
 JOIN pg_namespace n ON n.oid = c.relnamespace

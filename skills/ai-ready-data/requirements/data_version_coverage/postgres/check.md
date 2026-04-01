@@ -4,12 +4,14 @@ Fraction of datasets with point-in-time state reconstruction capability.
 
 ## Context
 
-PostgreSQL has no native Time Travel equivalent to Snowflake's `DATA_RETENTION_TIME_IN_DAYS`. This check uses heuristics to detect versioning patterns:
+PostgreSQL has no native Time Travel equivalent. This check uses heuristics to detect versioning patterns:
 
-1. **Temporal columns** — columns named `valid_from`, `valid_to`, `effective_from`, `effective_to`, `version`, `sys_period`, or matching `%_version%`. These suggest SCD Type 2 or temporal table patterns.
-2. **Audit/history triggers** — triggers whose names contain `audit`, `history`, or `version`, indicating the table writes change records to a history table.
+- **Temporal columns** — columns named `valid_from`, `valid_to`, `effective_from`, `effective_to`, `version`, `sys_period`, or `*_version*` suggest SCD Type 2 or temporal table patterns.
+- **Audit triggers** — triggers named `%audit%`, `%history%`, or `%version%` suggest trigger-based change history capture.
 
-A table matching either pattern is counted as having versioning capability. A score of 1.0 means every base table has at least one versioning mechanism detected. Because this relies on naming conventions, it may under-count tables with non-standard versioning implementations.
+A table matching either pattern is considered to have versioning capability. The score is the fraction of base tables with at least one versioning signal.
+
+This is a heuristic check — false positives are possible if column names or trigger names happen to match the patterns without actually implementing versioning.
 
 ## SQL
 
@@ -30,12 +32,14 @@ temporal_tables AS (
         AND c.relkind = 'r'
         AND a.attnum > 0
         AND NOT a.attisdropped
-        AND (LOWER(a.attname) IN (
+        AND (
+            LOWER(a.attname) IN (
                 'valid_from', 'valid_to',
                 'effective_from', 'effective_to',
                 'version', 'sys_period'
-             )
-             OR LOWER(a.attname) LIKE '%\_version%')
+            )
+            OR LOWER(a.attname) LIKE '%\_version%'
+        )
 ),
 audit_tables AS (
     SELECT DISTINCT c.relname
@@ -44,10 +48,11 @@ audit_tables AS (
     JOIN pg_namespace n ON n.oid = c.relnamespace
     WHERE n.nspname = '{{ schema }}'
         AND c.relkind = 'r'
-        AND NOT t.tgisinternal
-        AND (LOWER(t.tgname) LIKE '%audit%'
-             OR LOWER(t.tgname) LIKE '%history%'
-             OR LOWER(t.tgname) LIKE '%version%')
+        AND (
+            LOWER(t.tgname) LIKE '%audit%'
+            OR LOWER(t.tgname) LIKE '%history%'
+            OR LOWER(t.tgname) LIKE '%version%'
+        )
 ),
 versioned_tables AS (
     SELECT relname FROM temporal_tables

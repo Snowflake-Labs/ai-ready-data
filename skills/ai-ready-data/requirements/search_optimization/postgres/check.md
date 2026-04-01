@@ -1,14 +1,15 @@
 # Check: search_optimization
 
-Fraction of tables in the schema with GIN or GiST search indexes.
+Fraction of tables with GIN or GiST indexes for search optimization.
 
 ## Context
 
-In PostgreSQL, search optimization is achieved through GIN indexes (for full-text search, JSONB, and array columns) and GiST indexes (for geometric, range, and full-text data). This check counts the fraction of tables that have at least one GIN or GiST index.
+In Snowflake, search optimization is a built-in table-level property. In PostgreSQL, the equivalent capability comes from GIN and GiST indexes:
 
-Unlike Snowflake's built-in search optimization toggle, PostgreSQL requires explicit index creation on the columns you want to optimize. Not every table needs a search index — only those queried with full-text search (`@@`), JSONB operators (`@>`, `?`, `?|`), or array containment (`@>`).
+- **GIN** (Generalized Inverted Index) — Accelerates full-text search (`tsvector`), JSONB containment (`@>`), array overlap (`&&`), and trigram similarity (`%`).
+- **GiST** (Generalized Search Tree) — Accelerates geometric types, range types, full-text search, and nearest-neighbor queries.
 
-The check inspects `pg_indexes.indexdef` to detect GIN and GiST access methods.
+This check counts tables that have at least one GIN or GiST index, indicating search optimization is in place. Tables without searchable column types (text, JSONB, arrays, ranges) may not need these indexes.
 
 ## SQL
 
@@ -28,7 +29,7 @@ search_optimized AS (
 )
 SELECT
     search_optimized.cnt AS tables_with_search_indexes,
-    table_count.cnt      AS total_tables,
+    table_count.cnt AS total_tables,
     search_optimized.cnt::NUMERIC / NULLIF(table_count.cnt::NUMERIC, 0) AS value
 FROM table_count, search_optimized
 ```

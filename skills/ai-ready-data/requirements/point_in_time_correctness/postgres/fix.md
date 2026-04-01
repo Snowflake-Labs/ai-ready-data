@@ -1,54 +1,53 @@
 # Fix: point_in_time_correctness
 
-Remediation guidance for tables lacking temporal columns for point-in-time joins.
+Remediation guidance for tables missing temporal columns required for point-in-time joins.
 
 ## Context
 
-Point-in-time correctness prevents future data leakage in ML training pipelines. Tables need temporal columns (`event_time`, `created_at`, `valid_from`/`valid_to`) to support point-in-time joins — queries that reconstruct the state of data as it was known at a specific moment.
-
-PostgreSQL has no native time travel (unlike Snowflake's `AT` / `BEFORE` syntax). Temporal capability relies entirely on explicit timestamp columns and query patterns. The `valid_from` / `valid_to` pattern (SCD Type 2) is the standard approach.
+Point-in-time joins require at least one timestamp column per table that records when a row became valid or when an event occurred. Without these columns, feature pipelines cannot prevent future data leakage during training dataset construction.
 
 ## Remediation: Add an event timestamp column
 
-For tables that record events or facts, add a timestamp column recording when the event occurred:
+Add a timestamp column that records when each row's data became valid:
 
 ```sql
 ALTER TABLE {{ schema }}.{{ asset }}
-    ADD COLUMN IF NOT EXISTS event_time TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    ADD COLUMN event_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
 ```
 
-## Remediation: Add valid_from / valid_to for slowly changing dimensions
+## Remediation: Add validity range columns
 
-For dimension tables that need point-in-time lookups, add temporal range columns:
+For slowly-changing dimension (SCD Type 2) tables, add `valid_from` and `valid_to` columns:
 
 ```sql
 ALTER TABLE {{ schema }}.{{ asset }}
-    ADD COLUMN IF NOT EXISTS valid_from TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    ADD COLUMN IF NOT EXISTS valid_to TIMESTAMPTZ DEFAULT 'infinity';
+    ADD COLUMN valid_from TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    ADD COLUMN valid_to TIMESTAMP WITH TIME ZONE DEFAULT 'infinity'::TIMESTAMP WITH TIME ZONE;
 ```
 
-## Remediation: Create an index for temporal queries
+## Remediation: Backfill timestamps from existing data
 
-Point-in-time joins are range queries on timestamp columns. Add an index to support efficient lookups:
-
-```sql
-CREATE INDEX IF NOT EXISTS {{ asset }}_temporal_idx
-    ON {{ schema }}.{{ asset }} (event_time);
-```
-
-For SCD Type 2 range lookups:
-
-```sql
-CREATE INDEX IF NOT EXISTS {{ asset }}_valid_range_idx
-    ON {{ schema }}.{{ asset }} (valid_from, valid_to);
-```
-
-## Remediation: Backfill timestamps for existing rows
-
-If adding a timestamp to a table with existing data, backfill from the best available proxy:
+If the table has a created/modified column under a non-standard name, backfill the new temporal column:
 
 ```sql
 UPDATE {{ schema }}.{{ asset }}
-SET event_time = {{ proxy_timestamp_expression }}
-WHERE event_time IS NULL;
+SET event_time = {{ source_timestamp_column }};
+```
+
+## Remediation: Add an index for point-in-time queries
+
+Point-in-time joins filter on timestamp ranges. Add an index to support efficient lookups:
+
+```sql
+CREATE INDEX ON {{ schema }}.{{ asset }} (event_time);
+```
+
+For validity-range patterns, a GiST index on a tstzrange can accelerate overlap queries:
+
+```sql
+ALTER TABLE {{ schema }}.{{ asset }}
+    ADD COLUMN validity tstzrange
+    GENERATED ALWAYS AS (tstzrange(valid_from, valid_to, '[)')) STORED;
+
+CREATE INDEX ON {{ schema }}.{{ asset }} USING gist (validity);
 ```

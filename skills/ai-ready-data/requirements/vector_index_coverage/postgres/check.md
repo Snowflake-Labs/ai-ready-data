@@ -4,9 +4,7 @@ Fraction of embedding collections with a vector similarity index built and maint
 
 ## Context
 
-pgvector supports two index types for approximate nearest neighbor search: HNSW and IVFFlat. HNSW is generally preferred for its better recall-latency tradeoff. Tables with `vector` columns that lack a vector index fall back to exact (brute-force) scans, which degrades latency at scale.
-
-This check finds all tables with at least one `vector` column, then checks whether each has an HNSW or IVFFlat index via the `pg_am` (access method) catalog. The score is the fraction of vector-bearing tables that have at least one vector index.
+In PostgreSQL with pgvector, vector similarity search is accelerated via HNSW or IVFFlat indexes. This check identifies tables with `vector` columns and determines how many have at least one vector index (using the `hnsw` or `ivfflat` access methods). Tables without a vector index fall back to brute-force sequential scans.
 
 Requires the `pgvector` extension.
 
