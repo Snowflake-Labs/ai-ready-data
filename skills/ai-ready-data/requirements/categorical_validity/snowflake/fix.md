@@ -10,7 +10,7 @@ Two options with different tradeoffs:
 
 In both cases, verify the allowed values list is correct and current before executing. If the "invalid" values are actually legitimate new categories, the fix is to update the allowed values list, not to remove data.
 
-## Remediation: Null invalid values (preferred — preserves rows)
+## Fix: Null invalid values (preferred — preserves rows)
 
 ```sql
 UPDATE {{ database }}.{{ schema }}.{{ asset }}
@@ -19,7 +19,7 @@ WHERE {{ column }} IS NOT NULL
     AND {{ column }} NOT IN ({{ allowed_values }})
 ```
 
-## Remediation: Delete rows with invalid values (irreversible)
+## Fix: Delete rows with invalid values (irreversible)
 
 ```sql
 DELETE FROM {{ database }}.{{ schema }}.{{ asset }}

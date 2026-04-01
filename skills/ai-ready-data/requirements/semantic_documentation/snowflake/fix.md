@@ -28,7 +28,7 @@ If the user picks semantic view (or the profile is `agents`), proceed with the g
 
 ---
 
-## Remediation: create-semantic-view
+## Fix: create-semantic-view
 
 Create a semantic view covering the target tables. This is the preferred remediation — it provides machine-readable metadata that powers Text-to-SQL, Cortex Analyst, and agent tool use.
 
@@ -302,7 +302,7 @@ Key rules:
 
 ---
 
-## Remediation: add-comments
+## Fix: add-comments
 
 Add comments to tables and columns. This is a fallback for users who cannot or choose not to create semantic views. Comments improve human readability and basic tooling support but do not enable Text-to-SQL or Cortex Analyst.
 

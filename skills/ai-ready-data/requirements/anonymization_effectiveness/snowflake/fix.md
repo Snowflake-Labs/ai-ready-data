@@ -10,7 +10,7 @@ The heuristic PII detection in the check is a starting point — it catches obvi
 
 Masking policies in Snowflake should use `IS_ROLE_IN_SESSION()`, not `CURRENT_ROLE()` — the latter does not respect role hierarchy. See the `column_masking` requirement for full masking policy creation and application.
 
-## Remediation: Run sensitive data classification first
+## Fix: Run sensitive data classification first
 
 Use Snowflake's built-in classification to identify PII beyond what name-pattern heuristics catch:
 
@@ -18,6 +18,6 @@ Use Snowflake's built-in classification to identify PII beyond what name-pattern
 SELECT * FROM TABLE({{ database }}.information_schema.{{ asset }}!SYSTEM$CLASSIFY());
 ```
 
-## Remediation: Apply masking policies
+## Fix: Apply masking policies
 
 After identifying PII columns, create and apply masking policies. See the `column_masking` requirement's fix for the full workflow including policy creation, role-based access, and idempotency guards.

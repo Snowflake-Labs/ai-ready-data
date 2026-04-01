@@ -8,7 +8,7 @@ In Snowflake, "native format" means data stored in managed Snowflake tables (BAS
 
 There is no single DDL fix — remediation depends on the data source and consumption pattern.
 
-## Remediation: Convert external tables to native tables
+## Fix: Convert external tables to native tables
 
 If the external table data is stable enough to be materialized:
 
@@ -19,7 +19,7 @@ SELECT * FROM {{ database }}.{{ schema }}.{{ asset }};
 
 Then update downstream references and drop the external table.
 
-## Remediation: Use materialized views over external tables
+## Fix: Use materialized views over external tables
 
 If the data must stay external but query performance matters:
 

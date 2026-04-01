@@ -21,5 +21,4 @@ No automated fix SQL is provided for this requirement. Remediation depends on th
    ```
 
    For 1024-dimension embeddings, use `EMBED_TEXT_1024` with an appropriate model instead.
-
 3. **Keep embeddings current** by scheduling a task or using a stream + task pattern to embed new/updated rows incrementally.

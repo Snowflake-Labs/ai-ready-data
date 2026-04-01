@@ -10,13 +10,13 @@ Two approaches, in order of preference:
 
 For schemas with many undocumented columns, consider using the `semantic_documentation` requirement's semantic view builder workflow, which creates comprehensive machine-readable metadata in a single pass.
 
-## Remediation: Add column comments
+## Fix: Add column comments
 
 ```sql
 COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ asset }}.{{ column }} IS '{{ comment }}';
 ```
 
-## Remediation: Create a glossary tag and apply it
+## Fix: Create a glossary tag and apply it
 
 ```sql
 CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.business_term

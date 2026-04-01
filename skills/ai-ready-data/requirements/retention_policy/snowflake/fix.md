@@ -16,7 +16,7 @@ If rows are returned, skip tag creation.
 
 `account_usage.tag_references` has approximately 2-hour latency — recently tagged tables may not appear yet. Note: `tag_references` has no `deleted` column — do not filter on it.
 
-## Remediation: Create the retention tag
+## Fix: Create the retention tag
 
 ```sql
 CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
@@ -24,7 +24,7 @@ CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
     COMMENT = '{{ comment }}'
 ```
 
-## Remediation: Apply retention tag to a table
+## Fix: Apply retention tag to a table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}

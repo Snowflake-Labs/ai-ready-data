@@ -12,7 +12,7 @@ If tables show as `NOT_INDEXED` in the diagnostic:
 2. **Evaluate recall separately.** After enabling search optimization, run ground-truth recall benchmarks against your query set to verify that the target recall threshold is met at the required latency.
 3. **Consider vector index tuning.** Snowflake's vector search behavior depends on the index type and parameters. Review Snowflake documentation for HNSW or IVF index configuration if recall is below target.
 
-## Remediation: Enable search optimization
+## Fix: Enable search optimization
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ table_name }} ADD SEARCH OPTIMIZATION;

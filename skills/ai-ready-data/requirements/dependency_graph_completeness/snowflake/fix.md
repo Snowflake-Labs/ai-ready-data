@@ -11,13 +11,13 @@ Snowflake's `object_dependencies` view is automatically populated for views, dyn
 3. **Missing IMPORTED PRIVILEGES.** The role running the assessment needs `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE` to read `account_usage.object_dependencies`. Grant this to the assessment role.
 4. **Latency.** Recently created objects or newly established references may not appear for ~2 hours. Re-run the check after the latency window.
 
-## Remediation: Grant access to dependency views
+## Fix: Grant access to dependency views
 
 ```sql
 GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE {{ role }};
 ```
 
-## Remediation: Add a comment to document external dependencies
+## Fix: Add a comment to document external dependencies
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ table }} SET COMMENT = 'Upstream: <source_system> | Pipeline: <pipeline_name>';

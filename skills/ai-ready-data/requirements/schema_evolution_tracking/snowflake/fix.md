@@ -8,13 +8,13 @@ Snowflake Time Travel is controlled by the `DATA_RETENTION_TIME_IN_DAYS` paramet
 
 Enterprise Edition accounts support up to 90 days of retention; Standard Edition supports up to 1 day.
 
-## Remediation: Enable Time Travel on a table
+## Fix: Enable Time Travel on a table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ table }} SET DATA_RETENTION_TIME_IN_DAYS = 1;
 ```
 
-## Remediation: Enable Time Travel at schema level
+## Fix: Enable Time Travel at schema level
 
 ```sql
 ALTER SCHEMA {{ database }}.{{ schema }} SET DATA_RETENTION_TIME_IN_DAYS = 1;

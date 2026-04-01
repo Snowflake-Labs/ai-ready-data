@@ -9,7 +9,7 @@ Row access policies in Snowflake enforce row-level security by filtering rows re
 1. **Create a row access policy** that defines which roles can see which rows.
 2. **Attach the policy** to each table that needs row-level filtering.
 
-## Remediation: Create a row access policy
+## Fix: Create a row access policy
 
 ```sql
 CREATE OR REPLACE ROW ACCESS POLICY {{ database }}.{{ schema }}.{{ policy_name }}
@@ -17,7 +17,7 @@ AS (val VARCHAR) RETURNS BOOLEAN ->
     CURRENT_ROLE() IN ('{{ allowed_role }}');
 ```
 
-## Remediation: Attach the policy to a table
+## Fix: Attach the policy to a table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ table_name }}

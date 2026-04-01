@@ -14,7 +14,7 @@ Both remediation options use `CREATE OR REPLACE TABLE` with `QUALIFY ROW_NUMBER(
 - `CREATE OR REPLACE TABLE` drops grants, policies, streams, and change tracking. Re-apply these after running the fix.
 - `key_columns` should be the logical primary key.
 
-## Remediation: deduplicate-keep-first
+## Fix: deduplicate-keep-first
 
 Keeps the earliest record per key combination based on the tiebreaker column.
 
@@ -25,7 +25,7 @@ FROM {{ database }}.{{ schema }}.{{ asset }}
 QUALIFY ROW_NUMBER() OVER (PARTITION BY {{ key_columns }} ORDER BY {{ tiebreaker_column }} ASC) = 1
 ```
 
-## Remediation: deduplicate-keep-last
+## Fix: deduplicate-keep-last
 
 Keeps the most recent record per key combination based on the tiebreaker column.
 

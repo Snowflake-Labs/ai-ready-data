@@ -12,7 +12,7 @@ Chunk readiness issues fall into two categories:
 
 There is no universal SQL fix for chunking — the implementation depends on the content structure and the target embedding model. Below are common patterns for Snowflake.
 
-## Remediation: Create a chunked view for long content
+## Fix: Create a chunked view for long content
 
 Create a view or table that splits long text into overlapping chunks. Adjust the chunk size and overlap based on your embedding model's context window.
 
@@ -40,7 +40,7 @@ SELECT source_id, chunk_index, chunk_text
 FROM chunks
 ```
 
-## Remediation: Concatenate short content with context
+## Fix: Concatenate short content with context
 
 If short text rows have associated context columns (e.g., title, category, description), concatenate them to create richer content for embedding:
 

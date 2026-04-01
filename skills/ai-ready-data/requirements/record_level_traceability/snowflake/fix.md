@@ -21,5 +21,4 @@ No automated fix SQL is provided for this requirement. Adding a trace identifier
    SET trace_id = UUID_STRING()
    WHERE trace_id IS NULL;
    ```
-
 4. **Update ingestion pipelines** to populate the trace column on every new record so the backfill is not needed going forward.

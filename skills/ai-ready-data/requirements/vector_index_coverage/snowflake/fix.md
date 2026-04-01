@@ -8,7 +8,7 @@ Snowflake uses search optimization to accelerate vector similarity queries. Tabl
 
 To enable vector indexing, run the following on each table identified by the diagnostic:
 
-## Remediation: Enable search optimization
+## Fix: Enable search optimization
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ table_name }} SET SEARCH_OPTIMIZATION = ON;
