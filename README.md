@@ -210,6 +210,12 @@ skills/
         <br /><sub><b>Jacob Prall</b></sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/rajivgupta780184">
+        <img src="https://github.com/rajivgupta780184.png" width="80px;" alt="rajivgupta780184"/>
+        <br /><sub><b>Rajiv Gupta</b></sub>
+      </a>
+    </td>
   </tr>
 </table>
 <!-- CONTRIBUTORS:END -->
