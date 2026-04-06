@@ -211,6 +211,12 @@ skills/
       </a>
     </td>
     <td align="center">
+      <a href="https://github.com/ved1985prakash3">
+        <img src="https://github.com/ved1985prakash3.png" width="80px;" alt="ved1985prakash3"/>
+        <br /><sub><b>Ved Prakash</b></sub>
+      </a>
+    </td>
+    <td align="center">
       <a href="https://github.com/rajivgupta780184">
         <img src="https://github.com/rajivgupta780184.png" width="80px;" alt="rajivgupta780184"/>
         <br /><sub><b>Rajiv Gupta</b></sub>
