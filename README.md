@@ -1,10 +1,12 @@
-# The AI-Ready Data Agent
+# The AI-Ready Data Framework
 
 ## Introduction
 
-The **AI-Ready Data Agent** is a skill-based copilot that assesses and optimizes your data for AI workloads. Point it at your data estate, tell it your workload — RAG, agents, feature serving, or training — and it scores every requirement, surfaces gaps, and guides you through remediation.
+The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means — six factors, 62 measurable requirements, and five workload profiles that apply to any data platform.
 
-Under the hood, the agent is powered by an open framework: six factors of AI-ready data, 62 measurable requirements, and five workload profiles that define AI-readiness as a platform-agnostic standard. The framework defines what "AI-ready" means. The agent measures where you stand and fixes what doesn't pass.
+The **AI-Ready Data Agent** is an installable skill that puts the framework to work. Point it at your data estate, tell it your workload — RAG, agents, feature serving, or training — and it scores every requirement, surfaces gaps, and guides you through remediation.
+
+The framework defines what to measure. The agent measures it and fixes what doesn't pass.
 
 ### Background
 
