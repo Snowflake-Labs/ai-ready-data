@@ -1,15 +1,10 @@
-# The AI-Ready Data Framework
+# The AI-Ready Data Agent
 
 ## Introduction
 
-The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means. The six factors of AI-ready data provide criteria and requirements to help you evaluate your data, pipelines, and platforms against the demands of AI workloads.
+The **AI-Ready Data Agent** is a skill-based copilot that assesses and optimizes your data for AI workloads. Point it at your data estate, tell it your workload — RAG, agents, feature serving, or training — and it scores every requirement, surfaces gaps, and guides you through remediation.
 
-This repo contains two things:
-
-1. **The framework** — six factors, 62 measurable requirements, and five workload profiles that define AI-readiness as a platform-agnostic standard.
-2. **The `ai-ready-data` skill** — an installable agent skill that can scan your data estate, assess specific assets against a profile, score every requirement, and guide you through remediation. Point a coding agent at this repo and say "assess my data for RAG readiness" — it handles the rest.
-
-Use the framework to understand what matters. Use the skill to measure where you stand and fix what doesn't pass.
+Under the hood, the agent is powered by an open framework: six factors of AI-ready data, 62 measurable requirements, and five workload profiles that define AI-readiness as a platform-agnostic standard. The framework defines what "AI-ready" means. The agent measures where you stand and fixes what doesn't pass.
 
 ### Background
 
@@ -42,9 +37,11 @@ Each factor is backed by a set of measurable **requirements** — specific, plat
 
 The factor markdown files above describe the *why* and *what* of each factor in prose. The manifest provides the machine-readable counterpart: every requirement has a unique key, a description, a factor, and a scope (schema, table, or column). All tests return a normalized score between 0 and 1, making it straightforward to build automated assessments or dashboards on top of the framework.
 
-## AI-Ready Data Skill
+## AI-Ready Data Agent (Skill)
 
-An installable skill that any coding agent can dynamically load and execute. Scan your data estate for prioritization, assess specific assets against a profile, and get a scored report across the six factors of AI-ready data with guided remediation.
+An installable skill for coding agents. Use it to scan your data estate for prioritization, assess specific assets against a profile, and get a scored report across the six factors of AI-ready data with guided remediation.
+
+Currently supports Snowflake. Looking for contributions to extend to other platforms.
 
 ### Quick Start
 
