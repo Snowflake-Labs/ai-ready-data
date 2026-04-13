@@ -221,6 +221,12 @@ skills/
         <br /><sub><b>Rajiv Gupta</b></sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/madhiceg">
+        <img src="https://github.com/madhiceg.png" width="80px;" alt="madhiceg"/>
+        <br /><sub><b>Madhivanan Anbalagan</b></sub>
+      </a>
+    </td>
   </tr>
 </table>
 <!-- CONTRIBUTORS:END -->
