@@ -11,7 +11,7 @@ There are four remediation approaches, each with different tradeoffs. Choose bas
 - **Delete incomplete** — Remove entire rows where the column is null. Best when the row is meaningless without the value (e.g., a fact table missing its measure). Risk: data loss — verify row counts before and after.
 - **Add NOT NULL constraint** — Enforce non-nullability at the schema level going forward. This will fail if any nulls still exist in the column, so always run one of the above remediations first. This is a structural guard, not a data fix.
 
-### Remediation: fill-default
+## Fix: Fill default
 
 Replace nulls with a concrete default value. Set `{{ default_value }}` to the appropriate literal for the column's data type.
 
@@ -21,7 +21,7 @@ SET {{ column }} = {{ default_value }}
 WHERE {{ column }} IS NULL
 ```
 
-### Remediation: fill-placeholder
+## Fix: Fill placeholder
 
 Replace nulls with a placeholder expression. Set `{{ placeholder_expression }}` to a sentinel like `'UNKNOWN'`, `'N/A'`, or `-1` depending on the column type and consumer expectations.
 
@@ -31,7 +31,7 @@ SET {{ column }} = {{ placeholder_expression }}
 WHERE {{ column }} IS NULL
 ```
 
-### Remediation: delete-incomplete
+## Fix: Delete incomplete rows
 
 Delete rows where the column is null. Use when the row has no value without this column. Always check `SELECT COUNT(*) ... WHERE {{ column }} IS NULL` first to understand the blast radius.
 
@@ -40,7 +40,7 @@ DELETE FROM {{ database }}.{{ schema }}.{{ asset }}
 WHERE {{ column }} IS NULL
 ```
 
-### Remediation: add-not-null
+## Fix: Add NOT NULL constraint
 
 Add a NOT NULL constraint to prevent future nulls. This will fail if any nulls currently exist — run a fill or delete remediation first.
 

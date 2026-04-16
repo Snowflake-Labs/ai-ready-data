@@ -12,14 +12,16 @@ There is no single DDL fix for latency compliance — optimization depends on th
 4. **Reduce bytes scanned.** Select only the columns needed, apply filters early, and avoid `SELECT *` on wide tables.
 5. **Review query design.** Anti-patterns like correlated subqueries, excessive `FLATTEN` on large arrays, or missing predicates inflate elapsed time.
 
-## Remediation: Add clustering key
+## Fix: Add clustering key
+
+`ALTER TABLE ... CLUSTER BY` silently replaces any existing clustering key. Inspect the current key via `SHOW TABLES LIKE '{{ asset }}'` before applying.
 
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} CLUSTER BY ({{ cluster_columns }});
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} CLUSTER BY ({{ clustering_columns }});
 ```
 
-## Remediation: Resize warehouse
+## Fix: Resize warehouse
 
 ```sql
-ALTER WAREHOUSE {{ warehouse }} SET WAREHOUSE_SIZE = '{{ size }}';
+ALTER WAREHOUSE {{ warehouse }} SET WAREHOUSE_SIZE = '{{ warehouse_size }}';
 ```

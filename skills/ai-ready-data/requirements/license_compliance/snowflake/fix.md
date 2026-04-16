@@ -8,7 +8,7 @@ Two remediation steps: first create the license tag (if it does not already exis
 
 `account_usage.tag_references` has approximately 2-hour latency for new tags — the check and diagnostic queries may not reflect changes immediately after tagging.
 
-### Remediation: Create License Tag
+## Fix: Create the license tag
 
 ```sql
 CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
@@ -16,9 +16,9 @@ CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
     COMMENT = '{{ comment }}'
 ```
 
-### Remediation: Apply License Tag to Table
+## Fix: Apply the license tag to a table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```

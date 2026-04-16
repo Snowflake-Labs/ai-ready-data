@@ -15,7 +15,17 @@ Avoid clustering on high-cardinality columns (e.g., unique IDs) unless they're u
 
 Adding a clustering key does not rewrite existing data immediately — Snowflake's automatic clustering service reorganizes data in the background over time. There is an ongoing compute cost for automatic reclustering.
 
-## SQL
+**`ALTER TABLE ... CLUSTER BY` silently replaces any existing clustering key.** Before applying, inspect the current key — if one is already set to a different expression, confirm with the owner that replacing it is intended.
+
+```sql
+SELECT clustering_key
+FROM {{ database }}.information_schema.tables
+WHERE table_schema = '{{ schema }}' AND table_name = '{{ asset }}';
+```
+
+If the query returns a non-null value and it equals `LINEAR({{ clustering_columns }})`, the fix is a no-op — skip it. If it returns a different expression, warn the user and get explicit approval before proceeding.
+
+## Fix: Add a clustering key
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}

@@ -1,35 +1,52 @@
 # Fix: propagation_latency_compliance
 
-Fraction of data pipelines where end-to-end propagation latency meets the defined freshness SLA.
+Restore on-time propagation for dynamic tables whose end-to-end lag exceeds the SLA.
 
-## Remediation Guidance
+## Context
 
-1. **Resume suspended dynamic tables** — If the diagnostic shows `SUSPENDED` scheduling state, resume the table:
-   ```sql
-   ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.<table_name> RESUME;
-   ```
+Dynamic tables carry a `TARGET_LAG` and a `data_timestamp` that together describe their freshness guarantee. Non-compliance is typically one of three root causes: the dynamic table is suspended, the warehouse is undersized for the target, or the upstream pipeline is not a dynamic table at all and has no declarative lag guarantee.
 
-2. **Adjust target lag** — If actual lag consistently exceeds the target, the warehouse may be undersized or the target unrealistic. Increase the target lag to match operational reality, or scale up the warehouse:
-   ```sql
-   ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.<table_name> SET TARGET_LAG = '10 minutes';
-   ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.<table_name> SET WAREHOUSE = <larger_warehouse>;
-   ```
+`account_usage.query_history` and `DYNAMIC_TABLE_REFRESH_HISTORY` have approximately 45-minute latency — the check may not reflect a resumed or resized table for that window.
 
-3. **Create dynamic tables for unmanaged pipelines** — If data is loaded via external ETL with no latency tracking, consider wrapping downstream transformations in dynamic tables to gain declarative freshness guarantees:
-   ```sql
-   CREATE OR REPLACE DYNAMIC TABLE {{ database }}.{{ schema }}.<table_name>
-       TARGET_LAG = '5 minutes'
-       WAREHOUSE = <warehouse>
-   AS
-       SELECT * FROM {{ database }}.{{ schema }}.<source_table>;
-   ```
+## Fix: Resume a suspended dynamic table
 
-4. **Monitor with DYNAMIC_TABLE_REFRESH_HISTORY** — For ongoing compliance tracking:
-   ```sql
-   SELECT *
-   FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLE_REFRESH_HISTORY(
-       NAME => '{{ database }}.{{ schema }}.<table_name>'
-   ))
-   ORDER BY REFRESH_START_TIME DESC
-   LIMIT 20;
-   ```
+```sql
+ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }} RESUME;
+```
+
+## Fix: Adjust target lag or warehouse
+
+Use when actual lag consistently exceeds the current target. Either relax the target to match operational reality, or attach a larger warehouse:
+
+```sql
+ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }} SET TARGET_LAG = '{{ target_lag }}';
+```
+
+```sql
+ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }} SET WAREHOUSE = {{ warehouse }};
+```
+
+## Fix: Wrap an unmanaged pipeline in a dynamic table
+
+Use when data is loaded via external ETL without declarative freshness tracking. Wrapping downstream transformations as a dynamic table gives Snowflake explicit lag guarantees:
+
+```sql
+CREATE OR REPLACE DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }}
+    TARGET_LAG = '{{ target_lag }}'
+    WAREHOUSE = {{ warehouse }}
+AS
+    SELECT * FROM {{ source_namespace }}.{{ source_asset }};
+```
+
+## Monitor refresh history
+
+For ongoing compliance tracking:
+
+```sql
+SELECT *
+FROM TABLE(INFORMATION_SCHEMA.DYNAMIC_TABLE_REFRESH_HISTORY(
+    NAME => '{{ database }}.{{ schema }}.{{ asset }}'
+))
+ORDER BY REFRESH_START_TIME DESC
+LIMIT 20;
+```

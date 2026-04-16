@@ -8,12 +8,12 @@ Static base tables used as feature stores create skew risk: training pipelines r
 
 True parity verification requires comparing transformation logic across pipelines — this heuristic only checks whether feature tables are dynamic. A dynamic table that sources from a different transformation than the training pipeline still has a parity gap.
 
-## Remediation: Convert a static feature table to a dynamic table
+## Fix: Convert a static feature table to a dynamic table
 
 Replace the static base table with a dynamic table that materializes from the same transformation logic used during training.
 
 ```sql
-CREATE OR REPLACE DYNAMIC TABLE {{ database }}.{{ schema }}.{{ table_name }}
+CREATE OR REPLACE DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }}
     TARGET_LAG = '1 hour'
     WAREHOUSE = {{ warehouse }}
 AS

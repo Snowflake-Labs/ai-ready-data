@@ -14,7 +14,7 @@ SHOW TAGS LIKE '{{ tag_name }}' IN SCHEMA {{ database }}.{{ schema }};
 
 If rows are returned, skip tag creation.
 
-## Remediation: Create the bias testing tag
+## Fix: Create the bias testing tag
 
 ```sql
 CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
@@ -22,9 +22,9 @@ CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
     COMMENT = '{{ comment }}'
 ```
 
-## Remediation: Apply the tag to a tested table
+## Fix: Apply the tag to a tested table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```

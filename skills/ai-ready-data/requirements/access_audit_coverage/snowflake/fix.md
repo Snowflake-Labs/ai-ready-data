@@ -10,7 +10,7 @@ Snowflake's `access_history` is automatic and immutable — there is no DDL or D
 2. **Missing IMPORTED PRIVILEGES.** The role running the assessment needs `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE` to read `account_usage.access_history`. Grant this to the assessment role.
 3. **Latency.** Recently created tables or tables accessed within the last ~2 hours may not appear yet. Re-run the check after the latency window.
 
-## Remediation: Grant access to audit views
+## Fix: Grant access to audit views
 
 ```sql
 GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE {{ role }};

@@ -13,13 +13,18 @@ A score of 1.0 means every non-null value is in the allowed set. Values outside 
 ## SQL
 
 ```sql
+WITH col_check AS (
+    SELECT
+        COUNT(*) AS total_rows,
+        COUNT_IF({{ column }} IN ({{ allowed_values }})) AS valid_rows
+    FROM {{ database }}.{{ schema }}.{{ asset }}
+    WHERE {{ column }} IS NOT NULL
+)
 SELECT
     '{{ asset }}' AS table_name,
     '{{ column }}' AS column_name,
-    COUNT(*) AS total_rows,
-    SUM(CASE WHEN {{ column }} IN ({{ allowed_values }}) THEN 1 ELSE 0 END) AS valid_rows,
-    SUM(CASE WHEN {{ column }} IN ({{ allowed_values }}) THEN 1 ELSE 0 END)::FLOAT
-        / NULLIF(COUNT(*)::FLOAT, 0) AS value
-FROM {{ database }}.{{ schema }}.{{ asset }}
-WHERE {{ column }} IS NOT NULL
+    total_rows,
+    valid_rows,
+    valid_rows::FLOAT / NULLIF(total_rows::FLOAT, 0) AS value
+FROM col_check
 ```

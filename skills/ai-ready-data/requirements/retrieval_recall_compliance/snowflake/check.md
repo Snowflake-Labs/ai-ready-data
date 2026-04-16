@@ -1,37 +1,38 @@
 # Check: retrieval_recall_compliance
 
-Fraction of vector search indexes achieving their target recall threshold at required query latency.
+Fraction of vector-bearing tables whose vector columns have search optimization enabled — a proxy for recall compliance at acceptable latency.
 
 ## Context
 
-Recall measurement requires ground-truth queries — this check proxies via index presence. It counts tables with VECTOR columns and checks whether search optimization is enabled. Since `search_optimization` is not available in `information_schema.tables`, this query returns a placeholder value of 0.0. For accurate results, use `SHOW TABLES` and inspect the `search_optimization` column.
+True recall measurement requires a labeled query/ground-truth set, which Snowflake does not expose. This check proxies compliance by asking: of the tables that contain a `VECTOR` column, how many have search optimization enabled on the table? Search optimization is the platform feature that backs ANN recall at low latency.
 
-A score of 1.0 would mean every vector table has search optimization enabled, proxying for recall compliance.
+Requires `SHOW TABLES` + `RESULT_SCAN` in the **same session** — search-optimization status is not in `information_schema.tables`.
+
+Returns NULL (N/A) when the schema contains no vector-bearing tables.
 
 ## SQL
 
 ```sql
--- check-retrieval-recall-compliance.sql
--- Checks if vector tables have search optimization for recall compliance
--- Returns: value (float 0-1) - fraction of vector tables with search optimization
--- Note: search_optimization is not in information_schema.tables — requires SHOW TABLES.
--- This check proxies by counting tables with VECTOR columns as a baseline.
+SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 
-WITH vector_tables AS (
-    SELECT COUNT(DISTINCT c.table_name) AS total_vector_tables
+WITH show_results AS (
+    SELECT
+        UPPER("name") AS table_name,
+        "search_optimization" AS search_optimization
+    FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+    WHERE "kind" = 'TABLE'
+),
+vector_tables AS (
+    SELECT DISTINCT UPPER(c.table_name) AS table_name
     FROM {{ database }}.information_schema.columns c
-    JOIN {{ database }}.information_schema.tables t
-        ON c.table_name = t.table_name AND c.table_schema = t.table_schema
-    WHERE c.table_schema = '{{ schema }}'
-        AND t.table_type = 'BASE TABLE'
-        AND c.data_type LIKE 'VECTOR%'
+    WHERE UPPER(c.table_schema) = UPPER('{{ schema }}')
+      AND c.data_type LIKE 'VECTOR%'
 )
 SELECT
-    0 AS indexed_tables,  -- Placeholder: requires SHOW TABLES for search_optimization
-    vector_tables.total_vector_tables AS total_vector_tables,
-    0.0 AS value
-FROM vector_tables
--- For accurate results, run:
--- SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
--- Then check "search_optimization" = 'ON' for tables with VECTOR columns
+    COUNT_IF(s.search_optimization = 'ON') AS indexed_vector_tables,
+    COUNT(*) AS total_vector_tables,
+    COUNT_IF(s.search_optimization = 'ON')::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM vector_tables v
+JOIN show_results s USING (table_name)
 ```

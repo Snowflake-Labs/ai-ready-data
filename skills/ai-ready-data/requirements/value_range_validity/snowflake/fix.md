@@ -10,7 +10,7 @@ Two options with different tradeoffs:
 
 Clamping changes data values — verify business rules before applying. Deletion is irreversible — prefer clamping for recoverable data.
 
-## Remediation: Clamp out-of-range values (preferred — preserves rows)
+## Fix: Clamp out-of-range values (preferred — preserves rows)
 
 ```sql
 UPDATE {{ database }}.{{ schema }}.{{ asset }}
@@ -22,7 +22,7 @@ END
 WHERE {{ column }} < {{ min_value }} OR {{ column }} > {{ max_value }}
 ```
 
-## Remediation: Delete out-of-range rows (irreversible)
+## Fix: Delete out-of-range rows (irreversible)
 
 ```sql
 DELETE FROM {{ database }}.{{ schema }}.{{ asset }}

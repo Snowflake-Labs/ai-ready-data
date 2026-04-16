@@ -16,7 +16,7 @@ If rows are returned, skip tag creation.
 
 Common legal basis values (GDPR Article 6): `consent`, `legitimate_interest`, `contract`, `legal_obligation`, `public_interest`, `vital_interest`.
 
-## Remediation: Create the consent tag
+## Fix: Create the consent tag
 
 ```sql
 CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
@@ -24,9 +24,9 @@ CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
     COMMENT = '{{ comment }}'
 ```
 
-## Remediation: Apply consent tag to a table
+## Fix: Apply consent tag to a table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```

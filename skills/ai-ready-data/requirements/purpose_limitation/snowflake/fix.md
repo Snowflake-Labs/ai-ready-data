@@ -8,7 +8,7 @@ Tables without a purpose tag have no enforceable declaration of what AI processi
 
 `account_usage.tag_references` has approximately 2-hour latency — tags will not appear in check/diagnostic results immediately after application.
 
-### Remediation: Create purpose tag
+## Fix: Create the purpose tag
 
 ```sql
 CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
@@ -16,9 +16,9 @@ CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
     COMMENT = '{{ comment }}'
 ```
 
-### Remediation: Apply purpose tag to table
+## Fix: Apply the purpose tag to a table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```

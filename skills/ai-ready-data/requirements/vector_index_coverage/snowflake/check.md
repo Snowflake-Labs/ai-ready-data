@@ -1,43 +1,42 @@
 # Check: vector_index_coverage
 
-Fraction of embedding collections with a vector similarity index built and maintained.
+Fraction of tables with a `VECTOR` column that have search optimization enabled — Snowflake's mechanism for backing vector similarity search with an on-disk index.
 
 ## Context
 
-Vector search optimization in Snowflake is enabled via `ALTER TABLE ... ALTER COLUMN ... SET SEARCH OPTIMIZATION = ON`. This check identifies tables with `VECTOR` columns and attempts to determine how many have search optimization enabled.
+Snowflake vector search optimization is enabled per-table via:
 
-Accurate results require a two-step approach: `SHOW TABLES` followed by `RESULT_SCAN` in the same session, because search optimization status is not exposed in `information_schema`. The query below returns a conservative score of 0.0 — run the diagnostic to get the actual per-table status.
+```sql
+ALTER TABLE <t> ADD SEARCH OPTIMIZATION ON EQUALITY(<col>);
+```
+
+This check identifies tables in the target schema whose `data_type` starts with `VECTOR` and reports the fraction with search optimization turned on. Requires `SHOW TABLES` + `RESULT_SCAN` in the **same session** — search-optimization status is not exposed in `information_schema.tables`.
+
+Returns NULL (N/A) when the schema contains no vector-bearing tables.
 
 ## SQL
 
 ```sql
--- check-vector-index-coverage.sql
--- Checks fraction of vector columns with search optimization enabled
--- Returns: value (float 0-1) - fraction of vector columns with indexes
+SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
 
--- Note: Vector search optimization in Snowflake is enabled via:
--- ALTER TABLE ... ALTER COLUMN ... SET SEARCH OPTIMIZATION = ON
--- This check looks for tables with search optimization containing vector columns
-
-WITH vector_tables AS (
-    SELECT DISTINCT
-        c.table_catalog,
-        c.table_schema,
-        c.table_name
-    FROM {{ database }}.information_schema.columns c
-    WHERE c.table_schema = '{{ schema }}'
-        AND c.data_type LIKE 'VECTOR%'
+WITH show_results AS (
+    SELECT
+        UPPER("name") AS table_name,
+        "search_optimization" AS search_optimization
+    FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+    WHERE "kind" = 'TABLE'
 ),
--- Check search optimization status via SHOW TABLES
--- Note: Requires same-session RESULT_SCAN
-tables_in_scope AS (
-    SELECT COUNT(*) AS total_vector_tables FROM vector_tables
+vector_tables AS (
+    SELECT DISTINCT UPPER(c.table_name) AS table_name
+    FROM {{ database }}.information_schema.columns c
+    WHERE UPPER(c.table_schema) = UPPER('{{ schema }}')
+      AND c.data_type LIKE 'VECTOR%'
 )
 SELECT
-    0 AS tables_with_vector_index,  -- Placeholder: requires SHOW TABLES + RESULT_SCAN
-    (SELECT total_vector_tables FROM tables_in_scope) AS total_vector_tables,
-    0.0 AS value  -- Conservative: assumes no indexes until verified via SHOW TABLES
--- To get accurate results, run:
--- SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
--- Then query RESULT_SCAN for "search_optimization" = 'ON'
+    COUNT_IF(s.search_optimization = 'ON') AS tables_with_vector_index,
+    COUNT(*) AS total_vector_tables,
+    COUNT_IF(s.search_optimization = 'ON')::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM vector_tables v
+JOIN show_results s USING (table_name)
 ```

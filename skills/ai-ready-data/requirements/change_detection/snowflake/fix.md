@@ -17,13 +17,13 @@ SHOW STREAMS LIKE '{{ stream_name }}' IN SCHEMA {{ database }}.{{ schema }};
 
 If rows are returned, skip stream creation.
 
-## Remediation: Enable change tracking
+## Fix: Enable change tracking
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} SET CHANGE_TRACKING = TRUE
 ```
 
-## Remediation: Create a stream
+## Fix: Create a stream
 
 ```sql
 CREATE STREAM IF NOT EXISTS {{ database }}.{{ schema }}.{{ stream_name }}

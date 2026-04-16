@@ -8,8 +8,8 @@ Temporal columns without comments lack declared scope — consumers and AI workl
 
 Add a `COMMENT` to each temporal column describing its role. Use the `suggested_temporal_role` from the diagnostic query as a starting point.
 
-## Remediation: Add comment to temporal column
+## Fix: Add comment to temporal column
 
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} ALTER COLUMN {{ column }} SET COMMENT '{{ comment }}';
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} ALTER COLUMN {{ column }} SET COMMENT '{{ comment }}';
 ```

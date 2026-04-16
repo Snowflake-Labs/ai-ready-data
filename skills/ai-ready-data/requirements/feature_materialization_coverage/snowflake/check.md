@@ -1,33 +1,26 @@
 # Check: feature_materialization_coverage
 
-Fraction of ML features pre-materialized in both online and offline serving stores.
+Fraction of table-like objects in the schema that are materialized (dynamic table or materialized view), versus the base-table + materialized total.
 
 ## Context
 
-Counts dynamic tables and materialized views in the schema relative to total tables (base + materialized). A score of 1.0 means every table-like object in the schema is a dynamic table or materialized view. Base tables with no materialized counterpart pull the score down.
+A higher score indicates more of the schema's assets are pre-computed for serving. Base tables that have no materialized counterpart drag the score down. This check does not attempt to determine which base tables should be materialized — use it as a schema-wide indicator, then investigate individual feature tables with the diagnostic.
+
+Returns NULL (N/A) when the schema contains no base tables, dynamic tables, or materialized views.
 
 ## SQL
 
 ```sql
--- check-feature-materialization-coverage.sql
--- Checks fraction of features available in materialized views or dynamic tables
--- Returns: value (float 0-1) - fraction of tables with materialization
-
-WITH tables_in_scope AS (
-    SELECT table_name
+WITH objects AS (
+    SELECT table_type
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'BASE TABLE'
-),
-materialized_tables AS (
-    SELECT table_name
-    FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type IN ('DYNAMIC TABLE', 'MATERIALIZED VIEW')
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
+      AND table_type IN ('BASE TABLE','DYNAMIC TABLE','MATERIALIZED VIEW')
 )
 SELECT
-    (SELECT COUNT(*) FROM materialized_tables) AS materialized_count,
-    (SELECT COUNT(*) FROM tables_in_scope) + (SELECT COUNT(*) FROM materialized_tables) AS total_count,
-    (SELECT COUNT(*) FROM materialized_tables)::FLOAT / 
-        NULLIF(((SELECT COUNT(*) FROM tables_in_scope) + (SELECT COUNT(*) FROM materialized_tables))::FLOAT, 0) AS value
+    COUNT_IF(table_type IN ('DYNAMIC TABLE','MATERIALIZED VIEW')) AS materialized_count,
+    COUNT(*) AS total_count,
+    COUNT_IF(table_type IN ('DYNAMIC TABLE','MATERIALIZED VIEW'))::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM objects
 ```

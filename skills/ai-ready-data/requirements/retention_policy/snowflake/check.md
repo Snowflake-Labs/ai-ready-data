@@ -1,12 +1,16 @@
 # Check: retention_policy
 
-Fraction of datasets with defined and enforced data retention and deletion schedules.
+Fraction of base tables tagged with a retention / deletion schedule.
 
 ## Context
 
-Counts base tables in the schema that carry at least one retention-related tag (`retention_days`, `retention_policy`, `data_retention`, `ttl`) in `snowflake.account_usage.tag_references`. A score of 1.0 means every base table has an explicit retention schedule.
+Counts base tables that carry a retention-related tag in `snowflake.account_usage.tag_references`. A score of 1.0 means every base table has an explicit retention schedule; enforcement (actual deletion or TTL behavior) is a separate concern.
 
-`account_usage.tag_references` has approximately 2-hour latency — recently tagged tables may not appear yet. Note: `tag_references` has no `deleted` column — do not filter on it.
+`account_usage.tag_references` has approximately 2-hour latency for newly applied tags. The view has **no `deleted` column** — do not filter on it.
+
+Requires `{{ tag_names }}` — comma-separated quoted list, typically `'retention_days','retention_policy','data_retention','ttl'`.
+
+Returns NULL (N/A) when the schema contains no base tables.
 
 ## SQL
 
@@ -14,24 +18,24 @@ Counts base tables in the schema that carry at least one retention-related tag (
 WITH table_count AS (
     SELECT COUNT(*) AS cnt
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
         AND table_type = 'BASE TABLE'
 ),
-tagged_retention AS (
+tagged_tables AS (
     SELECT COUNT(DISTINCT tr.object_name) AS cnt
     FROM snowflake.account_usage.tag_references tr
     JOIN {{ database }}.information_schema.tables t
         ON UPPER(tr.object_name) = UPPER(t.table_name)
-        AND t.table_schema = '{{ schema }}'
+        AND UPPER(t.table_schema) = UPPER('{{ schema }}')
         AND t.table_type = 'BASE TABLE'
     WHERE UPPER(tr.object_database) = UPPER('{{ database }}')
-        AND UPPER(tr.object_schema) = UPPER('{{ schema }}')
+        AND UPPER(tr.object_schema)   = UPPER('{{ schema }}')
         AND tr.domain = 'TABLE'
-        AND LOWER(tr.tag_name) IN ('retention_days', 'retention_policy', 'data_retention', 'ttl')
+        AND LOWER(tr.tag_name) IN ({{ tag_names }})
 )
 SELECT
-    tagged_retention.cnt AS tables_with_retention,
-    table_count.cnt AS total_tables,
-    tagged_retention.cnt::FLOAT / NULLIF(table_count.cnt::FLOAT, 0) AS value
-FROM table_count, tagged_retention
+    tagged_tables.cnt AS tables_tagged,
+    table_count.cnt   AS total_tables,
+    tagged_tables.cnt::FLOAT / NULLIF(table_count.cnt::FLOAT, 0) AS value
+FROM table_count, tagged_tables
 ```

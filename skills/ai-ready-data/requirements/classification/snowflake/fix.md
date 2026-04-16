@@ -16,7 +16,7 @@ If rows are returned, skip tag creation.
 
 `account_usage.tag_references` has approximately 2-hour latency — re-running the check immediately after tagging may not reflect the changes.
 
-## Remediation: Create a governance tag
+## Fix: Create a governance tag
 
 ```sql
 CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
@@ -24,17 +24,17 @@ CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
     COMMENT = '{{ comment }}'
 ```
 
-## Remediation: Apply tag to a table
+## Fix: Apply tag to a table
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```
 
-## Remediation: Apply tag to a column
+## Fix: Apply tag to a column
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
 MODIFY COLUMN {{ column }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```

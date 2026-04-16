@@ -8,8 +8,8 @@ The primary remediation is to add a `COMMENT` to each numeric column that docume
 
 Alternatively, columns can be renamed to include unit suffixes (e.g., `revenue` → `revenue_usd`), but this is a breaking change for downstream consumers.
 
-## Remediation: Add unit-of-measure comment to a column
+## Fix: Add unit-of-measure comment to a column
 
 ```sql
-COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ table }}.{{ column }} IS '{{ comment_with_unit }}';
+COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ asset }}.{{ column }} IS '{{ comment_with_unit }}';
 ```

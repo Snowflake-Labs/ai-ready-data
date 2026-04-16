@@ -1,21 +1,86 @@
 version: v2
 
 requirements:
+
+  # ── clean ──────────────────────────────────────────────────────────────
+
+  categorical_validity:
+    description: Fraction of categorical column values that belong to a declared controlled vocabulary or code set
+    factor: clean
+    scope: column
+    implementations: [snowflake, postgres]
+
+  cross_column_consistency:
+    description: Fraction of records where logically related columns are mutually consistent per declared cross-column rules
+    factor: clean
+    scope: table
+    implementations: [snowflake, postgres]
+
+  data_completeness:
+    description: Fraction of non-null values across scoped columns (1.0 = no nulls)
+    factor: clean
+    scope: column
+    implementations: [snowflake, postgres]
+
+  distribution_conformity:
+    description: Fraction of features whose statistical distributions conform to declared baseline distributions within tolerance thresholds
+    factor: clean
+    scope: table
+    implementations: [snowflake, postgres]
+
+  encoding_validity:
+    description: Fraction of text column values free of encoding errors, garbled characters, or Unicode replacement characters
+    factor: clean
+    scope: column
+    implementations: [snowflake, postgres]
+
+  outlier_prevalence:
+    description: Fraction of records containing values flagged as statistical outliers beyond declared distance thresholds
+    factor: clean
+    scope: table
+    implementations: [snowflake, postgres]
+
+  referential_accuracy:
+    description: Fraction of column values verified as correct against an authoritative reference or ground-truth source
+    factor: clean
+    scope: table
+    implementations: [snowflake, postgres]
+
+  referential_integrity:
+    description: Fraction of foreign-key or cross-dataset reference values that successfully resolve to valid target records
+    factor: clean
+    scope: table
+    implementations: [snowflake, postgres]
+
+  schema_conformity:
+    description: Fraction of records that conform to the declared schema, including correct data types, required fields present, and structural rules satisfied
+    factor: clean
+    scope: column
+    implementations: [snowflake, postgres]
+
+  syntactic_validity:
+    description: Fraction of raw data records that parse without structural errors, including well-formed serialization and correct delimiters
+    factor: clean
+    scope: column
+    implementations: [snowflake, postgres]
+
+  uniqueness:
+    description: Fraction of rows that are unique across scoped key columns (1.0 = no duplicates)
+    factor: clean
+    scope: table
+    implementations: [snowflake, postgres]
+
+  value_range_validity:
+    description: Fraction of numeric column values that fall within declared valid ranges or domain boundaries
+    factor: clean
+    scope: column
+    implementations: [snowflake, postgres]
+
+  # ── compliant ──────────────────────────────────────────────────────────
+
   access_audit_coverage:
     description: Fraction of AI data access events captured in immutable audit logs
     factor: compliant
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  access_optimization:
-    description: Fraction of large tables with clustering keys
-    factor: consumable
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  agent_attribution:
-    description: Fraction of data modifications with a QUERY_TAG identifying the responsible agent, pipeline, or process
-    factor: correlated
     scope: schema
     implementations: [snowflake, postgres]
 
@@ -25,39 +90,9 @@ requirements:
     scope: schema
     implementations: [snowflake, postgres]
 
-  batch_throughput_sufficiency:
-    description: Fraction of training data pipelines with I/O throughput sufficient to avoid compute idle time
-    factor: consumable
-    scope: schema
-    implementations: [snowflake, postgres]
-
   bias_testing_coverage:
     description: Fraction of training datasets that have undergone statistical bias testing prior to AI consumption
     factor: compliant
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  business_glossary_linkage:
-    description: Fraction of data fields linked to a business glossary or authoritative term definition
-    factor: contextual
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  categorical_validity:
-    description: Fraction of categorical column values that belong to a declared controlled vocabulary or code set
-    factor: clean
-    scope: column
-    implementations: [snowflake, postgres]
-
-  change_detection:
-    description: Fraction of tables with change tracking and streams enabled
-    factor: current
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  chunk_readiness:
-    description: Fraction of document assets pre-chunked to sizes aligned with target context windows
-    factor: consumable
     scope: schema
     implementations: [snowflake, postgres]
 
@@ -79,58 +114,54 @@ requirements:
     scope: schema
     implementations: [snowflake, postgres]
 
-  constraint_declaration:
-    description: Fraction of data fields with explicitly declared constraints (nullability, uniqueness, valid ranges, or patterns)
-    factor: contextual
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  cross_column_consistency:
-    description: Fraction of records where logically related columns are mutually consistent per declared cross-column rules
-    factor: clean
-    scope: table
-    implementations: [snowflake, postgres]
-
-  data_completeness:
-    description: Fraction of null values across scoped columns
-    factor: clean
-    scope: column
-    implementations: [snowflake, postgres]
-
-  data_freshness:
-    description: Fraction of data assets with a declared freshness SLA that are within their defined freshness window
-    factor: current
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  data_provenance:
-    description: Fraction of datasets with documented source provenance including origin system, collection method, and upstream lineage
-    factor: correlated
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  data_version_coverage:
-    description: Fraction of datasets with Time Travel retention enabled for point-in-time state reconstruction
-    factor: correlated
-    scope: schema
-    implementations: [snowflake, postgres]
-
   demographic_representation:
     description: Fraction of training datasets with measured and documented demographic distribution relative to target population
     factor: compliant
     scope: schema
     implementations: [snowflake, postgres]
 
-  dependency_graph_completeness:
-    description: Fraction of datasets with fully enumerated upstream and downstream dependency relationships
-    factor: correlated
+  license_compliance:
+    description: Fraction of externally sourced datasets with documented and valid usage licenses permitting AI training
+    factor: compliant
     scope: schema
     implementations: [snowflake, postgres]
 
-  distribution_conformity:
-    description: Fraction of features whose statistical distributions conform to declared baseline distributions within tolerance thresholds
-    factor: clean
-    scope: table
+  purpose_limitation:
+    description: Fraction of data access paths with declared permitted AI processing purposes and enforced purpose-based authorization
+    factor: compliant
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  retention_policy:
+    description: Fraction of datasets with defined and enforced data retention and deletion schedules
+    factor: compliant
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  row_access_policy:
+    description: Fraction of tables with row access policies enforcing row-level security
+    factor: compliant
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  # ── consumable ─────────────────────────────────────────────────────────
+
+  access_optimization:
+    description: Fraction of large tables with clustering keys
+    factor: consumable
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  batch_throughput_sufficiency:
+    description: Fraction of recent COPY loads (last 7 days) that sustained at least the configured rows-per-second throughput
+    factor: consumable
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  chunk_readiness:
+    description: Fraction of document assets pre-chunked to sizes aligned with target context windows
+    factor: consumable
+    scope: schema
     implementations: [snowflake, postgres]
 
   embedding_coverage:
@@ -142,18 +173,6 @@ requirements:
   embedding_dimension_consistency:
     description: Fraction of embedding collections with uniform dimensionality matching their consuming model's expected input
     factor: consumable
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  encoding_validity:
-    description: Fraction of text column values free of encoding errors, garbled characters, or Unicode replacement characters
-    factor: clean
-    scope: column
-    implementations: [snowflake, postgres]
-
-  entity_identifier_declaration:
-    description: Fraction of entities or datasets with explicitly declared primary or natural key definitions
-    factor: contextual
     scope: schema
     implementations: [snowflake, postgres]
 
@@ -169,135 +188,21 @@ requirements:
     scope: schema
     implementations: [snowflake, postgres]
 
-  feature_refresh_compliance:
-    description: Fraction of served features updated within their defined staleness tolerance threshold
-    factor: current
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  impact_analysis_capability:
-    description: Fraction of datasets for which the downstream impact of a schema or content change can be automatically enumerated
-    factor: correlated
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  incremental_update_coverage:
-    description: Fraction of data pipelines that use incremental processing (CDC or streaming) rather than full-reload extraction
-    factor: current
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  license_compliance:
-    description: Fraction of externally sourced datasets with documented and valid usage licenses permitting AI training
-    factor: compliant
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  lineage_completeness:
-    description: Fraction of datasets with documented end-to-end lineage from source through transformations, at both dataset and column level
-    factor: correlated
-    scope: schema
-    implementations: [snowflake, postgres]
-
   native_format_availability:
     description: Fraction of datasets stored in consumption-ready formats without requiring runtime format conversion
     factor: consumable
     scope: schema
     implementations: [snowflake, postgres]
 
-  outlier_prevalence:
-    description: Fraction of records containing values flagged as statistical outliers beyond declared distance thresholds
-    factor: clean
-    scope: table
-    implementations: [snowflake, postgres]
-
-  pipeline_execution_audit:
-    description: Fraction of pipeline runs with immutable execution records capturing inputs, parameters, outputs, and completion status
-    factor: correlated
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  point_in_time_correctness:
-    description: Fraction of feature datasets that support point-in-time joins preventing future data leakage
-    factor: current
-    scope: schema
-    implementations: [snowflake, postgres]
-
   point_lookup_availability:
-    description: Fraction of entity records accessible via low-latency key-based point lookups
+    description: Fraction of base tables with a clustering key defined OR search optimization enabled
     factor: consumable
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  propagation_latency_compliance:
-    description: Fraction of data pipelines where end-to-end propagation latency meets the defined freshness SLA
-    factor: current
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  purpose_limitation:
-    description: Fraction of data access paths with declared permitted AI processing purposes and enforced purpose-based authorization
-    factor: compliant
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  record_level_traceability:
-    description: Fraction of records with a unique correlation identifier enabling trace-back to their originating source record
-    factor: correlated
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  referential_accuracy:
-    description: Fraction of column values verified as correct against an authoritative reference or ground-truth source
-    factor: clean
-    scope: table
-    implementations: [snowflake, postgres]
-
-  referential_integrity:
-    description: Fraction of foreign-key or cross-dataset reference values that successfully resolve to valid target records
-    factor: clean
-    scope: table
-    implementations: [snowflake, postgres]
-
-  relationship_declaration:
-    description: Fraction of cross-entity references with explicit, machine-readable relationship declarations
-    factor: contextual
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  retention_policy:
-    description: Fraction of datasets with defined and enforced data retention and deletion schedules
-    factor: compliant
     scope: schema
     implementations: [snowflake, postgres]
 
   retrieval_recall_compliance:
-    description: Fraction of vector search indexes achieving their target recall threshold at required query latency
+    description: Fraction of vector-bearing tables with search optimization enabled (proxy for recall compliance at low latency)
     factor: consumable
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  row_access_policy:
-    description: Fraction of tables with row access policies enforcing row-level security
-    factor: compliant
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  schema_conformity:
-    description: Fraction of records that conform to the declared schema, including correct data types, required fields present, and structural rules satisfied
-    factor: clean
-    scope: column
-    implementations: [snowflake, postgres]
-
-  schema_evolution_tracking:
-    description: Fraction of data assets with automated schema change detection, version identifiers, and version history
-    factor: current
-    scope: schema
-    implementations: [snowflake, postgres]
-
-  schema_type_coverage:
-    description: Fraction of data fields with explicitly declared, machine-readable data types
-    factor: contextual
     scope: schema
     implementations: [snowflake, postgres]
 
@@ -307,28 +212,54 @@ requirements:
     scope: schema
     implementations: [snowflake, postgres]
 
-  semantic_documentation:
-    description: Fraction of objects with machine-readable semantic descriptions
-    factor: contextual
-    scope: schema
-    implementations: [snowflake, postgres]
-
   serving_latency_compliance:
-    description: Fraction of data serving endpoints meeting their defined latency SLA at p99
+    description: Fraction of recent successful SELECT queries that read tables in the schema (attributed via access_history) and completed within the configured latency threshold (ms)
     factor: consumable
     scope: schema
     implementations: [snowflake, postgres]
 
-  syntactic_validity:
-    description: Fraction of raw data records that parse without structural errors, including well-formed serialization and correct delimiters
-    factor: clean
-    scope: column
+  vector_index_coverage:
+    description: Fraction of embedding collections with a vector similarity index built and maintained
+    factor: consumable
+    scope: schema
     implementations: [snowflake, postgres]
 
-  temporal_referential_integrity:
-    description: Fraction of records with valid, non-null event timestamps traceable to source system origination time
-    factor: current
-    scope: table
+  # ── contextual ─────────────────────────────────────────────────────────
+
+  business_glossary_linkage:
+    description: Fraction of data fields linked to a business glossary or authoritative term definition
+    factor: contextual
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  constraint_declaration:
+    description: Fraction of columns declared NOT NULL, appearing in a PRIMARY KEY / UNIQUE / CHECK constraint, or carrying a comment with a range declaration
+    factor: contextual
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  entity_identifier_declaration:
+    description: Fraction of entities or datasets with explicitly declared primary or natural key definitions
+    factor: contextual
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  relationship_declaration:
+    description: Fraction of semantic views in the schema whose DDL includes a RELATIONSHIPS clause
+    factor: contextual
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  schema_type_coverage:
+    description: Fraction of columns that carry a semantic-role signal (non-empty comment or recognizable name pattern) beyond the baseline declared physical type
+    factor: contextual
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  semantic_documentation:
+    description: Fraction of objects with machine-readable semantic descriptions
+    factor: contextual
+    scope: schema
     implementations: [snowflake, postgres]
 
   temporal_scope_declaration:
@@ -337,9 +268,59 @@ requirements:
     scope: schema
     implementations: [snowflake, postgres]
 
-  training_serving_parity:
-    description: Fraction of ML features with consistent computation logic between training (batch) and serving (real-time) paths
-    factor: current
+  unit_of_measure_declaration:
+    description: Fraction of numeric fields with explicit unit of measure declarations
+    factor: contextual
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  # ── correlated ─────────────────────────────────────────────────────────
+
+  agent_attribution:
+    description: Fraction of data modifications with a QUERY_TAG identifying the responsible agent, pipeline, or process
+    factor: correlated
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  data_provenance:
+    description: Fraction of datasets with documented source provenance including origin system, collection method, and upstream lineage
+    factor: correlated
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  data_version_coverage:
+    description: Fraction of datasets with Time Travel retention enabled for point-in-time state reconstruction
+    factor: correlated
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  dependency_graph_completeness:
+    description: Fraction of datasets with fully enumerated upstream and downstream dependency relationships
+    factor: correlated
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  impact_analysis_capability:
+    description: Fraction of datasets for which the downstream impact of a schema or content change can be automatically enumerated
+    factor: correlated
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  lineage_completeness:
+    description: Fraction of datasets with documented end-to-end lineage from source through transformations, at both dataset and column level
+    factor: correlated
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  pipeline_execution_audit:
+    description: Fraction of pipeline runs with immutable execution records capturing inputs, parameters, outputs, and completion status
+    factor: correlated
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  record_level_traceability:
+    description: Fraction of records with a unique correlation identifier enabling trace-back to their originating source record
+    factor: correlated
     scope: schema
     implementations: [snowflake, postgres]
 
@@ -349,26 +330,58 @@ requirements:
     scope: schema
     implementations: [snowflake, postgres]
 
-  uniqueness:
-    description: Fraction of duplicate records across scoped key columns
-    factor: clean
-    scope: table
-    implementations: [snowflake, postgres]
+  # ── current ────────────────────────────────────────────────────────────
 
-  unit_of_measure_declaration:
-    description: Fraction of numeric fields with explicit unit of measure declarations
-    factor: contextual
+  change_detection:
+    description: Fraction of tables with change tracking and streams enabled
+    factor: current
     scope: schema
     implementations: [snowflake, postgres]
 
-  value_range_validity:
-    description: Fraction of numeric column values that fall within declared valid ranges or domain boundaries
-    factor: clean
-    scope: column
+  data_freshness:
+    description: Fraction of data assets with a declared freshness SLA that are within their defined freshness window
+    factor: current
+    scope: schema
     implementations: [snowflake, postgres]
 
-  vector_index_coverage:
-    description: Fraction of embedding collections with a vector similarity index built and maintained
-    factor: consumable
+  feature_refresh_compliance:
+    description: Fraction of dynamic tables whose scheduling state is active and whose data_timestamp is within the configured staleness threshold (hours)
+    factor: current
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  incremental_update_coverage:
+    description: Fraction of data pipelines that use incremental processing (CDC or streaming) rather than full-reload extraction
+    factor: current
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  point_in_time_correctness:
+    description: Fraction of feature datasets that support point-in-time joins preventing future data leakage
+    factor: current
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  propagation_latency_compliance:
+    description: Fraction of dynamic tables whose observed lag (now - data_timestamp) is within the caller's freshness SLA (hours)
+    factor: current
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  schema_evolution_tracking:
+    description: Fraction of base tables with column-level change history observable in SNOWFLAKE.ACCOUNT_USAGE.COLUMNS
+    factor: current
+    scope: schema
+    implementations: [snowflake, postgres]
+
+  temporal_referential_integrity:
+    description: Fraction of records with valid, non-null event timestamps traceable to source system origination time
+    factor: current
+    scope: table
+    implementations: [snowflake, postgres]
+
+  training_serving_parity:
+    description: Fraction of ML features with consistent computation logic between training (batch) and serving (real-time) paths
+    factor: current
     scope: schema
     implementations: [snowflake, postgres]

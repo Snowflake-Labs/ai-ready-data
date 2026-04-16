@@ -2,14 +2,11 @@
 
 ## Introduction
 
-The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means. The six factors of AI-ready data provide criteria and requirements to help you evaluate your data, pipelines, and platforms against the demands of AI workloads.
+The **AI-Ready Data Framework** is an open standard that defines what "AI-ready" actually means — six factors, 62 measurable requirements, and five workload profiles that apply to any data platform.
 
-This repo contains two things:
+The **AI-Ready Data Agent** is an installable skill that puts the framework to work. Point it at your data estate, tell it your workload — RAG, agents, feature serving, or training — and it scores every requirement, surfaces gaps, and guides you through remediation.
 
-1. **The framework** — six factors, 62 measurable requirements, and five workload profiles that define AI-readiness as a platform-agnostic standard.
-2. **The `ai-ready-data` skill** — an installable agent skill that can scan your data estate, assess specific assets against a profile, score every requirement, and guide you through remediation. Point a coding agent at this repo and say "assess my data for RAG readiness" — it handles the rest.
-
-Use the framework to understand what matters. Use the skill to measure where you stand and fix what doesn't pass.
+The framework defines what to measure. The agent measures it and fixes what doesn't pass.
 
 ### Background
 
@@ -42,9 +39,11 @@ Each factor is backed by a set of measurable **requirements** — specific, plat
 
 The factor markdown files above describe the *why* and *what* of each factor in prose. The manifest provides the machine-readable counterpart: every requirement has a unique key, a description, a factor, and a scope (schema, table, or column). All tests return a normalized score between 0 and 1, making it straightforward to build automated assessments or dashboards on top of the framework.
 
-## AI-Ready Data Skill
+## AI-Ready Data Agent (Skill)
 
-An installable skill that any coding agent can dynamically load and execute. Scan your data estate for prioritization, assess specific assets against a profile, and get a scored report across the six factors of AI-ready data with guided remediation.
+An installable skill for coding agents. Use it to scan your data estate for prioritization, assess specific assets against a profile, and get a scored report across the six factors of AI-ready data with guided remediation.
+
+Currently supports Snowflake. Looking for contributions to extend to other platforms.
 
 ### Quick Start
 
@@ -208,6 +207,24 @@ skills/
       <a href="https://github.com/jacobprall">
         <img src="https://github.com/jacobprall.png" width="80px;" alt="jacobprall"/>
         <br /><sub><b>Jacob Prall</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ved1985prakash3">
+        <img src="https://github.com/ved1985prakash3.png" width="80px;" alt="ved1985prakash3"/>
+        <br /><sub><b>Ved Prakash</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/rajivgupta780184">
+        <img src="https://github.com/rajivgupta780184.png" width="80px;" alt="rajivgupta780184"/>
+        <br /><sub><b>Rajiv Gupta</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/madhiceg">
+        <img src="https://github.com/madhiceg.png" width="80px;" alt="madhiceg"/>
+        <br /><sub><b>Madhivanan Anbalagan</b></sub>
       </a>
     </td>
   </tr>

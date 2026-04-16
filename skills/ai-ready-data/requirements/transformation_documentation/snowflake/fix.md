@@ -8,20 +8,20 @@ Snowflake supports `COMMENT ON` for views, dynamic tables, and materialized view
 
 There are no automated fixes — each transformation's comment must be authored by someone who understands the logic. Use the diagnostic query to identify which objects need documentation.
 
-## Remediation: Add a comment to a view
+## Fix: Add a comment to a view
 
 ```sql
-COMMENT ON VIEW {{ database }}.{{ schema }}.{{ table_name }} IS 'Describe transformation logic, input sources, and output purpose here.';
+COMMENT ON VIEW {{ database }}.{{ schema }}.{{ asset }} IS 'Describe transformation logic, input sources, and output purpose here.';
 ```
 
-## Remediation: Add a comment to a dynamic table
+## Fix: Add a comment to a dynamic table
 
 ```sql
-COMMENT ON DYNAMIC TABLE {{ database }}.{{ schema }}.{{ table_name }} IS 'Describe transformation logic, input sources, and output purpose here.';
+COMMENT ON DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }} IS 'Describe transformation logic, input sources, and output purpose here.';
 ```
 
-## Remediation: Add a comment to a materialized view
+## Fix: Add a comment to a materialized view
 
 ```sql
-COMMENT ON MATERIALIZED VIEW {{ database }}.{{ schema }}.{{ table_name }} IS 'Describe transformation logic, input sources, and output purpose here.';
+COMMENT ON MATERIALIZED VIEW {{ database }}.{{ schema }}.{{ asset }} IS 'Describe transformation logic, input sources, and output purpose here.';
 ```

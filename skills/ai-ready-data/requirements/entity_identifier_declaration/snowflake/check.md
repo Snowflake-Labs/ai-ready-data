@@ -1,62 +1,35 @@
 # Check: entity_identifier_declaration
 
-Fraction of entities or datasets with explicitly declared primary or natural key definitions.
+Fraction of base tables in the schema that have at least one PRIMARY KEY or UNIQUE constraint declared.
 
 ## Context
 
-Checks base tables for primary key or unique constraints in `information_schema.table_constraints`. Primary key constraints in Snowflake are not enforced — they are metadata hints. A table with either a PRIMARY KEY or UNIQUE constraint counts as having an identifier declared.
+Uses `information_schema.table_constraints` with `constraint_type IN ('PRIMARY KEY','UNIQUE')` to identify tables with an entity-identifier declaration. Primary key and unique constraints in Snowflake are **not enforced** — they are metadata hints — but they still count here because they express the author's intent about the entity's identity.
 
-A score of 1.0 means every base table in the schema has at least one primary key or unique constraint declared.
+A score of 1.0 means every base table in the schema carries at least one identifier declaration.
+
+Returns NULL (N/A) when the schema contains no base tables.
 
 ## SQL
 
 ```sql
 WITH tables_in_scope AS (
-    SELECT
-        t.table_catalog,
-        t.table_schema,
-        t.table_name
-    FROM {{ database }}.information_schema.tables t
-    WHERE t.table_schema = '{{ schema }}'
-        AND t.table_type = 'BASE TABLE'
-),
--- Check for primary key constraints
-pk_constraints AS (
-    SELECT DISTINCT
-        tc.table_catalog,
-        tc.table_schema,
-        tc.table_name
-    FROM {{ database }}.information_schema.table_constraints tc
-    WHERE tc.table_schema = '{{ schema }}'
-        AND tc.constraint_type = 'PRIMARY KEY'
-),
--- Check for unique constraints (often used as entity identifiers)
-unique_constraints AS (
-    SELECT DISTINCT
-        tc.table_catalog,
-        tc.table_schema,
-        tc.table_name
-    FROM {{ database }}.information_schema.table_constraints tc
-    WHERE tc.table_schema = '{{ schema }}'
-        AND tc.constraint_type = 'UNIQUE'
+    SELECT UPPER(table_name) AS table_name
+    FROM {{ database }}.information_schema.tables
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
+      AND table_type = 'BASE TABLE'
 ),
 tables_with_identifiers AS (
-    SELECT DISTINCT t.table_name
-    FROM tables_in_scope t
-    LEFT JOIN pk_constraints pk 
-        ON t.table_catalog = pk.table_catalog 
-        AND t.table_schema = pk.table_schema 
-        AND t.table_name = pk.table_name
-    LEFT JOIN unique_constraints uq 
-        ON t.table_catalog = uq.table_catalog 
-        AND t.table_schema = uq.table_schema 
-        AND t.table_name = uq.table_name
-    WHERE pk.table_name IS NOT NULL 
-        OR uq.table_name IS NOT NULL
+    SELECT DISTINCT UPPER(table_name) AS table_name
+    FROM {{ database }}.information_schema.table_constraints
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
+      AND constraint_type IN ('PRIMARY KEY','UNIQUE')
 )
 SELECT
-    (SELECT COUNT(*) FROM tables_with_identifiers) AS tables_with_pk,
-    (SELECT COUNT(*) FROM tables_in_scope) AS total_tables,
-    (SELECT COUNT(*) FROM tables_with_identifiers)::FLOAT / 
-        NULLIF((SELECT COUNT(*) FROM tables_in_scope)::FLOAT, 0) AS value
+    COUNT_IF(t.table_name IN (SELECT table_name FROM tables_with_identifiers))
+        AS tables_with_identifiers,
+    COUNT(*) AS total_tables,
+    COUNT_IF(t.table_name IN (SELECT table_name FROM tables_with_identifiers))::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM tables_in_scope t
 ```

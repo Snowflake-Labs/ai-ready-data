@@ -10,20 +10,33 @@ Two approaches, in order of preference:
 
 For schemas with many undocumented columns, consider using the `semantic_documentation` requirement's semantic view builder workflow, which creates comprehensive machine-readable metadata in a single pass.
 
-## Remediation: Add column comments
+Before creating the tag, check whether it already exists:
+
+```sql
+SHOW TAGS LIKE '{{ tag_name }}' IN SCHEMA {{ database }}.{{ schema }};
+```
+
+If rows are returned, skip the CREATE and go straight to the apply step.
+
+`account_usage.tag_references` has approximately 2-hour latency — recently applied tags may not appear in the check immediately.
+
+## Fix: Add column comments
 
 ```sql
 COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ asset }}.{{ column }} IS '{{ comment }}';
 ```
 
-## Remediation: Create a glossary tag and apply it
+## Fix: Create a glossary tag
 
 ```sql
-CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.business_term
-    COMMENT = 'Business glossary term definition';
+CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
+    COMMENT = '{{ comment }}';
 ```
+
+## Fix: Apply the glossary tag to a column
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
-ALTER COLUMN {{ column }} SET TAG business_term = '{{ tag_value }}';
+MODIFY COLUMN {{ column }}
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}';
 ```

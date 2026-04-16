@@ -1,33 +1,36 @@
 # Check: column_masking
 
-Fraction of PII columns with masking policies applied.
+Fraction of PII-candidate columns in the schema with a masking policy attached.
 
 ## Context
 
-Identifies PII columns by name-pattern heuristic (`%email%`, `%phone%`, `%ssn%`, `%password%`, `%credit_card%`, `%address%`) and checks whether each has a masking policy. This is a narrower PII pattern set than `anonymization_effectiveness` — focused on high-confidence PII indicators.
+Identifies PII columns by name regex and checks `snowflake.account_usage.policy_references` for a `MASKING_POLICY` on each. Compared to `anonymization_effectiveness` this check uses a **narrower, higher-confidence PII pattern** focused on directly identifying or credential-bearing columns.
 
-`account_usage.policy_references` has approximately 2-hour latency. Uses `ref_column_name` and `ref_entity_name` (not `column_name` / `table_name`).
+Pattern matching uses `REGEXP_LIKE` with anchored underscores so `_` is not treated as a LIKE wildcard.
+
+`account_usage.policy_references` has approximately 2-hour latency. It exposes column attachment via `ref_column_name` and `ref_entity_name` (not `column_name` / `table_name`).
 
 Delegates to the `data-policy` skill for comprehensive masking policy management.
+
+Requires `{{ pii_patterns }}` — a regex (POSIX ERE-compatible) that matches PII column names. Default for this check: `'(^|_)(email|phone|ssn|password|credit_card|address)($|_)'`.
+
+Returns NULL (N/A) when the schema contains no PII-candidate columns.
 
 ## SQL
 
 ```sql
 WITH pii_columns AS (
-    SELECT c.table_name, c.column_name
+    SELECT
+        UPPER(c.table_name)  AS table_name,
+        UPPER(c.column_name) AS column_name
     FROM {{ database }}.information_schema.columns c
     JOIN {{ database }}.information_schema.tables t
-        ON c.table_name = t.table_name AND c.table_schema = t.table_schema
-    WHERE c.table_schema = '{{ schema }}'
+        ON c.table_catalog = t.table_catalog
+        AND c.table_schema = t.table_schema
+        AND c.table_name   = t.table_name
+    WHERE UPPER(c.table_schema) = UPPER('{{ schema }}')
         AND t.table_type = 'BASE TABLE'
-        AND (
-            LOWER(c.column_name) LIKE '%email%'
-            OR LOWER(c.column_name) LIKE '%phone%'
-            OR LOWER(c.column_name) LIKE '%ssn%'
-            OR LOWER(c.column_name) LIKE '%password%'
-            OR LOWER(c.column_name) LIKE '%credit_card%'
-            OR LOWER(c.column_name) LIKE '%address%'
-        )
+        AND REGEXP_LIKE(LOWER(c.column_name), '{{ pii_patterns }}')
 ),
 masked_columns AS (
     SELECT DISTINCT
@@ -37,18 +40,13 @@ masked_columns AS (
     WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
         AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
         AND policy_kind = 'MASKING_POLICY'
-),
-coverage AS (
-    SELECT
-        COUNT(*) AS pii_count,
-        COUNT(m.column_name) AS masked_count
-    FROM pii_columns p
-    LEFT JOIN masked_columns m
-        ON UPPER(p.table_name) = m.table_name AND UPPER(p.column_name) = m.column_name
 )
 SELECT
-    masked_count AS masked_pii_columns,
-    pii_count AS total_pii_columns,
-    masked_count::FLOAT / NULLIF(pii_count::FLOAT, 0) AS value
-FROM coverage
+    COUNT(m.column_name) AS masked_pii_columns,
+    COUNT(*)             AS total_pii_columns,
+    COUNT(m.column_name)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM pii_columns pc
+LEFT JOIN masked_columns m
+    ON pc.table_name = m.table_name
+   AND pc.column_name = m.column_name
 ```

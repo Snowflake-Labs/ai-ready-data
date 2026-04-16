@@ -1,37 +1,41 @@
 # Check: schema_evolution_tracking
 
-Fraction of base tables in the schema with Time Travel retention enabled, allowing historical schema queries.
+Fraction of base tables whose schema history is observable via `SNOWFLAKE.ACCOUNT_USAGE.COLUMNS`.
 
 ## Context
 
-Uses `information_schema.tables` to check each base table's `retention_time`. A value greater than 0 means Time Travel is enabled and the table supports historical schema queries via `AT`/`BEFORE` clauses.
+AI-ready data products support programmatic reasoning about schema change over time. In Snowflake, column lifecycle (adds, drops, type changes) is captured in `SNOWFLAKE.ACCOUNT_USAGE.COLUMNS`, which records every historical column version with `created` and `deleted` timestamps.
 
-A score of 1.0 means every base table in the schema has Time Travel retention enabled. Tables with `retention_time = 0` cannot be queried historically and have no schema version tracking.
+A base table is considered "tracked" when the view has at least one row for it — either a currently-present column or a historically-dropped one. This is a capability check, not a churn measure: the presence of history is what matters.
+
+Caveats:
+
+- `ACCOUNT_USAGE.COLUMNS` has approximately **2-hour latency**. Very new tables won't appear yet and will look untracked.
+- Requires `IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE`.
+- Distinct from `data_version_coverage` (which measures Time Travel retention): a table can have Time Travel without column history, or vice versa.
+
+Returns NULL (N/A) when the schema contains no base tables.
 
 ## SQL
 
 ```sql
-WITH tables_in_scope AS (
-    SELECT 
-        table_catalog,
-        table_schema,
-        table_name,
-        created,
-        last_altered,
-        retention_time
+WITH base_tables AS (
+    SELECT UPPER(table_name) AS table_name
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
         AND table_type = 'BASE TABLE'
 ),
--- Tables with Time Travel retention > 0 (enables historical queries)
-tables_with_retention AS (
-    SELECT table_name
-    FROM tables_in_scope
-    WHERE retention_time > 0
+tracked_tables AS (
+    SELECT DISTINCT UPPER(table_name) AS table_name
+    FROM snowflake.account_usage.columns
+    WHERE UPPER(table_catalog) = UPPER('{{ database }}')
+        AND UPPER(table_schema) = UPPER('{{ schema }}')
 )
 SELECT
-    (SELECT COUNT(*) FROM tables_with_retention) AS tables_with_tracking,
-    (SELECT COUNT(*) FROM tables_in_scope) AS total_tables,
-    (SELECT COUNT(*) FROM tables_with_retention)::FLOAT / 
-        NULLIF((SELECT COUNT(*) FROM tables_in_scope)::FLOAT, 0) AS value
+    COUNT_IF(b.table_name IN (SELECT table_name FROM tracked_tables))
+        AS tables_with_history,
+    COUNT(*) AS total_tables,
+    COUNT_IF(b.table_name IN (SELECT table_name FROM tracked_tables))::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM base_tables b
 ```

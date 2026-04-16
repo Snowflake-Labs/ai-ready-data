@@ -1,36 +1,34 @@
 # Check: data_completeness
 
-Fraction of non-null values for a given column in the target table.
+Fraction of non-null values for a given column in the target table. A score of 1.0 means no nulls exist in the column.
 
 ## Context
 
-Computes `1.0 - (null_count / total_count)` for a single column, returning a value between 0.0 (entirely null) and 1.0 (fully complete). A score of 1.0 means no nulls exist in the column.
+Computes `1.0 - (null_count / total_count)` for a single column. For tables with more than ~1M rows, use the **sampled** variant to avoid a full table scan. The sampled check uses `TABLESAMPLE ({{ sample_rows }} ROWS)` — suitable for triage, not for gating a `SET NOT NULL` operation.
 
-For tables with more than 1 million rows, use the sampled variant to avoid a full table scan. The sampled check uses `TABLESAMPLE ({{ sample_rows }} ROWS)` to estimate completeness from a subset — accurate enough for triage but not suitable as a final gate before applying a NOT NULL constraint.
+NULL-counting treats NULL as NULL (no implicit type coercion). For VARIANT/JSON null handling, wrap the column in `TYPEOF(col) = 'NULL_VALUE'` instead.
 
 ## SQL
 
-### Full scan
-
-Use this for smaller tables or when you need an exact completeness score.
+### Full scan (primary)
 
 ```sql
 SELECT
-    '{{ asset }}' AS table_name,
+    '{{ asset }}'  AS table_name,
     '{{ column }}' AS column_name,
-    1.0 - (COUNT_IF({{ column }} IS NULL) * 1.0 / NULLIF(COUNT(*), 0)) AS value
+    1.0 - (COUNT_IF({{ column }} IS NULL)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0)) AS value
 FROM {{ database }}.{{ schema }}.{{ asset }}
 ```
 
-### Sampled
+### Sampled (variant)
 
-Use this for tables over ~1M rows to reduce scan cost. The `{{ sample_rows }}` placeholder controls sample size.
+Use this for tables over ~1M rows to reduce scan cost. `{{ sample_rows }}` controls sample size.
 
 ```sql
 SELECT
-    '{{ asset }}' AS table_name,
+    '{{ asset }}'  AS table_name,
     '{{ column }}' AS column_name,
-    1.0 - (COUNT_IF({{ column }} IS NULL) * 1.0 / NULLIF(COUNT(*), 0)) AS value
+    1.0 - (COUNT_IF({{ column }} IS NULL)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0)) AS value
 FROM {{ database }}.{{ schema }}.{{ asset }}
     TABLESAMPLE ({{ sample_rows }} ROWS)
 ```

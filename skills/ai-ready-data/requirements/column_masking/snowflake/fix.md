@@ -18,7 +18,7 @@ If rows are returned, skip policy creation.
 
 `account_usage.policy_references` has approximately 2-hour latency — re-running the check immediately after applying a policy may not reflect the change.
 
-## Remediation: Create a masking policy
+## Fix: Create a masking policy
 
 ```sql
 CREATE MASKING POLICY IF NOT EXISTS {{ database }}.{{ schema }}.{{ policy_name }}
@@ -29,10 +29,10 @@ CASE
 END
 ```
 
-## Remediation: Apply masking policy to a column
+## Fix: Apply masking policy to a column
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
 MODIFY COLUMN {{ column }}
-SET MASKING POLICY {{ policy_name }}
+SET MASKING POLICY {{ database }}.{{ schema }}.{{ policy_name }}
 ```
