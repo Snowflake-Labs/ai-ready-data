@@ -11,17 +11,17 @@ There are no automated fixes — each transformation's comment must be authored 
 ## Fix: Add a comment to a view
 
 ```sql
-COMMENT ON VIEW {{ database }}.{{ schema }}.{{ table_name }} IS 'Describe transformation logic, input sources, and output purpose here.';
+COMMENT ON VIEW {{ database }}.{{ schema }}.{{ asset }} IS 'Describe transformation logic, input sources, and output purpose here.';
 ```
 
 ## Fix: Add a comment to a dynamic table
 
 ```sql
-COMMENT ON DYNAMIC TABLE {{ database }}.{{ schema }}.{{ table_name }} IS 'Describe transformation logic, input sources, and output purpose here.';
+COMMENT ON DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }} IS 'Describe transformation logic, input sources, and output purpose here.';
 ```
 
 ## Fix: Add a comment to a materialized view
 
 ```sql
-COMMENT ON MATERIALIZED VIEW {{ database }}.{{ schema }}.{{ table_name }} IS 'Describe transformation logic, input sources, and output purpose here.';
+COMMENT ON MATERIALIZED VIEW {{ database }}.{{ schema }}.{{ asset }} IS 'Describe transformation logic, input sources, and output purpose here.';
 ```

@@ -1,6 +1,6 @@
 # Fix: entity_identifier_declaration
 
-Guidance for declaring entity identifiers on tables that lack them.
+Declare entity identifiers on tables that lack them.
 
 ## Context
 
@@ -8,19 +8,38 @@ Snowflake primary key and unique constraints are **not enforced** — they serve
 
 Choose the column(s) that uniquely identify each row. If no single column is sufficient, use a composite key. Prefer `PRIMARY KEY` over `UNIQUE` when the column(s) represent the main entity identifier.
 
-## SQL
+Before applying, check whether a constraint of the same name already exists — Snowflake rejects duplicate constraint names:
 
 ```sql
--- Add a primary key on a single column
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} ADD PRIMARY KEY ({{ column }});
+SELECT 1 FROM {{ database }}.information_schema.table_constraints
+WHERE constraint_schema = '{{ schema }}'
+  AND table_name = '{{ asset }}'
+  AND constraint_name = '{{ constraint_name }}';
 ```
 
-```sql
--- Add a primary key on multiple columns (composite key)
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} ADD PRIMARY KEY ({{ column1 }}, {{ column2 }});
-```
+Skip the ALTER if this returns a row.
+
+## Fix: Add a primary key on a single column
 
 ```sql
--- Add a unique constraint instead (when PK is not appropriate)
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} ADD UNIQUE ({{ column }});
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
+ADD CONSTRAINT {{ constraint_name }} PRIMARY KEY ({{ column }});
+```
+
+## Fix: Add a composite primary key
+
+Use `{{ key_columns }}` as a comma-separated list of column names (e.g. `order_id, line_number`):
+
+```sql
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
+ADD CONSTRAINT {{ constraint_name }} PRIMARY KEY ({{ key_columns }});
+```
+
+## Fix: Add a unique constraint
+
+Use when the column is a natural key but not the main entity identifier:
+
+```sql
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
+ADD CONSTRAINT {{ constraint_name }} UNIQUE ({{ column }});
 ```

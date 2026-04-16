@@ -1,27 +1,38 @@
 # Check: feature_refresh_compliance
 
-Fraction of served features updated within their defined staleness tolerance threshold.
+Fraction of dynamic tables in the schema whose most recent refresh is within the configured staleness tolerance and whose scheduling state is active.
 
 ## Context
 
-Uses `information_schema.tables` to count dynamic tables in the schema. Accurate measurement requires running `SHOW DYNAMIC TABLES` followed by `RESULT_SCAN` in the same session to inspect `scheduling_state` and compare actual lag to `target_lag`.
+Served features in Snowflake are typically materialized via dynamic tables. A dynamic table is "compliant" when (a) its `scheduling_state` indicates an active refresh schedule (not suspended), and (b) its `data_timestamp` (the logical freshness watermark) is within the caller's staleness tolerance (`{{ staleness_threshold_hours }}`).
 
-Requires SHOW DYNAMIC TABLES + RESULT_SCAN for accurate measurement.
+Requires `SHOW DYNAMIC TABLES` + `RESULT_SCAN` in the **same session** — `scheduling_state` and `data_timestamp` are not exposed in `information_schema.tables`.
+
+Returns NULL (N/A) when the schema contains no dynamic tables.
 
 ## SQL
 
 ```sql
-WITH dynamic_tables AS (
-    SELECT COUNT(*) AS cnt
-    FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'DYNAMIC TABLE'
+SHOW DYNAMIC TABLES IN SCHEMA {{ database }}.{{ schema }};
+
+WITH dt AS (
+    SELECT
+        "name" AS table_name,
+        "scheduling_state" AS scheduling_state,
+        "data_timestamp" AS data_timestamp
+    FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 )
 SELECT
-    (SELECT cnt FROM dynamic_tables) AS total_dynamic_tables,
-    -- Assume compliant unless SHOW DYNAMIC TABLES reveals otherwise
-    1.0 AS value
--- For accurate results, run:
--- SHOW DYNAMIC TABLES IN SCHEMA {{ database }}.{{ schema }};
--- Then check "scheduling_state" = 'RUNNING' and compare actual lag to target_lag
+    COUNT_IF(
+        scheduling_state ILIKE '%RUNNING%'
+        AND data_timestamp IS NOT NULL
+        AND DATEDIFF('hour', data_timestamp::TIMESTAMP_NTZ, CURRENT_TIMESTAMP()) <= {{ staleness_threshold_hours }}
+    ) AS fresh_features,
+    COUNT(*) AS total_dynamic_tables,
+    COUNT_IF(
+        scheduling_state ILIKE '%RUNNING%'
+        AND data_timestamp IS NOT NULL
+        AND DATEDIFF('hour', data_timestamp::TIMESTAMP_NTZ, CURRENT_TIMESTAMP()) <= {{ staleness_threshold_hours }}
+    )::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM dt
 ```

@@ -21,7 +21,12 @@ Before non-idempotent fix operations, run the guard query. Skip if the desired s
 |---|---|---|
 | CREATE TAG | `SHOW TAGS LIKE '{name}' IN SCHEMA {schema}` | Has rows |
 | CREATE MASKING POLICY | `SHOW MASKING POLICIES LIKE '{name}' IN SCHEMA {schema}` | Has rows |
+| CREATE ROW ACCESS POLICY | `SHOW ROW ACCESS POLICIES LIKE '{name}' IN SCHEMA {schema}` | Has rows |
 | CREATE STREAM | `SHOW STREAMS LIKE '{name}' IN SCHEMA {schema}` | Has rows |
+| ALTER TABLE ADD CONSTRAINT | `SELECT 1 FROM information_schema.table_constraints WHERE table_name = '{asset}' AND constraint_name = '{name}'` | Has rows |
+| ALTER TABLE CLUSTER BY | `SELECT clustering_key FROM information_schema.tables WHERE table_name = '{asset}'` | Already set to the same key (warn and prompt if different) |
+| ALTER TABLE ADD SEARCH OPTIMIZATION | No guard needed | Re-running is a silent no-op |
+| ALTER TABLE SET CHANGE_TRACKING = TRUE | No guard needed | Re-running is a silent no-op |
 | ALTER COLUMN SET NOT NULL | `DESCRIBE TABLE {asset}` | Column already NOT NULL |
 | CREATE SEMANTIC VIEW | No guard needed | `CREATE OR REPLACE` is safe |
 

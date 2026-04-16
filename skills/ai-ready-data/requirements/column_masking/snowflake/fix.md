@@ -34,5 +34,5 @@ END
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
 MODIFY COLUMN {{ column }}
-SET MASKING POLICY {{ policy_name }}
+SET MASKING POLICY {{ database }}.{{ schema }}.{{ policy_name }}
 ```

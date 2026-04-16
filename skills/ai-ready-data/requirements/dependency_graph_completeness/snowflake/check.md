@@ -1,39 +1,42 @@
 # Check: dependency_graph_completeness
 
-Fraction of datasets with fully enumerated upstream and downstream dependency relationships.
+Fraction of tables, views, and dynamic tables in the schema that participate in at least one documented dependency relationship.
 
 ## Context
 
-Uses `snowflake.account_usage.object_dependencies` to identify tables, views, and dynamic tables that appear as either a referencing or referenced object. Scoped to a single schema.
+Uses `snowflake.account_usage.object_dependencies` to identify objects that appear on either side of a dependency edge (as the referencing or the referenced object). A score of 1.0 means every object in the schema has at least one documented relationship.
 
-A score of 1.0 means every object in the schema participates in at least one documented dependency relationship. Objects with no dependency records may be standalone tables with no views or downstream consumers, or they may lack dependency tracking because they were loaded via external tooling that bypasses Snowflake lineage capture.
+Objects with no dependency records may be standalone (no consumers and no upstream references), or they may bypass Snowflake lineage capture — e.g. external ELT tools that materialize tables via direct inserts.
+
+`account_usage.object_dependencies` has approximately 2-hour latency.
+
+Returns NULL (N/A) when the schema contains no in-scope objects.
 
 ## SQL
 
 ```sql
-WITH tables_in_scope AS (
-    SELECT DISTINCT table_name
+WITH objects_in_scope AS (
+    SELECT DISTINCT UPPER(table_name) AS object_name
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type IN ('BASE TABLE', 'VIEW', 'DYNAMIC TABLE')
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
+        AND table_type IN ('BASE TABLE','VIEW','DYNAMIC TABLE')
 ),
-tables_with_dependencies AS (
-    SELECT DISTINCT referencing_object_name AS table_name
+objects_with_dependencies AS (
+    SELECT DISTINCT UPPER(referencing_object_name) AS object_name
     FROM snowflake.account_usage.object_dependencies
     WHERE UPPER(referencing_database) = UPPER('{{ database }}')
-        AND UPPER(referencing_schema) = UPPER('{{ schema }}')
+        AND UPPER(referencing_schema)   = UPPER('{{ schema }}')
     UNION
-    SELECT DISTINCT referenced_object_name AS table_name
+    SELECT DISTINCT UPPER(referenced_object_name) AS object_name
     FROM snowflake.account_usage.object_dependencies
     WHERE UPPER(referenced_database) = UPPER('{{ database }}')
-        AND UPPER(referenced_schema) = UPPER('{{ schema }}')
+        AND UPPER(referenced_schema)   = UPPER('{{ schema }}')
 )
 SELECT
-    (SELECT COUNT(*) FROM tables_in_scope t 
-     WHERE t.table_name IN (SELECT table_name FROM tables_with_dependencies)
-    ) AS tables_with_dependencies,
-    (SELECT COUNT(*) FROM tables_in_scope) AS total_tables,
-    (SELECT COUNT(*) FROM tables_in_scope t 
-     WHERE t.table_name IN (SELECT table_name FROM tables_with_dependencies)
-    )::FLOAT / NULLIF((SELECT COUNT(*) FROM tables_in_scope)::FLOAT, 0) AS value
+    COUNT_IF(o.object_name IN (SELECT object_name FROM objects_with_dependencies))
+        AS objects_with_dependencies,
+    COUNT(*) AS total_objects,
+    COUNT_IF(o.object_name IN (SELECT object_name FROM objects_with_dependencies))::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM objects_in_scope o
 ```

@@ -11,5 +11,5 @@ Alternatively, columns can be renamed to include unit suffixes (e.g., `revenue` 
 ## Fix: Add unit-of-measure comment to a column
 
 ```sql
-COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ table }}.{{ column }} IS '{{ comment_with_unit }}';
+COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ asset }}.{{ column }} IS '{{ comment_with_unit }}';
 ```

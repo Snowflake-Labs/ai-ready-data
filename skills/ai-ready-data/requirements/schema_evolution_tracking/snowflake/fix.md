@@ -11,7 +11,7 @@ Enterprise Edition accounts support up to 90 days of retention; Standard Edition
 ## Fix: Enable Time Travel on a table
 
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} SET DATA_RETENTION_TIME_IN_DAYS = 1;
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} SET DATA_RETENTION_TIME_IN_DAYS = {{ retention_days }};
 ```
 
 ## Fix: Enable Time Travel at schema level

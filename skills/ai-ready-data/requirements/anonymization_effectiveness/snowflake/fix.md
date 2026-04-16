@@ -12,11 +12,16 @@ Masking policies in Snowflake should use `IS_ROLE_IN_SESSION()`, not `CURRENT_RO
 
 ## Fix: Run sensitive data classification first
 
-Use Snowflake's built-in classification to identify PII beyond what name-pattern heuristics catch:
+Use Snowflake's built-in classification to identify PII beyond what name-pattern heuristics catch. `SYSTEM$CLASSIFY` is a scalar SQL function that returns a semi-structured classification report for the target table:
 
 ```sql
-SELECT * FROM TABLE({{ database }}.information_schema.{{ asset }}!SYSTEM$CLASSIFY());
+SELECT SYSTEM$CLASSIFY(
+    '{{ database }}.{{ schema }}.{{ asset }}',
+    {'auto_tag': false}
+) AS classification;
 ```
+
+To persist the output for downstream review, wrap the call in an INSERT into a governance log table, or use the Classification Profile flow documented by the `sensitive-data-classification` skill.
 
 ## Fix: Apply masking policies
 

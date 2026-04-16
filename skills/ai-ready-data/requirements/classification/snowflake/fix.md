@@ -28,7 +28,7 @@ CREATE TAG IF NOT EXISTS {{ database }}.{{ schema }}.{{ tag_name }}
 
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```
 
 ## Fix: Apply tag to a column
@@ -36,5 +36,5 @@ SET TAG {{ tag_name }} = '{{ tag_value }}'
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
 MODIFY COLUMN {{ column }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```

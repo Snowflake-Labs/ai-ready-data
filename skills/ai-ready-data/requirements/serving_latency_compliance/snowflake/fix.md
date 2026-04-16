@@ -14,12 +14,14 @@ There is no single DDL fix for latency compliance — optimization depends on th
 
 ## Fix: Add clustering key
 
+`ALTER TABLE ... CLUSTER BY` silently replaces any existing clustering key. Inspect the current key via `SHOW TABLES LIKE '{{ asset }}'` before applying.
+
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} CLUSTER BY ({{ cluster_columns }});
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} CLUSTER BY ({{ clustering_columns }});
 ```
 
 ## Fix: Resize warehouse
 
 ```sql
-ALTER WAREHOUSE {{ warehouse }} SET WAREHOUSE_SIZE = '{{ size }}';
+ALTER WAREHOUSE {{ warehouse }} SET WAREHOUSE_SIZE = '{{ warehouse_size }}';
 ```

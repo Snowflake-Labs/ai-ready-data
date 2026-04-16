@@ -20,5 +20,5 @@ GRANT IMPORTED PRIVILEGES ON DATABASE SNOWFLAKE TO ROLE {{ role }};
 ## Fix: Add a comment to document external dependencies
 
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} SET COMMENT = 'Upstream: <source_system> | Pipeline: <pipeline_name>';
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} SET COMMENT = 'Upstream: <source_system> | Pipeline: <pipeline_name>';
 ```

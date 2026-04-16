@@ -1,43 +1,35 @@
 # Check: relationship_declaration
 
-Fraction of cross-entity references with explicit, machine-readable relationship declarations.
+Fraction of semantic views in the schema that declare at least one RELATIONSHIP between their member tables.
 
 ## Context
 
-Relationships define join paths — ensure they match actual foreign keys.
+Semantic views in Snowflake express join paths via the `RELATIONSHIPS` clause of `CREATE SEMANTIC VIEW`. Without a declared relationship, downstream tools (Cortex Analyst, Text-to-SQL) can't reliably join across the view's member tables.
+
+This check queries `INFORMATION_SCHEMA.SEMANTIC_VIEWS` to enumerate the schema's semantic views, then uses `GET_DDL` to inspect each view's definition for a `RELATIONSHIPS` clause. `GET_DDL` requires read privileges on the semantic view.
+
+`INFORMATION_SCHEMA.SEMANTIC_VIEWS` is not present on accounts that have never been opted into the Snowflake semantic views preview — in that case the query will fail with an object-not-found error and the check should be reported as N/A by the orchestrator.
+
+Returns NULL (N/A) when the schema contains no semantic views.
 
 ## SQL
 
 ```sql
--- check-relationship-declaration.sql
--- Checks if tables in semantic views have relationship declarations
--- Returns: value (float 0-1) - fraction of multi-table semantic views with relationships
-
-WITH semantic_views AS (
+WITH sv AS (
     SELECT
-        table_catalog,
-        table_schema,
-        table_name,
-        comment
-    FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'SEMANTIC VIEW'
-),
--- Count tables referenced in each semantic view via SHOW command would be ideal
--- but we approximate by checking if RELATIONSHIPS keyword exists in definition
-view_relationships AS (
-    SELECT
-        sv.table_name AS semantic_view_name,
-        -- Check if relationships are declared (approximate via definition check)
-        CASE 
-            WHEN sv.comment LIKE '%RELATIONSHIPS%' THEN 1
-            ELSE 0
-        END AS has_relationships
-    FROM semantic_views sv
+        semantic_view_name,
+        GET_DDL(
+            'SEMANTIC VIEW',
+            semantic_view_catalog || '.' || semantic_view_schema || '.' || semantic_view_name
+        ) AS ddl
+    FROM {{ database }}.information_schema.semantic_views
+    WHERE UPPER(semantic_view_schema) = UPPER('{{ schema }}')
+      AND deleted IS NULL
 )
 SELECT
-    COUNT_IF(has_relationships = 1) AS views_with_relationships,
+    COUNT_IF(UPPER(ddl) LIKE '%RELATIONSHIPS%') AS views_with_relationships,
     COUNT(*) AS total_semantic_views,
-    COUNT_IF(has_relationships = 1)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
-FROM view_relationships
+    COUNT_IF(UPPER(ddl) LIKE '%RELATIONSHIPS%')::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM sv
 ```

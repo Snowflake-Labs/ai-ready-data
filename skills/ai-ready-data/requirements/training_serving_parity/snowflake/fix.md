@@ -13,7 +13,7 @@ True parity verification requires comparing transformation logic across pipeline
 Replace the static base table with a dynamic table that materializes from the same transformation logic used during training.
 
 ```sql
-CREATE OR REPLACE DYNAMIC TABLE {{ database }}.{{ schema }}.{{ table_name }}
+CREATE OR REPLACE DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }}
     TARGET_LAG = '1 hour'
     WAREHOUSE = {{ warehouse }}
 AS

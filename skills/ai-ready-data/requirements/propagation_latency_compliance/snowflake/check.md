@@ -1,31 +1,36 @@
 # Check: propagation_latency_compliance
 
-Fraction of data pipelines where end-to-end propagation latency meets the defined freshness SLA.
+Fraction of dynamic tables whose end-to-end propagation latency (time between `data_timestamp` and now) is within the configured freshness SLA.
 
 ## Context
 
-Checks whether dynamic tables in the target schema exist, as a proxy for pipeline latency compliance. Dynamic tables are Snowflake's declarative pipeline primitive — their presence indicates managed refresh.
+Dynamic tables are Snowflake's declarative pipeline primitive. Each one carries a `target_lag` and a `data_timestamp` (the point-in-time of the data currently materialized). This check compares the observed lag (`now - data_timestamp`) against a caller-supplied `{{ freshness_threshold_hours }}` — a policy-level SLA that may be tighter or looser than the dynamic table's own declared `target_lag`.
 
-A full lag-vs-target comparison requires `SHOW DYNAMIC TABLES` (see diagnostic), since `information_schema.tables` does not expose target lag or scheduling state. This check returns 1.0 when at least one dynamic table exists.
+Requires `SHOW DYNAMIC TABLES` + `RESULT_SCAN` in the **same session** — `data_timestamp` is not exposed in `information_schema.tables`.
 
-Scoped to `{{ database }}.{{ schema }}`.
+Returns NULL (N/A) when the schema contains no dynamic tables.
 
 ## SQL
 
 ```sql
-WITH dynamic_tables AS (
+SHOW DYNAMIC TABLES IN SCHEMA {{ database }}.{{ schema }};
+
+WITH dt AS (
     SELECT
-        table_catalog,
-        table_schema,
-        table_name
-    FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'DYNAMIC TABLE'
+        "name" AS table_name,
+        "scheduling_state" AS scheduling_state,
+        "data_timestamp" AS data_timestamp
+    FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
 )
 SELECT
+    COUNT_IF(
+        data_timestamp IS NOT NULL
+        AND DATEDIFF('hour', data_timestamp::TIMESTAMP_NTZ, CURRENT_TIMESTAMP()) <= {{ freshness_threshold_hours }}
+    ) AS within_sla,
     COUNT(*) AS total_dynamic_tables,
-    -- Note: To get actual lag vs target lag, you need SHOW DYNAMIC TABLES
-    -- This check verifies dynamic tables exist; detailed lag check requires SHOW command
-    COUNT(*)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
-FROM dynamic_tables
+    COUNT_IF(
+        data_timestamp IS NOT NULL
+        AND DATEDIFF('hour', data_timestamp::TIMESTAMP_NTZ, CURRENT_TIMESTAMP()) <= {{ freshness_threshold_hours }}
+    )::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM dt
 ```

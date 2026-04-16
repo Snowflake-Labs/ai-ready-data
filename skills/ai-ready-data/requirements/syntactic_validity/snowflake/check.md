@@ -1,27 +1,30 @@
 # Check: syntactic_validity
 
-Fraction of raw data records that parse without structural errors, including well-formed serialization and correct delimiters.
+Fraction of records whose value in the target column parses as valid JSON.
 
 ## Context
 
-JSON validity uses TRY_PARSE_JSON which returns NULL for invalid JSON. NULL values in the source column are counted as valid (they represent missing data, not malformed data). Use for VARIANT columns or VARCHAR columns containing JSON.
+Uses `TRY_PARSE_JSON`, which returns NULL for inputs that cannot be parsed. NULL source values are excluded from both the numerator and denominator — a missing value is neither a valid nor an invalid JSON document.
 
-A score of 1.0 means every non-null value in the column parses as valid JSON.
+Note: any well-formed JSON literal will parse, including scalars like `42` or `"hello"`. Only run this check on columns that are **intended** to hold JSON documents (VARIANT columns, or VARCHAR/TEXT columns whose contract is "serialized JSON"). Pointing it at arbitrary text will produce inflated scores whenever values happen to be valid JSON scalars.
+
+A score of 1.0 means every non-null value parses as JSON.
 
 ## SQL
 
 ```sql
+WITH col_check AS (
+    SELECT
+        COUNT(*) AS total_rows,
+        COUNT_IF(TRY_PARSE_JSON({{ column }}) IS NOT NULL) AS valid_rows
+    FROM {{ database }}.{{ schema }}.{{ asset }}
+    WHERE {{ column }} IS NOT NULL
+)
 SELECT
     '{{ asset }}' AS table_name,
     '{{ column }}' AS column_name,
-    COUNT(*) AS total_rows,
-    SUM(CASE 
-        WHEN TRY_PARSE_JSON({{ column }}) IS NOT NULL OR {{ column }} IS NULL
-        THEN 1 ELSE 0 
-    END) AS valid_rows,
-    SUM(CASE 
-        WHEN TRY_PARSE_JSON({{ column }}) IS NOT NULL OR {{ column }} IS NULL
-        THEN 1 ELSE 0 
-    END)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
-FROM {{ database }}.{{ schema }}.{{ asset }}
+    total_rows,
+    valid_rows,
+    valid_rows::FLOAT / NULLIF(total_rows::FLOAT, 0) AS value
+FROM col_check
 ```

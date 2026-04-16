@@ -1,12 +1,12 @@
 # Check: native_format_availability
 
-Fraction of datasets stored in consumption-ready formats without requiring runtime format conversion.
+Fraction of in-scope tables that are stored in native Snowflake format (`BASE TABLE` or `DYNAMIC TABLE`) rather than as `EXTERNAL TABLE`.
 
 ## Context
 
-Classifies tables in `information_schema.tables` as NATIVE (`BASE TABLE`, `DYNAMIC TABLE`) or EXTERNAL (`EXTERNAL TABLE`). The score is the fraction of in-scope tables that are native Snowflake format.
+External tables require runtime format conversion and cannot use Snowflake's clustering, search optimization, or Time Travel. For AI workloads that require low-latency access, native storage is preferred — but for large archival datasets an external table in Parquet may be acceptable and cheaper. This check measures structural readiness, not desirability.
 
-Placeholders: `database`, `schema`.
+Returns NULL (N/A) when the schema contains no in-scope tables.
 
 ## SQL
 
@@ -14,15 +14,14 @@ Placeholders: `database`, `schema`.
 WITH tables_in_scope AS (
     SELECT
         table_name,
-        table_type,
         CASE
             WHEN table_type = 'EXTERNAL TABLE' THEN 'EXTERNAL'
-            WHEN table_type IN ('BASE TABLE', 'DYNAMIC TABLE') THEN 'NATIVE'
+            WHEN table_type IN ('BASE TABLE','DYNAMIC TABLE') THEN 'NATIVE'
             ELSE 'OTHER'
         END AS format_type
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type IN ('BASE TABLE', 'DYNAMIC TABLE', 'EXTERNAL TABLE')
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
+        AND table_type IN ('BASE TABLE','DYNAMIC TABLE','EXTERNAL TABLE')
 )
 SELECT
     COUNT_IF(format_type = 'NATIVE') AS native_count,

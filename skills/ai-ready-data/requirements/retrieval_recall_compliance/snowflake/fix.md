@@ -15,5 +15,5 @@ If tables show as `NOT_INDEXED` in the diagnostic:
 ## Fix: Enable search optimization
 
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table_name }} ADD SEARCH OPTIMIZATION;
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} ADD SEARCH OPTIMIZATION;
 ```

@@ -17,7 +17,7 @@ requirements:
     implementations: [snowflake]
 
   data_completeness:
-    description: Fraction of null values across scoped columns
+    description: Fraction of non-null values across scoped columns (1.0 = no nulls)
     factor: clean
     scope: column
     implementations: [snowflake]
@@ -65,7 +65,7 @@ requirements:
     implementations: [snowflake]
 
   uniqueness:
-    description: Fraction of duplicate records across scoped key columns
+    description: Fraction of rows that are unique across scoped key columns (1.0 = no duplicates)
     factor: clean
     scope: table
     implementations: [snowflake]
@@ -153,7 +153,7 @@ requirements:
     implementations: [snowflake]
 
   batch_throughput_sufficiency:
-    description: Fraction of training data pipelines with I/O throughput sufficient to avoid compute idle time
+    description: Fraction of recent COPY loads (last 7 days) that sustained at least the configured rows-per-second throughput
     factor: consumable
     scope: schema
     implementations: [snowflake]
@@ -195,13 +195,13 @@ requirements:
     implementations: [snowflake]
 
   point_lookup_availability:
-    description: Fraction of entity records accessible via low-latency key-based point lookups
+    description: Fraction of base tables with a clustering key defined OR search optimization enabled
     factor: consumable
     scope: schema
     implementations: [snowflake]
 
   retrieval_recall_compliance:
-    description: Fraction of vector search indexes achieving their target recall threshold at required query latency
+    description: Fraction of vector-bearing tables with search optimization enabled (proxy for recall compliance at low latency)
     factor: consumable
     scope: schema
     implementations: [snowflake]
@@ -213,7 +213,7 @@ requirements:
     implementations: [snowflake]
 
   serving_latency_compliance:
-    description: Fraction of data serving endpoints meeting their defined latency SLA at p99
+    description: Fraction of recent successful SELECT queries that read tables in the schema (attributed via access_history) and completed within the configured latency threshold (ms)
     factor: consumable
     scope: schema
     implementations: [snowflake]
@@ -233,7 +233,7 @@ requirements:
     implementations: [snowflake]
 
   constraint_declaration:
-    description: Fraction of data fields with explicitly declared constraints (nullability, uniqueness, valid ranges, or patterns)
+    description: Fraction of columns declared NOT NULL, appearing in a PRIMARY KEY / UNIQUE / CHECK constraint, or carrying a comment with a range declaration
     factor: contextual
     scope: schema
     implementations: [snowflake]
@@ -245,13 +245,13 @@ requirements:
     implementations: [snowflake]
 
   relationship_declaration:
-    description: Fraction of cross-entity references with explicit, machine-readable relationship declarations
+    description: Fraction of semantic views in the schema whose DDL includes a RELATIONSHIPS clause
     factor: contextual
     scope: schema
     implementations: [snowflake]
 
   schema_type_coverage:
-    description: Fraction of data fields with explicitly declared, machine-readable data types
+    description: Fraction of columns that carry a semantic-role signal (non-empty comment or recognizable name pattern) beyond the baseline declared physical type
     factor: contextual
     scope: schema
     implementations: [snowflake]
@@ -345,7 +345,7 @@ requirements:
     implementations: [snowflake]
 
   feature_refresh_compliance:
-    description: Fraction of served features updated within their defined staleness tolerance threshold
+    description: Fraction of dynamic tables whose scheduling state is active and whose data_timestamp is within the configured staleness threshold (hours)
     factor: current
     scope: schema
     implementations: [snowflake]
@@ -363,13 +363,13 @@ requirements:
     implementations: [snowflake]
 
   propagation_latency_compliance:
-    description: Fraction of data pipelines where end-to-end propagation latency meets the defined freshness SLA
+    description: Fraction of dynamic tables whose observed lag (now - data_timestamp) is within the caller's freshness SLA (hours)
     factor: current
     scope: schema
     implementations: [snowflake]
 
   schema_evolution_tracking:
-    description: Fraction of data assets with automated schema change detection, version identifiers, and version history
+    description: Fraction of base tables with column-level change history observable in SNOWFLAKE.ACCOUNT_USAGE.COLUMNS
     factor: current
     scope: schema
     implementations: [snowflake]
