@@ -12,9 +12,11 @@ There are two complementary approaches to improving version coverage:
 
 Choose based on your use case: Time Travel is sufficient for short-term rollback and auditing; explicit version columns are better for long-lived, pipeline-managed dataset versions.
 
-## SQL
+`{{ retention_days }}` must be between 1 and the edition maximum: **1 day** on Standard edition, **90 days** on Enterprise edition. Setting a larger value on Standard will fail; typical training-reproducibility values are `30` or `90` on Enterprise.
+
+## Fix: Enable Time Travel on a table
 
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table_name }}
-SET DATA_RETENTION_TIME_IN_DAYS = 90;
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
+SET DATA_RETENTION_TIME_IN_DAYS = {{ retention_days }};
 ```

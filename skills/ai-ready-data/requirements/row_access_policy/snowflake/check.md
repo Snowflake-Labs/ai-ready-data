@@ -1,34 +1,35 @@
 # Check: row_access_policy
 
-Fraction of tables with row access policies enforcing row-level security.
+Fraction of base tables in the schema with a row access policy attached.
 
 ## Context
 
-Uses `snowflake.account_usage.policy_references` to count distinct tables with an attached `ROW_ACCESS_POLICY`. The view uses `ref_entity_name` (not `table_name`) to identify the target table.
+Joins `snowflake.account_usage.policy_references` (filtered to `ROW_ACCESS_POLICY`) against `information_schema.tables` to count **base tables** — not views or materialized views — with a policy attached. Without the base-table filter, policies on views could push the score above 1.0.
 
-`policy_references` has approximately 2-hour latency — recently attached policies may not appear yet.
+`policy_references` has approximately 2-hour latency — recently attached policies may not appear yet. It exposes the target table via `ref_entity_name` (not `table_name`).
 
-A score of 1.0 means every base table in the schema has at least one row access policy attached.
+Returns NULL (N/A) when the schema contains no base tables.
 
 ## SQL
 
 ```sql
-WITH table_count AS (
-    SELECT COUNT(*) AS cnt
+WITH base_tables AS (
+    SELECT UPPER(table_name) AS table_name
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
         AND table_type = 'BASE TABLE'
 ),
 rap_tables AS (
-    SELECT COUNT(DISTINCT ref_entity_name) AS cnt
+    SELECT DISTINCT UPPER(ref_entity_name) AS table_name
     FROM snowflake.account_usage.policy_references
     WHERE UPPER(ref_database_name) = UPPER('{{ database }}')
         AND UPPER(ref_schema_name) = UPPER('{{ schema }}')
         AND policy_kind = 'ROW_ACCESS_POLICY'
 )
 SELECT
-    rap_tables.cnt AS tables_with_rap,
-    table_count.cnt AS total_tables,
-    rap_tables.cnt::FLOAT / NULLIF(table_count.cnt::FLOAT, 0) AS value
-FROM table_count, rap_tables
+    COUNT_IF(b.table_name IN (SELECT table_name FROM rap_tables)) AS tables_with_rap,
+    COUNT(*) AS total_tables,
+    COUNT_IF(b.table_name IN (SELECT table_name FROM rap_tables))::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM base_tables b
 ```

@@ -23,5 +23,5 @@ Sets the demographic tag on a specific column. Repeat for each column that conta
 ```sql
 ALTER TABLE {{ database }}.{{ schema }}.{{ asset }}
 MODIFY COLUMN {{ column }}
-SET TAG {{ tag_name }} = '{{ tag_value }}'
+SET TAG {{ database }}.{{ schema }}.{{ tag_name }} = '{{ tag_value }}'
 ```

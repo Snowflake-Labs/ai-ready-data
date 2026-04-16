@@ -306,7 +306,16 @@ Key rules:
 
 Add comments to tables and columns. This is a fallback for users who cannot or choose not to create semantic views. Comments improve human readability and basic tooling support but do not enable Text-to-SQL or Cortex Analyst.
 
+Each statement below is single-statement so it works with any Snowflake client regardless of `MULTI_STATEMENT_COUNT` settings. Run the table-level statement once, then issue the column-level statement once per column that needs a comment.
+
+### Add a table comment
+
 ```sql
 COMMENT ON TABLE {{ database }}.{{ schema }}.{{ asset }} IS '{{ table_comment }}';
-COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ asset }}.{{ column }} IS '{{ column_comment }}'
+```
+
+### Add a column comment
+
+```sql
+COMMENT ON COLUMN {{ database }}.{{ schema }}.{{ asset }}.{{ column }} IS '{{ column_comment }}';
 ```

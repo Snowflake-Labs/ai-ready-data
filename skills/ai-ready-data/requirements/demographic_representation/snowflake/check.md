@@ -1,12 +1,18 @@
 # Check: demographic_representation
 
-Fraction of training datasets with measured and documented demographic distribution relative to target population.
+Fraction of base tables (or their columns) tagged with a demographic / protected-class attribute.
 
 ## Context
 
-Looks for tables or columns tagged with any of the recognized demographic tag names: `demographic`, `protected_class`, `sensitive_attribute`, or `fairness_attribute`. Uses `snowflake.account_usage.tag_references` which has approximately 2-hour latency for new tags — recently tagged objects may not appear yet.
+Looks for tables or columns tagged with any of the recognized demographic tag names. The tag records that demographic analysis has been considered for this dataset; the check does not measure actual distribution.
 
-Scope is schema-level. A score of 1.0 means every base table in the schema has at least one demographic-related tag on the table or one of its columns. Demographic attributes are sensitive — handle with appropriate access controls.
+`account_usage.tag_references` has approximately 2-hour latency for new tags — recently tagged objects may not appear yet.
+
+Domain is `TABLE` **or** `COLUMN` — a demographic attribute can be declared at the table level or on a single column. Demographic attributes are sensitive — handle with appropriate access controls.
+
+Requires `{{ tag_names }}` — comma-separated quoted list, typically `'demographic','protected_class','sensitive_attribute','fairness_attribute'`.
+
+Returns NULL (N/A) when the schema contains no base tables.
 
 ## SQL
 
@@ -14,24 +20,24 @@ Scope is schema-level. A score of 1.0 means every base table in the schema has a
 WITH table_count AS (
     SELECT COUNT(*) AS cnt
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
         AND table_type = 'BASE TABLE'
 ),
-documented_tables AS (
+tagged_tables AS (
     SELECT COUNT(DISTINCT tr.object_name) AS cnt
     FROM snowflake.account_usage.tag_references tr
     JOIN {{ database }}.information_schema.tables t
         ON UPPER(tr.object_name) = UPPER(t.table_name)
-        AND t.table_schema = '{{ schema }}'
+        AND UPPER(t.table_schema) = UPPER('{{ schema }}')
         AND t.table_type = 'BASE TABLE'
     WHERE UPPER(tr.object_database) = UPPER('{{ database }}')
-        AND UPPER(tr.object_schema) = UPPER('{{ schema }}')
-        AND tr.domain IN ('TABLE', 'COLUMN')
-        AND LOWER(tr.tag_name) IN ('demographic', 'protected_class', 'sensitive_attribute', 'fairness_attribute')
+        AND UPPER(tr.object_schema)   = UPPER('{{ schema }}')
+        AND tr.domain IN ('TABLE','COLUMN')
+        AND LOWER(tr.tag_name) IN ({{ tag_names }})
 )
 SELECT
-    documented_tables.cnt AS tables_with_demographics,
-    table_count.cnt AS total_tables,
-    documented_tables.cnt::FLOAT / NULLIF(table_count.cnt::FLOAT, 0) AS value
-FROM table_count, documented_tables
+    tagged_tables.cnt AS tables_tagged,
+    table_count.cnt   AS total_tables,
+    tagged_tables.cnt::FLOAT / NULLIF(table_count.cnt::FLOAT, 0) AS value
+FROM table_count, tagged_tables
 ```

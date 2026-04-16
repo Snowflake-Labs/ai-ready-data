@@ -1,54 +1,52 @@
 # Check: lineage_completeness
 
-Fraction of tables with documented end-to-end lineage from source through transformations, verified via Snowflake's `ACCESS_HISTORY`.
+Fraction of base tables in the schema that appear as a base object (upstream source) in recent `ACCESS_HISTORY` events — a proxy for documented lineage.
 
 ## Context
 
-Uses `snowflake.account_usage.access_history` with a 7-day lookback window and a 100,000-row cap on flattened `base_objects_accessed` to limit scan cost on large accounts. The diagnostic query retains the full 30-day window.
+Uses `snowflake.account_usage.access_history` with a 7-day lookback window. The flattened `base_objects_accessed` stream is deterministically ordered by `query_start_time DESC` and capped at 100,000 rows to limit scan cost — the `ORDER BY` keeps repeated runs stable. The diagnostic query uses the full 30-day window.
 
-`ACCESS_HISTORY` has approximately 2-hour latency — recently created or accessed objects may not yet appear. Requires IMPORTED PRIVILEGES on the SNOWFLAKE database.
+`access_history` has approximately 2-hour latency. Requires `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database.
 
-A score of 1.0 means every base table in the schema has at least one lineage record (i.e., appears as a base object accessed in a query). Tables absent from the window score as having no documented lineage, which may simply mean they haven't been read as a source recently.
+A score of 1.0 means every base table in the schema has at least one lineage record — it was read as an upstream source by at least one query in the window. Tables absent from the window may simply not have been read recently, not that lineage is broken.
+
+Returns NULL (N/A) when the schema contains no base tables.
 
 ## SQL
 
 ```sql
--- check-lineage-completeness.sql
--- Checks fraction of tables with documented lineage in ACCESS_HISTORY
--- Returns: value (float 0-1) - fraction of tables with lineage data
-
--- Note: ACCESS_HISTORY has ~2 hour latency for new objects.
--- Uses 7-day window (not 30) and caps flattened rows to limit scan cost
--- on large accounts. Diagnostic query retains full 30-day window.
 WITH tables_in_scope AS (
-    SELECT DISTINCT table_name
+    SELECT DISTINCT UPPER(table_name) AS table_name
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
         AND table_type = 'BASE TABLE'
+),
+recent_access AS (
+    SELECT
+        query_start_time,
+        base_objects_accessed
+    FROM snowflake.account_usage.access_history
+    WHERE query_start_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
+    ORDER BY query_start_time DESC
+    LIMIT 100000
 ),
 access_sample AS (
     SELECT
-        obj.value:objectName::STRING AS object_name,
-        obj.value:objectDomain::STRING AS object_domain
-    FROM snowflake.account_usage.access_history,
-        LATERAL FLATTEN(input => base_objects_accessed) obj
-    WHERE query_start_time >= DATEADD(day, -7, CURRENT_TIMESTAMP())
-        AND obj.value:objectDomain::STRING = 'Table'
+        UPPER(SPLIT_PART(obj.value:objectName::STRING, '.', 3)) AS table_name
+    FROM recent_access,
+         LATERAL FLATTEN(input => base_objects_accessed) obj
+    WHERE obj.value:objectDomain::STRING = 'Table'
         AND UPPER(SPLIT_PART(obj.value:objectName::STRING, '.', 1)) = UPPER('{{ database }}')
         AND UPPER(SPLIT_PART(obj.value:objectName::STRING, '.', 2)) = UPPER('{{ schema }}')
-    LIMIT 100000
 ),
 tables_with_lineage AS (
-    SELECT DISTINCT
-        UPPER(SPLIT_PART(object_name, '.', 3)) AS table_name
-    FROM access_sample
+    SELECT DISTINCT table_name FROM access_sample
 )
 SELECT
-    (SELECT COUNT(*) FROM tables_in_scope t
-     WHERE UPPER(t.table_name) IN (SELECT table_name FROM tables_with_lineage)
-    ) AS tables_with_lineage,
-    (SELECT COUNT(*) FROM tables_in_scope) AS total_tables,
-    (SELECT COUNT(*) FROM tables_in_scope t
-     WHERE UPPER(t.table_name) IN (SELECT table_name FROM tables_with_lineage)
-    )::FLOAT / NULLIF((SELECT COUNT(*) FROM tables_in_scope)::FLOAT, 0) AS value
+    COUNT_IF(t.table_name IN (SELECT table_name FROM tables_with_lineage))
+        AS tables_with_lineage,
+    COUNT(*) AS total_tables,
+    COUNT_IF(t.table_name IN (SELECT table_name FROM tables_with_lineage))::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM tables_in_scope t
 ```

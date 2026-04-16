@@ -1,23 +1,19 @@
 # Check: outlier_prevalence
 
-Fraction of records containing values flagged as statistical outliers beyond declared distance thresholds.
+Fraction of non-null rows whose target-column value is **within** the configured z-score threshold — i.e., not flagged as an outlier.
 
 ## Context
 
-Uses z-score analysis against a configurable `stddev_threshold` to classify rows as outliers. Only non-NULL values in the target column are evaluated. A score of 1.0 means no rows exceed the threshold; lower scores indicate a higher fraction of outliers.
+Computes mean and standard deviation on non-null values in a CTE, then re-scans the table to count rows whose value is within `{{ stddev_threshold }}` standard deviations of the mean. A score of 1.0 means no outliers; lower scores indicate a higher fraction of rows beyond the threshold.
 
 Placeholders: `database`, `schema`, `asset`, `column`, `stddev_threshold`.
 
 ## SQL
 
 ```sql
--- check-outlier-prevalence.sql
--- Checks fraction of records containing statistical outliers (beyond N standard deviations)
--- Returns: value (float 0-1) - fraction of rows within expected range (1.0 = no outliers)
-
 WITH stats AS (
     SELECT
-        AVG({{ column }}) AS mean_val,
+        AVG({{ column }})    AS mean_val,
         STDDEV({{ column }}) AS stddev_val
     FROM {{ database }}.{{ schema }}.{{ asset }}
     WHERE {{ column }} IS NOT NULL

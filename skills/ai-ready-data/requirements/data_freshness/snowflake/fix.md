@@ -8,7 +8,7 @@ Triggers an immediate refresh of the specified dynamic table. This is only appli
 
 `last_altered` reflects DDL changes, not DML, so refreshing a dynamic table will not necessarily update `last_altered`. Use `DATA_TIMESTAMP` or streams for accurate freshness tracking on dynamic tables.
 
-## SQL
+## Fix: Refresh the dynamic table
 
 ```sql
 ALTER DYNAMIC TABLE {{ database }}.{{ schema }}.{{ asset }} REFRESH

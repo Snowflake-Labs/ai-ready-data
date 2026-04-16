@@ -1,12 +1,17 @@
 # Check: unit_of_measure_declaration
 
-Fraction of measured numeric columns with unit declarations.
+Fraction of numeric columns (excluding identifiers, keys, counts, flags) whose unit of measure is declared either in the column name suffix or in the column comment.
 
 ## Context
 
-Identifies numeric columns in the schema and checks whether each has an explicit unit of measure — either encoded in the column name suffix (e.g., `_usd`, `_pct`, `_kg`) or documented in the column comment. Columns likely to be identifiers, keys, counts, or flags are excluded.
+Identifiers (`_id`, `_key`), counts, and flags are excluded from the population — they don't need a unit. For the remaining numeric columns, the check looks for a unit declaration as either:
 
-A score of 1.0 means every measured numeric column has a discoverable unit. A low score means downstream consumers (models, agents) must guess units, which introduces silent conversion errors.
+- a name suffix such as `_usd`, `_pct`, `_percent`, `_seconds`, `_hours`, `_days`, `_kg`, `_meters`
+- a comment containing a recognizable unit word (`usd`, `dollar`, `percent`, `unit`, `meter`, `kilogram`, `second`, `hour`, `day`)
+
+All pattern matching uses `REGEXP_LIKE` so literal underscores in names aren't swallowed by `_` as a LIKE wildcard.
+
+A low score means downstream consumers must guess units, which introduces silent conversion errors. Returns NULL (N/A) when the schema contains no measured numeric columns.
 
 ## SQL
 
@@ -21,43 +26,27 @@ WITH numeric_columns AS (
       ON c.table_catalog = t.table_catalog
      AND c.table_schema = t.table_schema
      AND c.table_name = t.table_name
-    WHERE c.table_schema = '{{ schema }}'
+    WHERE UPPER(c.table_schema) = UPPER('{{ schema }}')
       AND t.table_type = 'BASE TABLE'
-      AND c.data_type IN ('NUMBER', 'DECIMAL', 'NUMERIC', 'INT', 'INTEGER', 'BIGINT', 'SMALLINT', 'FLOAT', 'DOUBLE', 'REAL')
-      AND LOWER(c.column_name) NOT LIKE '%_id'
-      AND LOWER(c.column_name) NOT LIKE '%_key'
-      AND LOWER(c.column_name) NOT LIKE '%count%'
-      AND LOWER(c.column_name) NOT LIKE '%flag%'
+      AND c.data_type IN ('NUMBER','DECIMAL','NUMERIC','INT','INTEGER','BIGINT','SMALLINT','FLOAT','DOUBLE','REAL')
+      AND NOT REGEXP_LIKE(LOWER(c.column_name), '.*(_id$|_key$|count|flag).*')
 ),
 columns_with_units AS (
     SELECT *
     FROM numeric_columns
     WHERE
-      (comment IS NOT NULL AND (
-          LOWER(comment) LIKE '%usd%'
-          OR LOWER(comment) LIKE '%dollar%'
-          OR LOWER(comment) LIKE '%percent%'
-          OR LOWER(comment) LIKE '%unit%'
-          OR LOWER(comment) LIKE '%meter%'
-          OR LOWER(comment) LIKE '%kilogram%'
-          OR LOWER(comment) LIKE '%second%'
-          OR LOWER(comment) LIKE '%hour%'
-          OR LOWER(comment) LIKE '%day%'
-      ))
-      OR LOWER(column_name) LIKE '%_usd'
-      OR LOWER(column_name) LIKE '%_pct'
-      OR LOWER(column_name) LIKE '%_percent'
-      OR LOWER(column_name) LIKE '%_seconds'
-      OR LOWER(column_name) LIKE '%_hours'
-      OR LOWER(column_name) LIKE '%_days'
-      OR LOWER(column_name) LIKE '%_kg'
-      OR LOWER(column_name) LIKE '%_meters'
+        REGEXP_LIKE(
+            LOWER(column_name),
+            '.*(_usd$|_pct$|_percent$|_seconds$|_hours$|_days$|_kg$|_meters$)'
+        )
+        OR (comment IS NOT NULL AND REGEXP_LIKE(
+                LOWER(comment),
+                '.*(usd|dollar|percent|unit|meter|kilogram|second|hour|day).*'
+            ))
 )
 SELECT
     (SELECT COUNT(*) FROM columns_with_units) AS columns_with_units,
     (SELECT COUNT(*) FROM numeric_columns) AS total_numeric_columns,
-    CASE
-      WHEN (SELECT COUNT(*) FROM numeric_columns) = 0 THEN 1.0
-      ELSE (SELECT COUNT(*) FROM columns_with_units)::FLOAT / (SELECT COUNT(*) FROM numeric_columns)::FLOAT
-    END AS value
+    (SELECT COUNT(*) FROM columns_with_units)::FLOAT
+        / NULLIF((SELECT COUNT(*) FROM numeric_columns)::FLOAT, 0) AS value
 ```

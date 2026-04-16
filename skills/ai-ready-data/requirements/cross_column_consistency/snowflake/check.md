@@ -4,16 +4,14 @@ Fraction of records where logically related columns are mutually consistent per 
 
 ## Context
 
-This is a template query — the agent must generate a `consistency_rule` and `filter_nulls` expression for each use case. These are injected as raw SQL expressions, not quoted strings.
+Template query — the caller supplies a `{{ consistency_rule }}` expression and a `{{ filter_nulls }}` predicate. Both are injected as **raw SQL**, not quoted strings.
 
 Example consistency rules:
 - `end_date >= start_date`
 - `total = quantity * unit_price`
-- `status = 'SHIPPED' implies shipped_date IS NOT NULL`
+- `status <> 'SHIPPED' OR shipped_date IS NOT NULL`
 
-The `filter_nulls` predicate should exclude rows where null values in the checked columns would cause misleading violations (e.g., `column1 IS NOT NULL AND column2 IS NOT NULL`).
-
-Returns a float 0–1 representing the fraction of consistent records. A value of 1.0 means all rows (after null filtering) satisfy the rule.
+`{{ filter_nulls }}` should exclude rows where nulls in the compared columns would cause misleading violations (e.g., `start_date IS NOT NULL AND end_date IS NOT NULL`). A score of 1.0 means all rows (after null filtering) satisfy the rule.
 
 ## SQL
 

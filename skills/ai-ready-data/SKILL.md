@@ -220,6 +220,14 @@ SQL blocks within markdown files use `{{ placeholder }}` syntax for variable sub
 - **Table-scoped** (includes `asset`): run per table, aggregate results.
 - **Column-scoped** (includes `column`): run per column, aggregate results.
 
+### Scoring conventions
+
+1. **Range.** `value` is a float in `[0.0, 1.0]` where `1.0` is perfect. All requirements are `gte`-direction: pass when `value >= threshold`.
+2. **N/A (empty denominator).** When the check has nothing to measure (no in-scope tables, no in-scope columns, no events in the window, etc.), the SQL must return `NULL` via `NULLIF(denominator, 0)`. The orchestrator renders `NULL` as `N/A` in reports and treats it as neither pass nor fail. **Never** emit a hard-coded `1.0` or `0.0` fallback — they silently inflate or deflate dashboards.
+3. **Casing.** All `information_schema` filters must wrap both sides in `UPPER(...)` (e.g. `UPPER(table_schema) = UPPER('{{ schema }}')`) so callers can pass identifiers in any case.
+4. **Determinism.** `LIMIT` on `account_usage` scans (`access_history`, `query_history`, …) must be paired with a stable `ORDER BY` — typically `ORDER BY query_start_time DESC` or `ORDER BY start_time DESC` — so repeated runs return the same score.
+5. **LIKE vs REGEXP_LIKE.** Prefer `REGEXP_LIKE(col, pattern)` for name pattern matching. `LIKE '%_X'` is unsafe because `_` is a single-character wildcard that matches unintended names (e.g. `USERAID` matches `%_ID`).
+
 ### Step 7: Report
 
 Present results in conversation first, then offer to save:
@@ -259,7 +267,7 @@ If the user confirms, write the report in the following standardized format. The
 | Schema        | {SCHEMA}                           |
 | Tables        | {table count} ({list or "all"})    |
 | Profile       | {profile name or "custom"}         |
-| Requirements  | {selected count} of 62             |
+| Requirements  | {selected count} of {manifest count} |
 | Runnable      | {runnable count}                   |
 
 ## Summary

@@ -1,61 +1,48 @@
 # Check: schema_type_coverage
 
-Fraction of columns with a semantic type indication, either via an explicit comment or a recognizable naming pattern.
+Fraction of columns across the schema that carry a recognizable semantic-role signal — either via a non-empty `COMMENT` or via a naming pattern that implies a well-known role (ID, date, amount, status, etc.).
 
 ## Context
 
-Joins `information_schema.columns` against `information_schema.tables` (filtered to base tables) in the target schema. A column counts as "typed" if it has a non-empty comment or its name matches common semantic patterns (e.g. `%_id`, `%_date`, `%amount%`). The score is the ratio of typed columns to total columns.
+In Snowflake every column has a declared physical type (`TEXT`, `NUMBER`, etc.), so "type declaration" coverage is trivially 100%. This check measures a stricter but more useful signal: whether a downstream consumer can **infer the semantic role** of a column from its metadata. A column counts as "typed" if it either has a non-empty comment or its name matches a known role suffix or substring.
+
+Patterns are matched via `REGEXP_LIKE` with anchored underscores so `LIKE '%_id'` doesn't spuriously match `USERXID`.
+
+Pattern families (case-insensitive):
+
+- Identifier/key: `_id`, `_key` suffixes
+- Temporal: `_date`, `_at`, `_time` suffixes or `time` substring
+- Measurement: `amount`, `price`, `cost`, `count`, `quantity`, `total` substrings
+- Descriptive: `name`, `description`, `status`, `type`, `category` substrings
 
 ## SQL
 
 ```sql
--- check-schema-type-coverage.sql
--- Checks if columns have semantic type assignments (via comments or semantic views)
--- Returns: value (float 0-1) - fraction of columns with semantic type indication
-
 WITH columns_in_scope AS (
     SELECT
-        c.table_catalog,
-        c.table_schema,
         c.table_name,
         c.column_name,
-        c.data_type,
         c.comment
     FROM {{ database }}.information_schema.columns c
-    INNER JOIN {{ database }}.information_schema.tables t
+    JOIN {{ database }}.information_schema.tables t
         ON c.table_catalog = t.table_catalog
         AND c.table_schema = t.table_schema
         AND c.table_name = t.table_name
-    WHERE c.table_schema = '{{ schema }}'
+    WHERE UPPER(c.table_schema) = UPPER('{{ schema }}')
         AND t.table_type = 'BASE TABLE'
 ),
 columns_with_semantic_type AS (
     SELECT *
     FROM columns_in_scope
-    WHERE 
-        -- Has a comment indicating semantic role
-        (comment IS NOT NULL AND comment != '')
-        -- Or is a common semantic pattern (ID, date, amount, count, etc.)
-        OR LOWER(column_name) LIKE '%_id'
-        OR LOWER(column_name) LIKE '%_key'
-        OR LOWER(column_name) LIKE '%_date'
-        OR LOWER(column_name) LIKE '%_time%'
-        OR LOWER(column_name) LIKE '%_at'
-        OR LOWER(column_name) LIKE '%amount%'
-        OR LOWER(column_name) LIKE '%price%'
-        OR LOWER(column_name) LIKE '%cost%'
-        OR LOWER(column_name) LIKE '%count%'
-        OR LOWER(column_name) LIKE '%quantity%'
-        OR LOWER(column_name) LIKE '%total%'
-        OR LOWER(column_name) LIKE '%name'
-        OR LOWER(column_name) LIKE '%description'
-        OR LOWER(column_name) LIKE '%status'
-        OR LOWER(column_name) LIKE '%type'
-        OR LOWER(column_name) LIKE '%category'
+    WHERE (comment IS NOT NULL AND comment <> '')
+       OR REGEXP_LIKE(
+            LOWER(column_name),
+            '.*(_id$|_key$|_date$|_at$|_time$|time|amount|price|cost|count|quantity|total|name|description|status|type|category).*'
+          )
 )
 SELECT
     (SELECT COUNT(*) FROM columns_with_semantic_type) AS columns_with_semantic_type,
     (SELECT COUNT(*) FROM columns_in_scope) AS total_columns,
-    (SELECT COUNT(*) FROM columns_with_semantic_type)::FLOAT / 
-        NULLIF((SELECT COUNT(*) FROM columns_in_scope)::FLOAT, 0) AS value
+    (SELECT COUNT(*) FROM columns_with_semantic_type)::FLOAT
+        / NULLIF((SELECT COUNT(*) FROM columns_in_scope)::FLOAT, 0) AS value
 ```

@@ -6,9 +6,7 @@ Creates a semantic view with relationship declarations.
 
 Relationships define join paths — ensure they match actual foreign keys.
 
-## SQL
-
-### fix.create-semantic-view
+## Fix: Create a semantic view
 
 ```sql
 CREATE OR REPLACE SEMANTIC VIEW {{ database }}.{{ schema }}.{{ semantic_view_name }}

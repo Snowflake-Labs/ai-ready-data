@@ -15,7 +15,7 @@ To pass the provenance check, each table's comment should describe:
 Use `COMMENT ON TABLE` to add or update provenance documentation:
 
 ```sql
-COMMENT ON TABLE {{ database }}.{{ schema }}.{{ table }} IS
+COMMENT ON TABLE {{ database }}.{{ schema }}.{{ asset }} IS
   'Source: <origin_system> | Method: <collection_method> | Upstream: <lineage_description>';
 ```
 

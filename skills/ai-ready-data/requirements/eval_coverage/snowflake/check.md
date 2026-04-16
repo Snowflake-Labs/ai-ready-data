@@ -1,42 +1,28 @@
 # Check: eval_coverage
 
-Fraction of data assets with associated evaluation sets that verify AI tool correctness.
+Fraction of base tables in the schema that have a companion evaluation table (name ends in `_eval`, starts with `eval_`, or contains `_eval_`).
 
 ## Context
 
-Checks for the existence of eval artifacts, not whether evals pass. Eval naming conventions are platform-specific.
+Checks only for the **presence** of eval artifacts, not whether the evals pass. Eval naming conventions vary by team — the regex matches the three common shapes and can be tuned in a per-profile override.
+
+A pathological interpretation: the eval tables themselves are counted in the denominator and (by name) also match the numerator. For small schemas this can inflate the score. If you need the stricter "fraction of non-eval tables with an eval companion" you can drop eval tables from the denominator — see `diagnostic.md` for that variant.
+
+Returns NULL (N/A) when the schema contains no base tables.
 
 ## SQL
 
 ```sql
-WITH semantic_views AS (
-    SELECT COUNT(*) AS cnt
-    FROM {{ database }}.information_schema.semantic_views
-    WHERE schema = '{{ schema }}'
-),
-eval_tables AS (
-    SELECT COUNT(DISTINCT table_name) AS cnt
+WITH base_tables AS (
+    SELECT LOWER(table_name) AS table_name
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-      AND table_type = 'BASE TABLE'
-      AND (
-        LOWER(table_name) LIKE '%_eval'
-        OR LOWER(table_name) LIKE '%_eval_%'
-        OR LOWER(table_name) LIKE 'eval_%'
-      )
-),
-assets_needing_evals AS (
-    SELECT COUNT(*) AS cnt
-    FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
       AND table_type = 'BASE TABLE'
 )
 SELECT
-    eval_tables.cnt AS eval_tables,
-    assets_needing_evals.cnt AS total_assets,
-    CASE
-      WHEN assets_needing_evals.cnt = 0 THEN 1.0
-      ELSE eval_tables.cnt::FLOAT / assets_needing_evals.cnt::FLOAT
-    END AS value
-FROM eval_tables, assets_needing_evals
+    COUNT_IF(REGEXP_LIKE(table_name, '(^eval_|_eval$|_eval_)')) AS eval_tables,
+    COUNT(*) AS total_tables,
+    COUNT_IF(REGEXP_LIKE(table_name, '(^eval_|_eval$|_eval_)'))::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM base_tables
 ```

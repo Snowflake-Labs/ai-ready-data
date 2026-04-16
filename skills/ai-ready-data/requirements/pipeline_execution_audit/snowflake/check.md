@@ -1,41 +1,32 @@
 # Check: pipeline_execution_audit
 
-Fraction of pipeline runs with immutable execution records capturing inputs, parameters, outputs, and completion status.
+Fraction of task runs in the last 7 days whose execution record captures both `query_start_time` and `completed_time`.
 
 ## Context
 
-Uses `snowflake.account_usage.task_history` with a 7-day lookback window scoped to the target database and schema. A task run is considered "audited" when both `query_start_time` and `completed_time` are present. A score of 1.0 means every task run in the window has a complete execution record.
+Uses `snowflake.account_usage.task_history` with a 7-day lookback scoped to `{{ database }}.{{ schema }}`. A task run is considered "audited" when it has both a start and a completion timestamp — partial records indicate something interrupted capture (task stopped mid-run, history view staleness, etc.).
 
-`task_history` has approximately 45-minute latency — very recent runs may not yet appear.
+`task_history` has approximately 45-minute latency.
+
+Returns NULL (N/A) when no task runs occurred in the window.
 
 ## SQL
 
 ```sql
--- check-pipeline-execution-audit.sql
--- Checks if pipeline executions (tasks) have audit records
--- Returns: value (float 0-1) - fraction of task runs with complete audit
-
 WITH task_runs AS (
     SELECT
         name AS task_name,
-        state,
-        scheduled_time,
         query_start_time,
-        completed_time,
-        error_code,
-        error_message
+        completed_time
     FROM snowflake.account_usage.task_history
-    WHERE scheduled_time >= DATEADD(day, -7, CURRENT_TIMESTAMP())
+    WHERE scheduled_time >= DATEADD('day', -7, CURRENT_TIMESTAMP())
         AND UPPER(database_name) = UPPER('{{ database }}')
-        AND UPPER(schema_name) = UPPER('{{ schema }}')
-),
-audited_runs AS (
-    SELECT * FROM task_runs
-    WHERE query_start_time IS NOT NULL AND completed_time IS NOT NULL
+        AND UPPER(schema_name)   = UPPER('{{ schema }}')
 )
 SELECT
-    (SELECT COUNT(*) FROM audited_runs) AS audited_runs,
-    (SELECT COUNT(*) FROM task_runs) AS total_runs,
-    (SELECT COUNT(*) FROM audited_runs)::FLOAT / 
-        NULLIF((SELECT COUNT(*) FROM task_runs)::FLOAT, 0) AS value
+    COUNT_IF(query_start_time IS NOT NULL AND completed_time IS NOT NULL) AS audited_runs,
+    COUNT(*) AS total_runs,
+    COUNT_IF(query_start_time IS NOT NULL AND completed_time IS NOT NULL)::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM task_runs
 ```

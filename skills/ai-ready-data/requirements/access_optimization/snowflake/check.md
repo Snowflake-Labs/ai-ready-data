@@ -1,34 +1,30 @@
 # Check: access_optimization
 
-Fraction of large tables in the schema that have clustering keys defined.
+Fraction of large base tables in the schema that have a clustering key defined.
 
 ## Context
 
-Only tables with more than 10,000 rows are evaluated — small tables don't benefit from clustering and would inflate the score. If the schema has no tables above this threshold, the check returns NULL (division by zero guard), which should be treated as not applicable.
+Only tables with more than 10,000 rows are evaluated — small tables don't benefit from clustering and would inflate the score. `row_count` in `information_schema.tables` is a materialized estimate, not a live count; it may lag by several minutes after bulk loads.
 
 A clustering key being *present* does not mean it is *effective*. Use the diagnostic to assess clustering depth on individual tables.
+
+Returns NULL (N/A) when the schema contains no tables above the row threshold.
 
 ## SQL
 
 ```sql
 WITH large_tables AS (
-    SELECT COUNT(*) AS cnt
+    SELECT
+        table_name,
+        clustering_key
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'BASE TABLE'
-        AND row_count > 10000
-),
-clustered AS (
-    SELECT COUNT(*) AS cnt
-    FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'BASE TABLE'
-        AND row_count > 10000
-        AND clustering_key IS NOT NULL
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
+      AND table_type = 'BASE TABLE'
+      AND row_count > 10000
 )
 SELECT
-    clustered.cnt AS clustered_tables,
-    large_tables.cnt AS large_tables,
-    clustered.cnt::FLOAT / NULLIF(large_tables.cnt::FLOAT, 0) AS value
-FROM large_tables, clustered
+    COUNT_IF(clustering_key IS NOT NULL) AS clustered_tables,
+    COUNT(*) AS large_tables,
+    COUNT_IF(clustering_key IS NOT NULL)::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM large_tables
 ```

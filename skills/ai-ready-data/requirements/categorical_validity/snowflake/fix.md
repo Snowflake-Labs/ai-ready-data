@@ -10,6 +10,8 @@ Two options with different tradeoffs:
 
 In both cases, verify the allowed values list is correct and current before executing. If the "invalid" values are actually legitimate new categories, the fix is to update the allowed values list, not to remove data.
 
+`{{ allowed_values }}` must be a comma-separated list of non-NULL quoted literals (e.g. `'active','inactive','pending'`). If the list contains a NULL (e.g. `'active', NULL, 'pending'`), `NOT IN` returns UNKNOWN for every row and the fix silently does nothing — filter NULL out before substitution.
+
 ## Fix: Null invalid values (preferred — preserves rows)
 
 ```sql

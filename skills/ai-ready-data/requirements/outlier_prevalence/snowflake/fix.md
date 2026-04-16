@@ -13,14 +13,26 @@ Use the diagnostic query to identify specific outlier rows and their z-scores. C
 - **Unit mismatches** — values recorded in different units (e.g., cents vs dollars)
 - **Processing artifacts** — sentinel values like -1, 9999, or 0 used as placeholders
 
-## Fix: Clamp outlier values
+## Fix: Clamp outlier values (symmetric)
 
-If outliers are confirmed as errors and the correct value is unknown, clamp to the boundary:
+If outliers are confirmed as errors and the correct value is unknown, clamp to the nearest boundary. This clamps both the upper and lower tail to `mean ± stddev_threshold * stddev`. Evaluates the table statistics in a single pass to keep the UPDATE cheap.
 
 ```sql
-UPDATE {{ database }}.{{ schema }}.{{ asset }}
-SET {{ column }} = (SELECT AVG({{ column }}) + {{ stddev_threshold }} * STDDEV({{ column }}) FROM {{ database }}.{{ schema }}.{{ asset }})
-WHERE {{ column }} > (SELECT AVG({{ column }}) + {{ stddev_threshold }} * STDDEV({{ column }}) FROM {{ database }}.{{ schema }}.{{ asset }})
+WITH bounds AS (
+    SELECT
+        AVG({{ column }}) - {{ stddev_threshold }} * STDDEV({{ column }}) AS lower_bound,
+        AVG({{ column }}) + {{ stddev_threshold }} * STDDEV({{ column }}) AS upper_bound
+    FROM {{ database }}.{{ schema }}.{{ asset }}
+    WHERE {{ column }} IS NOT NULL
+)
+UPDATE {{ database }}.{{ schema }}.{{ asset }} t
+SET t.{{ column }} = CASE
+    WHEN t.{{ column }} < b.lower_bound THEN b.lower_bound
+    WHEN t.{{ column }} > b.upper_bound THEN b.upper_bound
+END
+FROM bounds b
+WHERE t.{{ column }} IS NOT NULL
+  AND (t.{{ column }} < b.lower_bound OR t.{{ column }} > b.upper_bound);
 ```
 
 ## Fix: Exclude outliers from AI consumption

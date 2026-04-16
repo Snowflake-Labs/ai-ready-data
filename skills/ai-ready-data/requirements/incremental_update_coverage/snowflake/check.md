@@ -1,35 +1,49 @@
 # Check: incremental_update_coverage
 
-Fraction of data pipelines that use incremental processing (CDC or streaming) rather than full-reload extraction.
+Fraction of tables in the schema that support incremental updates — either implemented as a dynamic table or with change tracking enabled on a base table.
 
 ## Context
 
-Checks fraction of tables that support incremental updates (streams or dynamic tables). Returns a float 0-1 representing the fraction of tables with incremental update capability.
+Two signals count toward "incremental-capable":
 
-Streams are not listed in `information_schema.tables`. Uses dynamic tables + change_tracking enabled tables as proxy for incremental capability.
+1. **Dynamic tables** — inherently incremental via Snowflake's declarative refresh.
+2. **Base tables with `change_tracking = 'ON'`** — downstream consumers can use streams or `CHANGES` queries.
+
+`change_tracking` is not exposed in `information_schema.tables`, so this check uses `SHOW TABLES` + `RESULT_SCAN` (same-session requirement). Dynamic tables are discovered from `information_schema.tables`.
+
+Returns NULL (N/A) when the schema contains no base or dynamic tables.
 
 ## SQL
 
 ```sql
-WITH base_tables AS (
-    SELECT table_name
-    FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'BASE TABLE'
+SHOW TABLES IN SCHEMA {{ database }}.{{ schema }};
+
+WITH show_results AS (
+    SELECT
+        UPPER("name") AS table_name,
+        "change_tracking" AS change_tracking
+    FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
+    WHERE "kind" = 'TABLE'
 ),
-dynamic_tables AS (
-    SELECT table_name
+tables_in_scope AS (
+    SELECT
+        UPPER(table_name) AS table_name,
+        table_type
     FROM {{ database }}.information_schema.tables
-    WHERE table_schema = '{{ schema }}'
-        AND table_type = 'DYNAMIC TABLE'
-),
--- Dynamic tables are inherently incremental
-tables_with_incremental AS (
-    SELECT table_name FROM dynamic_tables
+    WHERE UPPER(table_schema) = UPPER('{{ schema }}')
+      AND table_type IN ('BASE TABLE','DYNAMIC TABLE')
 )
 SELECT
-    (SELECT COUNT(*) FROM tables_with_incremental) AS tables_with_incremental,
-    (SELECT COUNT(*) FROM base_tables) + (SELECT COUNT(*) FROM dynamic_tables) AS total_tables,
-    (SELECT COUNT(*) FROM tables_with_incremental)::FLOAT / 
-        NULLIF(((SELECT COUNT(*) FROM base_tables) + (SELECT COUNT(*) FROM dynamic_tables))::FLOAT, 0) AS value
+    COUNT_IF(
+        t.table_type = 'DYNAMIC TABLE'
+        OR s.change_tracking = 'ON'
+    ) AS tables_with_incremental,
+    COUNT(*) AS total_tables,
+    COUNT_IF(
+        t.table_type = 'DYNAMIC TABLE'
+        OR s.change_tracking = 'ON'
+    )::FLOAT / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM tables_in_scope t
+LEFT JOIN show_results s
+    ON s.table_name = t.table_name
 ```

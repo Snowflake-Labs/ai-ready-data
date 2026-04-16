@@ -11,5 +11,5 @@ Add a `COMMENT` to each temporal column describing its role. Use the `suggested_
 ## Fix: Add comment to temporal column
 
 ```sql
-ALTER TABLE {{ database }}.{{ schema }}.{{ table }} ALTER COLUMN {{ column }} SET COMMENT '{{ comment }}';
+ALTER TABLE {{ database }}.{{ schema }}.{{ asset }} ALTER COLUMN {{ column }} SET COMMENT '{{ comment }}';
 ```

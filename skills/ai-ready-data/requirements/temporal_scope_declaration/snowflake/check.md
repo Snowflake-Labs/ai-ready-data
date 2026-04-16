@@ -1,37 +1,33 @@
 # Check: temporal_scope_declaration
 
-Fraction of temporal columns (date/timestamp) in the schema that have documentation via column comments declaring their temporal role.
+Fraction of temporal columns (DATE/TIMESTAMP family) across base tables that have a non-empty `COMMENT`.
 
 ## Context
 
-Scans `information_schema.columns` for all date and timestamp types (`DATE`, `DATETIME`, `TIMESTAMP_LTZ`, `TIMESTAMP_NTZ`, `TIMESTAMP_TZ`, `TIME`) and checks whether each has a non-empty `comment`. A score of 1.0 means every temporal column has a comment describing its validity window, effective date, or temporal role.
+Scans `information_schema.columns` (joined to `information_schema.tables` with `table_type = 'BASE TABLE'`) for all date and timestamp types — `DATE`, `DATETIME`, `TIMESTAMP_LTZ`, `TIMESTAMP_NTZ`, `TIMESTAMP_TZ`, `TIME` — and checks whether each has a non-empty `comment`. Restricting to base tables prevents view-column comments from inflating the score.
 
-Columns without comments are assumed undocumented. The check does not validate comment content — only presence.
+A score of 1.0 means every temporal column in a base table has a comment describing its temporal role (validity window, effective date, event time, etc.). The check does not validate comment content — only presence.
+
+Returns NULL (N/A) when the schema contains no temporal columns in base tables.
 
 ## SQL
 
 ```sql
 WITH temporal_columns AS (
-    SELECT
-        c.table_catalog,
-        c.table_schema,
-        c.table_name,
-        c.column_name,
-        c.data_type,
-        c.comment
+    SELECT c.comment
     FROM {{ database }}.information_schema.columns c
-    WHERE c.table_schema = '{{ schema }}'
-        AND c.data_type IN ('DATE', 'DATETIME', 'TIMESTAMP_LTZ', 'TIMESTAMP_NTZ', 'TIMESTAMP_TZ', 'TIME')
-),
-documented_temporal AS (
-    SELECT *
-    FROM temporal_columns
-    WHERE comment IS NOT NULL 
-        AND comment != ''
+    JOIN {{ database }}.information_schema.tables t
+        ON c.table_catalog = t.table_catalog
+        AND c.table_schema = t.table_schema
+        AND c.table_name   = t.table_name
+    WHERE UPPER(c.table_schema) = UPPER('{{ schema }}')
+        AND t.table_type = 'BASE TABLE'
+        AND c.data_type IN ('DATE','DATETIME','TIMESTAMP_LTZ','TIMESTAMP_NTZ','TIMESTAMP_TZ','TIME')
 )
 SELECT
-    (SELECT COUNT(*) FROM documented_temporal) AS documented_temporal_columns,
-    (SELECT COUNT(*) FROM temporal_columns) AS total_temporal_columns,
-    (SELECT COUNT(*) FROM documented_temporal)::FLOAT / 
-        NULLIF((SELECT COUNT(*) FROM temporal_columns)::FLOAT, 0) AS value
+    COUNT_IF(comment IS NOT NULL AND comment <> '') AS documented_temporal_columns,
+    COUNT(*) AS total_temporal_columns,
+    COUNT_IF(comment IS NOT NULL AND comment <> '')::FLOAT
+        / NULLIF(COUNT(*)::FLOAT, 0) AS value
+FROM temporal_columns
 ```
