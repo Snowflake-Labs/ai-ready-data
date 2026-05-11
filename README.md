@@ -227,6 +227,12 @@ skills/
         <br /><sub><b>Madhivanan Anbalagan</b></sub>
       </a>
     </td>
+    <td align="center">
+      <a href="https://github.com/angelaharney">
+        <img src="https://github.com/angelaharney.png" width="80px;" alt="angelaharney"/>
+        <br /><sub><b>Angela Harney</b></sub>
+      </a>
+    </td>
   </tr>
 </table>
 <!-- CONTRIBUTORS:END -->
