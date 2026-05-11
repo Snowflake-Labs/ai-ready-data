@@ -33,6 +33,7 @@ Three phases, light to deep:
 Ask the user what platform their data is on. Supported platforms:
 
 - `snowflake`
+- `postgres`
 
 Load the platform reference from `platforms/` — either `platforms/{PLATFORM}.md` or `platforms/{platform}/{PLATFORM}.md`. This is your reference for all platform-specific behavior during this session.
 
