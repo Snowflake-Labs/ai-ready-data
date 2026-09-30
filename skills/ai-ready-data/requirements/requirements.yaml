@@ -20,7 +20,7 @@ requirements:
     description: Fraction of non-null values across scoped columns (1.0 = no nulls)
     factor: clean
     scope: column
-    implementations: [snowflake]
+    implementations: [snowflake, postgres]
 
   distribution_conformity:
     description: Fraction of features whose statistical distributions conform to declared baseline distributions within tolerance thresholds
